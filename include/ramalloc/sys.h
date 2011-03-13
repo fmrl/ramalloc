@@ -36,6 +36,7 @@
 
 #include <ramalloc/fail.h>
 #include <ramalloc/sys/sysdef.h>
+#include <ramalloc/sys/detect.h>
 
 #ifdef RAMSYS_WINDOWS
 #  include <ramalloc/sys/win.h>
@@ -47,7 +48,6 @@
 #  define ramsys_release ramwin_release
 /* thread local storage */
 typedef ramwin_tlskey_t ramsys_tlskey_t;
-#define RAMSYS_NILTLSKEY RAMWIN_NILTLSKEY
 #  define ramsys_mktlskey ramwin_mktlskey
 #  define ramsys_rmtlskey ramwin_rmtlskey
 #  define ramsys_rcltls ramwin_rcltls
@@ -59,7 +59,9 @@ typedef ramwin_mutex_t ramsys_mutex_t;
 #  define ramsys_waitformutex ramwin_waitformutex
 #  define ramsys_quitmutex ramwin_quitmutex
 /* threads */
+typedef ramsys_thread_t ramwin_thread_t;
 #define ramsys_mkthread ramwin_mkthread
+#define ramwin_jointhread ramwin_jointhread
 /* barriers */
 typedef ramwin_barrier_t ramsys_barrier_t;
 #define ramsys_mkbarrier ramwin_mkbarrier
@@ -70,11 +72,10 @@ typedef ramwin_barrier_t ramsys_barrier_t;
 #  define ramsys_commit ramuix_commit
 #  define ramsys_decommit ramuix_decommit
 #  define ramsys_reset ramuix_reset
-#  define ramsys_bulkalloc ramuix_alloc
+#  define ramsys_bulkalloc ramuix_bulkalloc
 #  define ramsys_release ramuix_release
 /* thread local storage */
 typedef ramuix_tlskey_t ramsys_tlskey_t;
-#define RAMSYS_NILTLSKEY RAMUIX_NILTLSKEY
 #  define ramsys_mktlskey ramuix_mktlskey
 #  define ramsys_rmtlskey ramuix_rmtlskey
 #  define ramsys_rcltls ramuix_rcltls
@@ -86,13 +87,15 @@ typedef ramuix_mutex_t ramsys_mutex_t;
 #  define ramsys_waitformutex ramuix_waitformutex
 #  define ramsys_quitmutex ramuix_quitmutex
 /* threads */
+typedef ramuix_thread_t ramsys_thread_t;
 #define ramsys_mkthread ramuix_mkthread
+#define ramsys_jointhread ramuix_jointhread
 /* barriers */
 typedef ramuix_barrier_t ramsys_barrier_t;
 #define ramsys_mkbarrier ramuix_mkbarrier
 #define ramsys_waitonbarrier ramuix_waitonbarrier
 #else
-#  error <ramalloc/sys/sysdef.h> didn't provide me with a RAMSYS_/PLATFORM/ definition.
+#  error <ramalloc/sys/detect.h> has not detected a platform i recognize.
 #endif /* platform check */
 
 ramfail_status_t ramsys_initialize();

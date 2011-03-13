@@ -127,7 +127,8 @@ ramfail_status_t ramfoot_mkfooter(void **storage_arg, const ramfoot_spec_t *spec
    return RAMFAIL_OK;
 }
 
-ramfail_status_t ramfoot_getstorage(char **result_arg, const ramfoot_spec_t *spec_arg, void *ptr_arg)
+ramfail_status_t ramfoot_getstorage(void **result_arg,
+      const ramfoot_spec_t *spec_arg, void *ptr_arg)
 {
    char *p = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;

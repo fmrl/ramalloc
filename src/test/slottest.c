@@ -36,18 +36,19 @@
 #include <ramalloc/misc.h>
 #include <ramalloc/sig.h>
 #include <ramalloc/meta.h>
-#include <pstdint.h>
+#include <ramalloc/test.h>
+#include <ramalloc/sys/stdint.h>
 #include <stdlib.h>
 
 #define ALLOCATION_COUNT 10000
 #define NODE_CAPACITY 10
 
-typedef struct node node_t;
+struct node;
 
 typedef struct slot
 {
    ramsig_signature_t s_sig;
-   node_t *s_node;
+   struct node *s_node;
    int32_t s_value;
 } slot_t;
 
@@ -60,8 +61,6 @@ typedef struct node
 #define ALLOCATION_SIZE sizeof(slot_t)
 #define NODE_SIZE (ALLOCATION_SIZE * NODE_CAPACITY)
 
-static ramfail_status_t shuffle(void *array_arg, size_t size_arg, size_t count_arg);
-static ramfail_status_t randu32ie(uint32_t *result_arg, uint32_t n0_arg, uint32_t n1_arg);
 static ramfail_status_t sequentialtest();
 static ramfail_status_t randomtest();
 static ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg);
@@ -116,7 +115,7 @@ ramfail_status_t randomtest()
 
    for (i = 0; i < ALLOCATION_COUNT; ++i)
       idx[i] = i;
-   RAMFAIL_RETURN(shuffle(idx, sizeof(idx[0]), ALLOCATION_COUNT));
+   RAMFAIL_RETURN(ramtest_shuffle(idx, sizeof(idx[0]), ALLOCATION_COUNT));
 
    RAMFAIL_RETURN(ramsig_init(&thesig, "RAND"));
    RAMFAIL_RETURN(ramslot_mkpool(&pool, ALLOCATION_SIZE, NODE_CAPACITY, &mknode, &rmnode, &initslot));
@@ -136,49 +135,7 @@ ramfail_status_t randomtest()
    return RAMFAIL_OK;
 }
 
-ramfail_status_t shuffle(void *array_arg, size_t size_arg, size_t count_arg)
-{
-   char *p = (char *)array_arg;
-   size_t i = 0;
 
-   RAMFAIL_DISALLOWZ(array_arg);
-   RAMFAIL_DISALLOWZ(size_arg);
-
-   if (0 < count_arg)
-   {
-      for (i = count_arg - 1; i > 0; --i)
-      {
-         uint32_t j = 0;
-
-         RAMFAIL_RETURN(randu32ie(&j, 0, i));
-         RAMFAIL_RETURN(rammisc_swap(&p[i * size_arg], &p[j * size_arg], size_arg));
-      }
-   }
-
-   return RAMFAIL_OK;
-}
-
-
-
-ramfail_status_t randu32ie(uint32_t *result_arg, uint32_t n0_arg, uint32_t n1_arg)
-{
-   uint32_t n = 0;
-
-   RAMFAIL_DISALLOWZ(result_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, n0_arg <= n1_arg);
-
-#define RANDU32IE(R, N0, N1) (((uint32_t)((float)((N1) - (N0)) * (R) / ((float)RAND_MAX + 1))) + (N0))
-   /* this assertion tests the boundaries of the scaling formula. */
-   assert(RANDU32IE(0, n0_arg, n1_arg) >= n0_arg);
-   assert(RANDU32IE(RAND_MAX, n0_arg, n1_arg) < n1_arg);
-   n = RANDU32IE(rand(), n0_arg, n1_arg);
-#undef RANDU32IE
-
-   assert(n >= n0_arg);
-   assert(n < n1_arg);
-   *result_arg = n;
-   return RAMFAIL_OK;
-}
 
 ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg)
 {

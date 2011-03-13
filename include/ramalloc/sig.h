@@ -35,7 +35,7 @@
 #define RAMSIG_H_IS_INCLUDED
 
 #include <ramalloc/fail.h>
-#include <pstdint.h>
+#include <ramalloc/sys/stdint.h>
 
 typedef union ramsig_signature
 {

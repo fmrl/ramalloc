@@ -53,7 +53,7 @@ ramfail_status_t ramvec_mkpool2(ramvec_pool_t *pool_arg, size_t nodecap_arg,
    ramvec_mknode_t mknode_arg)
 {
    assert(pool_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, nodecap_arg > 1);
+   RAMFAIL_DISALLOWZ(nodecap_arg);
    RAMFAIL_DISALLOWZ(mknode_arg);
 
    RAMFAIL_RETURN(ramlist_mklist(&pool_arg->ramvecvp_inv));
@@ -96,7 +96,7 @@ ramfail_status_t ramvec_acquire(ramvec_node_t *node_arg, int isfull_arg)
       ramlist_list_t *unused = NULL;
 
       RAMFAIL_RETURN(ramlist_pop(&unused, &node_arg->ramvecn_avail));
-      memset(&node_arg->ramvecn_avail, 0, sizeof(node_arg->ramvecn_avail));
+      RAMFAIL_RETURN(ramlist_mknil(&node_arg->ramvecn_avail));
    }
 
    return RAMFAIL_OK;
@@ -146,28 +146,25 @@ ramfail_status_t ramvec_release(ramvec_node_t *node_arg, int wasfull_arg, int is
    pool = node_arg->ramvecn_vpool;
    assert(pool);
 
-   /* this function doesn't work if the node capacity is less than 2, which
-    * shouldn't happen because it renders pooling meaningless. */
-   /* TODO: this constraint should be enforced at initialization. */
-   assert(!(wasfull_arg && isempty_arg));
-   assert(pool->ramvecvp_nodecapacity > 1);
-
-   /* if the node was full before releasing the memory object, then i need
-    * push it onto the availability stack. */
-   if (wasfull_arg)
-   {
-      RAMFAIL_RETURN(ramlist_mklist(&node_arg->ramvecn_avail));
-      RAMFAIL_RETURN(ramlist_splice(&pool->ramvecvp_avail, &node_arg->ramvecn_avail));
-   }
-   /* otherwise, if the node is now empty, i can discard it by removing it from
-    * both the inventory and availablity lists. */
-   else if (isempty_arg)
+   /* if the node is now empty, i can discard it by removing it from both
+    * the inventory and availability lists. */
+   if (isempty_arg)
    {
       ramlist_list_t *unused = NULL;
       RAMFAIL_RETURN(ramlist_pop(&unused, &node_arg->ramvecn_inv));
-      memset(&node_arg->ramvecn_inv, 0, sizeof(node_arg->ramvecn_inv));
-      RAMFAIL_RETURN(ramlist_pop(&unused, &node_arg->ramvecn_avail));
-      memset(&node_arg->ramvecn_avail, 0, sizeof(node_arg->ramvecn_avail));
+      RAMFAIL_RETURN(ramlist_mknil(&node_arg->ramvecn_inv));
+      if (!RAMLIST_ISNIL(&node_arg->ramvecn_avail))
+      {
+         RAMFAIL_RETURN(ramlist_pop(&unused, &node_arg->ramvecn_avail));
+         RAMFAIL_RETURN(ramlist_mknil(&node_arg->ramvecn_avail));
+      }
+   }
+   /* otherwise, if the node was full before releasing the memory object,
+    * then i need push it onto the availability stack. */
+   else if (wasfull_arg)
+   {
+      RAMFAIL_RETURN(ramlist_mklist(&node_arg->ramvecn_avail));
+      RAMFAIL_RETURN(ramlist_splice(&pool->ramvecvp_avail, &node_arg->ramvecn_avail));
    }
 
    return RAMFAIL_OK;

@@ -39,8 +39,59 @@
 #ifdef RAMSYS_UNIX
 
 #include <ramalloc/fail.h>
+#include <ramalloc/sys/sysdef.h>
+#include <pthread.h>
 
-ramfail_status_t ramuix_mkspec(ramsys_globals_t *globals_arg);
+#undef RAMUIX_PTHREADBARRIER
+
+ramfail_status_t ramuix_mkglobals(ramsys_globals_t *globals_arg);
+ramfail_status_t ramuix_commit(char *page_arg);
+ramfail_status_t ramuix_decommit(char *page_arg);
+ramfail_status_t ramuix_reset(char *page_arg);
+ramfail_status_t ramuix_reserve(char **pages_arg);
+ramfail_status_t ramuix_bulkalloc(char **pages_arg);
+ramfail_status_t ramuix_release(char *pages_arg);
+
+typedef pthread_key_t ramuix_tlskey_t;
+
+ramfail_status_t ramuix_mktlskey(ramuix_tlskey_t *key_arg);
+ramfail_status_t ramuix_rmtlskey(ramuix_tlskey_t *key_arg);
+#define ramuix_rcltls pthread_getspecific
+ramfail_status_t ramuix_stotls(ramuix_tlskey_t key_arg, void *value_arg);
+
+typedef pthread_mutex_t ramuix_mutex_t;
+
+ramfail_status_t ramuix_mkmutex(ramuix_mutex_t *mutex_arg);
+ramfail_status_t ramuix_rmmutex(ramuix_mutex_t *mutex_arg);
+ramfail_status_t ramuix_waitformutex(ramuix_mutex_t *mutex_arg);
+ramfail_status_t ramuix_quitmutex(ramuix_mutex_t *mutex_arg);
+
+typedef pthread_t ramuix_thread_t;
+
+ramfail_status_t ramuix_mkthread(ramuix_thread_t *thread_arg,
+      ramsys_threadmain_t main_arg, void *arg_arg);
+ramfail_status_t ramuix_jointhread(ramfail_status_t *reply_arg,
+      ramuix_thread_t thread_arg);
+
+typedef struct ramlin_barrier
+{
+   pthread_mutex_t ramlinb_mutex;
+   pthread_cond_t ramlinb_cond;
+   volatile size_t ramlinb_vacancy;
+   size_t ramlinb_capacity;
+   uintptr_t ramlinb_cycle;
+} ramlin_barrier_t;
+
+#ifdef RAMUIX_PTHREADBARRIER
+typedef pthread_barrier_t ramuix_barrier_t;
+#else
+typedef ramlin_barrier_t ramuix_barrier_t;
+#endif
+
+ramfail_status_t ramuix_mkbarrier(ramuix_barrier_t *barrier_arg,
+      int capacity_arg);
+ramfail_status_t ramuix_rmbarrier(ramuix_barrier_t *barrier_arg);
+ramfail_status_t ramuix_waitonbarrier(ramuix_barrier_t *barrier_arg);
 
 #endif /* RAMSYS_UNIX */
 

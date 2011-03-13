@@ -32,6 +32,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include <ramalloc/tra.h>
+#include <string.h>
 
 typedef struct ramtra_foreachadaptor
 {

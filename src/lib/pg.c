@@ -41,7 +41,7 @@
 typedef uint8_t rampg_index_t;
 #define RAMPG_MAXCAPACITY UINT8_MAX
 
-typedef struct rampg_snode rampg_snode_t;
+struct rampg_snode;
 
 typedef struct rampg_vnode
 {
@@ -55,7 +55,7 @@ typedef struct rampg_vnode
 typedef struct rampg_slot
 {
    ramsig_signature_t rampgg_signature;
-   rampg_snode_t *rampgg_snode;
+   struct rampg_snode *rampgg_snode;
    rampg_vnode_t rampgg_vnode;
 } rampg_slot_t;
 
@@ -73,7 +73,7 @@ typedef struct rampg_footer
 
 typedef struct rampg_globals
 {
-   ramsys_globals_t *rampgg_sysglobals;
+   const ramsys_globals_t *rampgg_sysglobals;
    ramfoot_spec_t rampgg_footerspec;
    size_t rampgg_nodecapacity;
    size_t rampgg_granularity;
@@ -197,7 +197,7 @@ ramfail_status_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
    /* i need to write a footer to the page to ensure that i can get to the pool
     * given any address of of the page. */
    /* TODO: should the footer spec be moved out of pool and into this? */
-   RAMFAIL_EPICFAIL(ramfoot_mkfooter((rampg_footer_t **)&foot, &rampg_theglobals.rampgg_footerspec, page));
+   RAMFAIL_EPICFAIL(ramfoot_mkfooter((void **)&foot, &rampg_theglobals.rampgg_footerspec, page));
    foot->rampgf_vnode = vnode;
 
    /* i finalize the acquisition by updating the pool state. */
@@ -284,7 +284,7 @@ ramfail_status_t rampg_mkvnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg
    assert(node_arg);
 
    RAMMETA_BACKCAST(pool, rampg_pool_t, rampgp_vpool, pool_arg);
-   RAMFAIL_RETURN(ramslot_acquire(&slot, &pool->rampgp_slotpool));
+   RAMFAIL_RETURN(ramslot_acquire((void **)&slot, &pool->rampgp_slotpool));
    e = rampg_initvnode(&slot->rampgg_vnode);
    if (RAMFAIL_OK == e)
    {

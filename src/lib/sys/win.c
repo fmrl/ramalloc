@@ -61,7 +61,7 @@ ramfail_status_t ramwin_mkglobals(ramsys_globals_t *globals_arg)
 ramfail_status_t ramwin_commit(char *page_arg)
 {
    RAMFAIL_DISALLOWZ(page_arg);
-   RAMFAIL_RETURN(ramsys_initialize());
+   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_theglobals != NULL);
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, RAMSYS_ISPAGE(page_arg, ramwin_theglobals));
    
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 
@@ -74,7 +74,7 @@ ramfail_status_t ramwin_commit(char *page_arg)
 ramfail_status_t ramwin_decommit(char *page_arg)
 {
    RAMFAIL_DISALLOWZ(page_arg);
-   RAMFAIL_RETURN(ramsys_initialize());
+   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_theglobals != NULL);
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, RAMSYS_ISPAGE(page_arg, ramwin_theglobals));
    
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
@@ -86,7 +86,7 @@ ramfail_status_t ramwin_decommit(char *page_arg)
 ramfail_status_t ramwin_reset(char *page_arg)
 {
    RAMFAIL_DISALLOWZ(page_arg);
-   RAMFAIL_RETURN(ramsys_initialize());
+   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_theglobals != NULL);
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, RAMSYS_ISPAGE(page_arg, ramwin_theglobals));
 
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 
@@ -100,7 +100,7 @@ ramfail_status_t ramwin_reserve(char **pages_arg)
 {
    RAMFAIL_DISALLOWZ(pages_arg);
    *pages_arg = NULL;
-   RAMFAIL_RETURN(ramsys_initialize());
+   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_theglobals != NULL);
 
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 
       *pages_arg = (char *)VirtualAlloc(NULL, ramwin_theglobals->ramsysg_granularity, 
@@ -113,7 +113,7 @@ ramfail_status_t ramwin_bulkalloc(char **pages_arg)
 {
    RAMFAIL_DISALLOWZ(pages_arg);
    *pages_arg = NULL;
-   RAMFAIL_RETURN(ramsys_initialize());
+   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_theglobals != NULL);
 
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 
       *pages_arg = (char *)VirtualAlloc(NULL, ramwin_theglobals->ramsysg_granularity, 
@@ -125,7 +125,7 @@ ramfail_status_t ramwin_bulkalloc(char **pages_arg)
 ramfail_status_t ramwin_release(char *pages_arg)
 {
    RAMFAIL_DISALLOWZ(pages_arg);
-   RAMFAIL_RETURN(ramsys_initialize());
+   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_theglobals != NULL);
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, RAMSYS_ISPAGE(pages_arg, ramwin_theglobals));
    
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,

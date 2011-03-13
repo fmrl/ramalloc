@@ -79,6 +79,7 @@ add_library(ramalloc
 	include/ramalloc/sys/uix.h
 	include/ramalloc/sys/win.h
 	include/ramalloc/thread.h
+	include/ramalloc/test.h
 	include/ramalloc/tls.h
 	include/ramalloc/tra.h
 	include/ramalloc/vec.h
@@ -104,48 +105,51 @@ add_library(ramalloc
 	src/lib/sys/uix.c
 	src/lib/sys/win.c
 	src/lib/thread.c
+	src/lib/test.c
 	src/lib/tls.c
 	src/lib/tra.c
 	src/lib/vec.c
 	)
+	
+set(RAMALLOC_LIBRARIES ramalloc ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(pgtest
 	src/test/pgtest.c
 	)
-target_link_libraries(pgtest ramalloc)
+target_link_libraries(pgtest ${RAMALLOC_LIBRARIES})
 
 add_executable(slottest
 	src/test/slottest.c
 	)
-target_link_libraries(slottest ramalloc)
+target_link_libraries(slottest ${RAMALLOC_LIBRARIES})
 
 add_executable(algntest
 	src/test/algntest.c
 	)
-target_link_libraries(algntest ramalloc)
+target_link_libraries(algntest ${RAMALLOC_LIBRARIES})
 
 add_executable(muxtest
 	src/test/muxtest.c
 	)
-target_link_libraries(muxtest ramalloc)
+target_link_libraries(muxtest ${RAMALLOC_LIBRARIES})
 
 add_executable(lazytest
 	src/test/lazytest.c
 	)
-target_link_libraries(lazytest ramalloc)
+target_link_libraries(lazytest ${RAMALLOC_LIBRARIES})
 
 add_executable(paratest
 	src/test/paratest.c
 	)
-target_link_libraries(paratest ramalloc)
+target_link_libraries(paratest ${RAMALLOC_LIBRARIES})
 
 add_executable(defaulttest
 	src/test/defaulttest.c
 	)
-target_link_libraries(defaulttest ramalloc)
+target_link_libraries(defaulttest ${RAMALLOC_LIBRARIES})
 
 add_executable(compattest
 	src/test/compattest.c
 	)
-target_link_libraries(compattest ramalloc)
+target_link_libraries(compattest ${RAMALLOC_LIBRARIES})
 

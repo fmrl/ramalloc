@@ -36,11 +36,9 @@
 
 #include <ramalloc/fail.h>
 
-typedef struct ramslst_slist ramslst_slist_t;
-
 typedef struct ramslst_slist
 {
-   ramslst_slist_t *ramslstsl_next;
+   struct ramslst_slist *ramslstsl_next;
 } ramslst_slist_t;
 
 typedef ramfail_status_t (*ramslst_foreach_t)(ramslst_slist_t *node_arg, void *context_arg);

@@ -39,7 +39,7 @@
 #elif defined(RAMSYS_UNIX)
 #  define ramsys_mkglobals ramuix_mkglobals
 #else
-#  error <ramalloc/sys/sysdef.h> didn't provide me with a RAMSYS_/PLATFORM/ definition.
+#  error <ramalloc/sys/detect.h> has not detected a platform i recognize.
 #endif /* platform check */
 
 static ramsys_globals_t ramsys_theglobals;

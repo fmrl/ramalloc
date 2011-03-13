@@ -38,7 +38,7 @@
 #include <ramalloc/sig.h>
 #include <ramalloc/meta.h>
 #include <ramalloc/sys.h>
-#include <pstdint.h>
+#include <ramalloc/sys/stdint.h>
 #include <stdlib.h>
 
 typedef struct ramfoot_spec
@@ -69,7 +69,8 @@ typedef struct ramfoot_spec
 ramfail_status_t ramfoot_mkspec(ramfoot_spec_t *spec_arg, size_t writezn_arg, 
    size_t footsz_arg, size_t storalign_arg, size_t storofs_arg, const char *sig_arg);
 ramfail_status_t ramfoot_mkfooter(void **storage_arg, const ramfoot_spec_t *spec_arg, void *page_arg);
-ramfail_status_t ramfoot_getstorage(void **result_arg, const ramfoot_spec_t *spec_arg, void *ptr_arg);
+ramfail_status_t ramfoot_getstorage(void **result_arg,
+      const ramfoot_spec_t *spec_arg, void *ptr_arg);
 
 #define RAMFOOT_GETPAGE(Spec, Ptr) (char *)((uintptr_t)(Ptr) & (Spec)->ramfoots_sysspec->ramsysg_pagemask)
 

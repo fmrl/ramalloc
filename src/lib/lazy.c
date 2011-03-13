@@ -32,6 +32,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include <ramalloc/lazy.h>
+#include <string.h>
 
 typedef struct ramlazy_chktrashnode
 {

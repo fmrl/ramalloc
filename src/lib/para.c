@@ -33,6 +33,7 @@
 
 #include <ramalloc/para.h>
 #include <ramalloc/mem.h>
+#include <string.h>
 
 typedef struct rampara_tls
 {
@@ -68,7 +69,7 @@ ramfail_status_t rampara_mkpool2(rampara_pool_t *parapool_arg, ramopt_appetite_t
 
    RAMFAIL_RETURN(ramtls_mkkey(&parapool_arg->ramparap_tlskey));
    parapool_arg->ramparap_appetite = appetite_arg;
-   parapool_arg->ramparap_disposalratio = disposalratio_arg;
+   parapool_arg->ramparap_reclaimratio = disposalratio_arg;
 
    return RAMFAIL_OK;
 }
@@ -77,8 +78,8 @@ ramfail_status_t rampara_rmpool(rampara_pool_t *parapool_arg)
 {
    RAMFAIL_DISALLOWZ(parapool_arg);
 
-   RAMFAIL_RETURN(ramtls_rmkey(parapool_arg->ramparap_tlskey));
-   parapool_arg->ramparap_tlskey = RAMTLS_NILKEY;
+   RAMFAIL_RETURN(ramtls_rmkey(&parapool_arg->ramparap_tlskey));
+   memset(parapool_arg, 0, sizeof(*parapool_arg));
 
    return RAMFAIL_OK;
 }
@@ -195,7 +196,7 @@ ramfail_status_t rampara_mktls(rampara_tls_t **newtls_arg, rampara_pool_t *parap
    RAMFAIL_CONFIRM(RAMFAIL_RESOURCE, p = rammem_supmalloc(sizeof(*p)));
    memset(p, 0, sizeof(*p));
    p->ramparat_backref = parapool_arg;
-   e = ramlazy_mkpool(&p->ramparat_lazypool, parapool_arg->ramparap_appetite, parapool_arg->ramparap_disposalratio);
+   e = ramlazy_mkpool(&p->ramparat_lazypool, parapool_arg->ramparap_appetite, parapool_arg->ramparap_reclaimratio);
    if (RAMFAIL_OK == e)
    {
       *newtls_arg = p;
@@ -217,7 +218,7 @@ ramfail_status_t rampara_rcltls(rampara_tls_t **tls_arg, rampara_pool_t *parapoo
    *tls_arg = NULL;
    RAMFAIL_DISALLOWZ(parapool_arg);
 
-   RAMFAIL_RETURN(ramtls_rcl(&tls, parapool_arg->ramparap_tlskey));
+   tls = ramtls_rcl(parapool_arg->ramparap_tlskey);
    if (NULL == tls)
    {
       /* BUG: the pool is leaked here if ramtls_sto() fails-- also when threads are destroyed. */

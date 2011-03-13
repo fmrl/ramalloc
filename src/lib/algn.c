@@ -53,7 +53,7 @@ typedef struct ramalgn_footer
 
 typedef struct ramalgn_globals
 {
-   ramsys_globals_t *ramalgng_sysspec;
+   const ramsys_globals_t *ramalgng_sysspec;
    ramfoot_spec_t ramalgng_footerspec;
    int ramalgng_initflag;
 } ramalgn_globals_t;
@@ -229,7 +229,7 @@ ramfail_status_t ramalgn_mknode2(ramalgn_node_t **node_arg, ramalgn_pool_t *pool
 
    /* i need to write a footer to the page to ensure that i can get to the pool
     * given any address of of the page. */
-   RAMFAIL_RETURN(ramfoot_mkfooter((ramalgn_footer_t **)&foot, 
+   RAMFAIL_RETURN(ramfoot_mkfooter((void **)&foot,
       &ramalgn_theglobals.ramalgng_footerspec, page_arg));
    *node_arg = &foot->ramalgnf_node;
 

@@ -42,10 +42,10 @@ typedef struct rampara_pool
 {
    ramtls_key_t ramparap_tlskey;
    ramopt_appetite_t ramparap_appetite;
-   size_t ramparap_disposalratio;
+   size_t ramparap_reclaimratio;
 } rampara_pool_t;
 
-ramfail_status_t rampara_mkpool(rampara_pool_t *parapool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg);
+ramfail_status_t rampara_mkpool(rampara_pool_t *parapool_arg, ramopt_appetite_t appetite_arg, size_t reclaimratio_arg);
 ramfail_status_t rampara_rmpool(rampara_pool_t *parapool_arg);
 ramfail_status_t rampara_acquire(void **newptr_arg, rampara_pool_t *parapool_arg, size_t size_arg);
 #define rampara_release ramlazy_release

@@ -33,7 +33,7 @@
 #define RAMSYSDEF_H_IS_INCLUDED
 
 #include <stddef.h>
-#include <pstdint.h>
+#include <ramalloc/sys/stdint.h>
 
 typedef struct ramsys_globals
 {
@@ -44,13 +44,5 @@ typedef struct ramsys_globals
 } ramsys_globals_t;
 
 typedef int32_t (*ramsys_threadmain_t)(void *);
-
-#ifdef _WIN32 
-#  define RAMSYS_WINDOWS
-#elif defined(unix) || defined(__unix__) || defined(__unix)
-#  define RAMSYS_UNIX
-#else
-#  error i don't recognize this platform.
-#endif /* platform check */
 
 #endif /* RAMSYSDEF_H_IS_INCLUDED */

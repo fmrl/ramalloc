@@ -34,15 +34,14 @@
 #include <ramalloc/ramalloc.h>
 #include <ramalloc/algn.h>
 #include <ramalloc/misc.h>
-#include <pstdint.h>
+#include <ramalloc/test.h>
+#include <ramalloc/sys/stdint.h>
 #include <stdlib.h>
 #include <memory.h>
 
 #define ALLOCATION_COUNT 1024 * 10
 #define ALLOCATION_SIZE 4
 
-static ramfail_status_t shuffle(void *array_arg, size_t size_arg, size_t count_arg);
-static ramfail_status_t randu32ie(uint32_t *result_arg, uint32_t n0_arg, uint32_t n1_arg);
 static ramfail_status_t fill(char *ptr_arg, size_t index_arg, size_t granularity_arg);
 static ramfail_status_t chkfill(char *ptrs_arg[], size_t count_arg, size_t granularity_arg);
 static ramfail_status_t sequentialtest();
@@ -67,7 +66,7 @@ ramfail_status_t sequentialtest()
    RAMFAIL_RETURN(ramalgn_chkpool(&pool));
    for (i = 0; i < ALLOCATION_COUNT; ++i)
    {
-      RAMFAIL_RETURN(ramalgn_acquire(&p[i], &pool));
+      RAMFAIL_RETURN(ramalgn_acquire((void **)&p[i], &pool));
       RAMFAIL_RETURN(ramalgn_chkpool(&pool));
       RAMFAIL_RETURN(fill(p[i], i, ALLOCATION_SIZE));
       RAMFAIL_RETURN(ramalgn_chkpool(&pool));
@@ -96,13 +95,13 @@ ramfail_status_t randomtest()
 
    for (i = 0; i < ALLOCATION_COUNT; ++i)
       idx[i] = i;
-   RAMFAIL_RETURN(shuffle(idx, sizeof(idx[0]), ALLOCATION_COUNT));
+   RAMFAIL_RETURN(ramtest_shuffle(idx, sizeof(idx[0]), ALLOCATION_COUNT));
 
    RAMFAIL_RETURN(ramalgn_mkpool(&pool, RAMOPT_DEFAULTAPPETITE, ALLOCATION_SIZE, NULL));
    RAMFAIL_RETURN(ramalgn_chkpool(&pool));
    for (i = 0; i < ALLOCATION_COUNT; ++i)
    {
-      RAMFAIL_RETURN(ramalgn_acquire(&p[i], &pool));
+      RAMFAIL_RETURN(ramalgn_acquire((void **)&p[i], &pool));
       RAMFAIL_RETURN(ramalgn_chkpool(&pool));
       RAMFAIL_RETURN(fill(p[i], i, ALLOCATION_SIZE));
       RAMFAIL_RETURN(ramalgn_chkpool(&pool));
@@ -120,49 +119,6 @@ ramfail_status_t randomtest()
    return RAMFAIL_OK;
 }
 
-ramfail_status_t shuffle(void *array_arg, size_t size_arg, size_t count_arg)
-{
-   char *p = (char *)array_arg;
-   size_t i = 0;
-
-   RAMFAIL_DISALLOWZ(array_arg);
-   RAMFAIL_DISALLOWZ(size_arg);
-
-   if (0 < count_arg)
-   {
-      for (i = count_arg - 1; i > 0; --i)
-      {
-         uint32_t j = 0;
-
-         RAMFAIL_RETURN(randu32ie(&j, 0, i));
-         RAMFAIL_RETURN(rammisc_swap(&p[i * size_arg], &p[j * size_arg], size_arg));
-      }
-   }
-
-   return RAMFAIL_OK;
-}
-
-
-
-ramfail_status_t randu32ie(uint32_t *result_arg, uint32_t n0_arg, uint32_t n1_arg)
-{
-   uint32_t n = 0;
-
-   RAMFAIL_DISALLOWZ(result_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, n0_arg <= n1_arg);
-
-#define RANDU32IE(R, N0, N1) (((uint32_t)((float)((N1) - (N0)) * (R) / ((float)RAND_MAX + 1))) + (N0))
-   /* this assertion tests the boundaries of the scaling formula. */
-   assert(RANDU32IE(0, n0_arg, n1_arg) >= n0_arg);
-   assert(RANDU32IE(RAND_MAX, n0_arg, n1_arg) < n1_arg);
-   n = RANDU32IE(rand(), n0_arg, n1_arg);
-#undef RANDU32IE
-
-   assert(n >= n0_arg);
-   assert(n < n1_arg);
-   *result_arg = n;
-   return RAMFAIL_OK;
-}
 
 ramfail_status_t fill(char *ptr_arg, size_t index_arg, size_t granularity_arg)
 {

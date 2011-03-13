@@ -34,13 +34,13 @@
 #include <ramalloc/ramalloc.h>
 #include <ramalloc/compat.h>
 #include <ramalloc/sys.h>
+#include <ramalloc/test.h>
 
 #define SMALL_SIZE 4
 #define LARGE_SIZE (1024 * 100)
 
 static ramfail_status_t malloctest(size_t size_arg);
 static ramfail_status_t calloctest(size_t count_arg, size_t size_arg);
-static ramfail_status_t realloctest(size_t size0_arg, size_t size1_arg);
 
 int main()
 {

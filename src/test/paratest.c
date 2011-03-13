@@ -36,8 +36,10 @@
 #include <ramalloc/misc.h>
 #include <ramalloc/thread.h>
 #include <ramalloc/barrier.h>
-#include <pstdint.h>
+#include <ramalloc/test.h>
+#include <ramalloc/sys/stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <memory.h>
 
 #define ALLOCATION_COUNT 1024 * 100
@@ -58,18 +60,15 @@ typedef struct allocinfo
 allocinfo_t allocinfos[ALLOCATION_COUNT] = {0};
 size_t sequence[ALLOCATION_COUNT * 2] = {0};
 rampara_pool_t thepool;
+ramthread_thread_t threads[THREAD_COUNT] = {0};
 rammtx_mutex_t mtx;
 size_t next = 0;
-int ok = 1;
-rambarrier_barrier_t finish;
 
-static ramfail_status_t shuffle(void *array_arg, size_t size_arg, size_t count_arg);
-static ramfail_status_t randu32ie(uint32_t *result_arg, uint32_t n0_arg, uint32_t n1_arg);
 static ramfail_status_t fill(char *ptr_arg, size_t sz_arg);
 static ramfail_status_t chkfill(char *ptr_arg, size_t sz_arg);
 static ramfail_status_t inittest();
 static int32_t testthread(void *arg);
-static ramfail_status_t testthread2(rampara_pool_t *pool_arg);
+static ramfail_status_t testthread2(int id_arg);
 static ramfail_status_t getnext(size_t *next_arg);
 static ramfail_status_t dotest();
 
@@ -96,33 +95,48 @@ ramfail_status_t inittest()
    for (i = 0, j = ALLOCATION_COUNT * 2; i < j; ++i)
       sequence[i] = (i / 2);
    /* i shuffle the sequence array to ensure a randomized order of operations. */
-   RAMFAIL_RETURN(shuffle(sequence, sizeof(sequence[0]), j));
+   RAMFAIL_RETURN(ramtest_shuffle(sequence, sizeof(sequence[0]), j));
    /* i need to initialize the pool. */
    RAMFAIL_RETURN(rampara_mkpool(&thepool, RAMOPT_DEFAULTAPPETITE, RECLAIMRATIO));
-   /* the barrier needs to include the test threads and the main thread. */
-   RAMFAIL_RETURN(rambarrier_mkbarrier(&finish, THREAD_COUNT + 1));
    return RAMFAIL_OK;
 }
 
 static ramfail_status_t dotest()
 {
    size_t i = 0;
+   ramfail_status_t e0 = RAMFAIL_OK;
 
    for (i = 0; i < THREAD_COUNT; ++i)
-      RAMFAIL_RETURN(ramthread_mkthread(&testthread, &thepool));
-
-   RAMFAIL_RETURN(rambarrier_wait(&finish));
-
-   if (ok)
    {
-      /* now that the threads no longer run, i need to flush them out before quitting.
-       * this doesn't work all that well yet, however, and some memory will be leaked. */
-      for (i = 0; i < THREAD_COUNT; ++i)
-         RAMFAIL_RETURN(rampara_flush(&thepool));
-      return RAMFAIL_OK;
+      fprintf(stderr, "[0] starting thread %d...\n", i + 1);
+      RAMFAIL_RETURN(ramthread_mkthread(&threads[i], &testthread, (void *)i));
+      fprintf(stderr, "[0] started thread %d.\n", i + 1);
    }
-   else
-      return RAMFAIL_CORRUPT;
+
+   fprintf(stderr, "[0] waiting for threads to finish...\n");
+   for (i = 0; i < THREAD_COUNT; ++i)
+   {
+      ramfail_status_t e = RAMFAIL_INSANE;
+
+      RAMFAIL_RETURN(ramthread_join(&e, threads[i]));
+      if (RAMFAIL_OK != e)
+   {
+         fprintf(stderr,
+               "[0] thread %d replied an unexpected failure (%d).\n",
+               i + 1, e);
+         if (RAMFAIL_OK == e0)
+            e0 = e;
+      }
+   }
+   if (RAMFAIL_OK != e0)
+      return e0;
+
+   /* now that the threads no longer run, i need to flush them out before
+    * quitting. */
+   fprintf(stderr, "[0] shutting down.\n");
+   for (i = 0; i < THREAD_COUNT; ++i)
+      RAMFAIL_RETURN(rampara_flush(&thepool));
+   return RAMFAIL_OK;
 }
 
 int32_t testthread(void *arg)
@@ -130,14 +144,10 @@ int32_t testthread(void *arg)
    ramfail_status_t e = RAMFAIL_INSANE;
    rampara_pool_t *pool = NULL;
    
-   pool = (rampara_pool_t *)arg;
-   e = testthread2(pool);
-   if (RAMFAIL_OK != e)
-      ok = 0;
-
-   RAMFAIL_EPICFAIL(rambarrier_wait(&finish));
-
-   return (int32_t)e;
+   fprintf(stderr, "[%d] testing...\n", ((int)arg) + 1);
+   /* TODO: i should be able to return a ramfail_status_t without
+    * casting. */
+   return (int32_t)testthread2((int)arg);
 }
 
 ramfail_status_t getnext(size_t *next_arg)
@@ -159,7 +169,7 @@ ramfail_status_t getnext(size_t *next_arg)
    return RAMFAIL_OK;
 }
 
-ramfail_status_t testthread2(rampara_pool_t *pool_arg)
+ramfail_status_t testthread2(int id_arg)
 {
    size_t i = 0;
    int allocflag = 1;
@@ -167,6 +177,7 @@ ramfail_status_t testthread2(rampara_pool_t *pool_arg)
    int32_t nextsz = 0;
    rampara_pool_t *nextpool = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
+   rampara_pool_t *pool = &thepool;
 
    while ((RAMFAIL_OK == (e = getnext(&i))) && i < ALLOCATION_COUNT)
    {
@@ -183,10 +194,10 @@ ramfail_status_t testthread2(rampara_pool_t *pool_arg)
       {
          int32_t roll = 0;
 
-         RAMFAIL_RETURN(randu32ie(&nextsz, ALLOCATION_MINSIZE, ALLOCATION_MAXSIZE));
+         RAMFAIL_RETURN(ramtest_randuint32(&nextsz, ALLOCATION_MINSIZE, ALLOCATION_MAXSIZE));
          /* i want a certain percentage of allocations to be performed by a different
           * allocator. */
-         RAMFAIL_RETURN(randu32ie(&roll, 0, 100));
+         RAMFAIL_RETURN(ramtest_randuint32(&roll, 0, 100));
          if (roll < MALLOC_PERCENTAGE)
          {
             nextptr = malloc(nextsz);
@@ -194,8 +205,8 @@ ramfail_status_t testthread2(rampara_pool_t *pool_arg)
          }
          else
          {
-            RAMFAIL_RETURN(rampara_acquire(&nextptr, pool_arg, nextsz));
-            nextpool = pool_arg;
+            RAMFAIL_RETURN(rampara_acquire(&nextptr, pool, nextsz));
+            nextpool = pool;
          }
 
          RAMFAIL_RETURN(fill(nextptr, nextsz));
@@ -247,56 +258,15 @@ ramfail_status_t testthread2(rampara_pool_t *pool_arg)
          }
       }
 
-      RAMFAIL_RETURN(rampara_chkpool(pool_arg));
+      RAMFAIL_RETURN(rampara_chkpool(pool));
    }
 
-   RAMFAIL_RETURN(rampara_flush(pool_arg));
-   RAMFAIL_RETURN(rampara_chkpool(pool_arg));
+   RAMFAIL_RETURN(rampara_flush(pool));
+   RAMFAIL_RETURN(rampara_chkpool(pool));
 
    return RAMFAIL_OK;
 }
 
-ramfail_status_t shuffle(void *array_arg, size_t size_arg, size_t count_arg)
-{
-   char *p = (char *)array_arg;
-   size_t i = 0;
-
-   RAMFAIL_DISALLOWZ(array_arg);
-   RAMFAIL_DISALLOWZ(size_arg);
-
-   if (0 < count_arg)
-   {
-      for (i = count_arg - 1; i > 0; --i)
-      {
-         uint32_t j = 0;
-
-         RAMFAIL_RETURN(randu32ie(&j, 0, i));
-         RAMFAIL_RETURN(rammisc_swap(&p[i * size_arg], &p[j * size_arg], size_arg));
-      }
-   }
-
-   return RAMFAIL_OK;
-}
-
-ramfail_status_t randu32ie(uint32_t *result_arg, uint32_t n0_arg, uint32_t n1_arg)
-{
-   uint32_t n = 0;
-
-   RAMFAIL_DISALLOWZ(result_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, n0_arg <= n1_arg);
-
-#define RANDU32IE(R, N0, N1) (((uint32_t)((float)((N1) - (N0)) * (R) / ((float)RAND_MAX + 1))) + (N0))
-   /* this assertion tests the boundaries of the scaling formula. */
-   assert(RANDU32IE(0, n0_arg, n1_arg) >= n0_arg);
-   assert(RANDU32IE(RAND_MAX, n0_arg, n1_arg) < n1_arg);
-   n = RANDU32IE(rand(), n0_arg, n1_arg);
-#undef RANDU32IE
-
-   assert(n >= n0_arg);
-   assert(n < n1_arg);
-   *result_arg = n;
-   return RAMFAIL_OK;
-}
 
 ramfail_status_t fill(char *ptr_arg, size_t sz_arg)
 {

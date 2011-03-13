@@ -34,6 +34,8 @@
 #ifndef RAMOPT_H_IS_INCLUDED
 #define RAMOPT_H_IS_INCLUDED
 
+#include <stdlib.h>
+
 /* 'RAMOPT_DEBUG' specifies whether ramalloc should include debugging oriented
  * features and code. if no preference is specified, a sensible value will
  * be determined based on whether NDEBUG is defined or not. */

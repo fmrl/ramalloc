@@ -38,7 +38,17 @@
 #include <ramalloc/fail.h>
 
 typedef ramsys_threadmain_t ramthread_main_t;
+typedef ramsys_thread_t ramthread_thread_t;
 
 #define ramthread_mkthread ramsys_mkthread
+/* on Linux, if the main thread exits before other threads running in the
+ * same process, the process will hang. this doesn't happen on Windows but
+ * it's still good practice to exit the main thread last. i can emulate
+ * the pattern Linux expects programmers to implement on Windows but i
+ * cannot emulate the expectations Windows programmers would have on Linux.
+ * therefore, i implemented a *join* operation for this API. */
+/* TODO: implement a *joinall* to make it as convenient as possible for
+ * Windows programmers. */
+#define ramthread_join ramsys_jointhread
 
 #endif /* RAMTHREAD_H_IS_INCLUDED */
