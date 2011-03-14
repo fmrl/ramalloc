@@ -67,7 +67,7 @@ size_t next = 0;
 static ramfail_status_t fill(char *ptr_arg, size_t sz_arg);
 static ramfail_status_t chkfill(char *ptr_arg, size_t sz_arg);
 static ramfail_status_t inittest();
-static int32_t testthread(void *arg);
+static ramfail_status_t testthread(void *arg);
 static ramfail_status_t testthread2(int id_arg);
 static ramfail_status_t getnext(size_t *next_arg);
 static ramfail_status_t dotest();
@@ -139,15 +139,10 @@ static ramfail_status_t dotest()
    return RAMFAIL_OK;
 }
 
-int32_t testthread(void *arg)
+ramfail_status_t testthread(void *arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
-   rampara_pool_t *pool = NULL;
-   
    fprintf(stderr, "[%d] testing...\n", ((int)arg) + 1);
-   /* TODO: i should be able to return a ramfail_status_t without
-    * casting. */
-   return (int32_t)testthread2((int)arg);
+   return testthread2((int)arg);
 }
 
 ramfail_status_t getnext(size_t *next_arg)

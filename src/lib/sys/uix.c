@@ -215,7 +215,7 @@ void * ramuix_startroutine(void *arg)
 {
    ramuix_startroutine_t *sr0 = NULL;
    ramuix_startroutine_t sr1 = {0};
-   int32_t e = RAMFAIL_INSANE;
+   ramfail_status_t e = RAMFAIL_INSANE;
 
    assert(NULL != arg);
    sr0 = (ramuix_startroutine_t *)arg;

@@ -32,8 +32,9 @@
 #ifndef RAMSYSDEF_H_IS_INCLUDED
 #define RAMSYSDEF_H_IS_INCLUDED
 
-#include <stddef.h>
+#include <ramalloc/fail.h>
 #include <ramalloc/sys/stdint.h>
+#include <stddef.h>
 
 typedef struct ramsys_globals
 {
@@ -43,6 +44,6 @@ typedef struct ramsys_globals
    int ramsysg_initflag;
 } ramsys_globals_t;
 
-typedef int32_t (*ramsys_threadmain_t)(void *);
+typedef ramfail_status_t (*ramsys_threadmain_t)(void *);
 
 #endif /* RAMSYSDEF_H_IS_INCLUDED */
