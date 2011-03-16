@@ -1,3 +1,5 @@
+/* ex: set softtabstop=3 shiftwidth=3 expandtab: */
+
 /* This file is part of the *ramalloc* project at <http://fmrl.org>.
  * Copyright (c) 2011, Michael Lowell Roberts.
  * All rights reserved. 
@@ -29,21 +31,42 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMSYSDEF_H_IS_INCLUDED
-#define RAMSYSDEF_H_IS_INCLUDED
+#ifndef RAMALLOC_PTHREADS_H_IS_INCLUDED
+#define RAMALLOC_PTHREADS_H_IS_INCLUDED
 
+/* this header isn't intended to be included directly. please include
+ * <ramalloc/sys.h> instead. */
+#ifdef RAMSYS_PTHREADS
+
+#include <ramalloc/sys/types.h>
 #include <ramalloc/fail.h>
-#include <ramalloc/sys/stdint.h>
-#include <stddef.h>
+#include <pthread.h>
 
-typedef struct ramsys_globals
-{
-   uintptr_t ramsysg_granularity;
-   uintptr_t ramsysg_pagesize;
-   uintptr_t ramsysg_pagemask;
-   int ramsysg_initflag;
-} ramsys_globals_t;
+typedef pthread_key_t ramuix_tlskey_t;
+typedef pthread_mutex_t ramuix_mutex_t;
+typedef pthread_t ramuix_thread_t;
+typedef pthread_barrier_t ramuix_barrier_t;
 
-typedef ramfail_status_t (*ramsys_threadmain_t)(void *);
+ramfail_status_t ramuix_mktlskey(ramuix_tlskey_t *key_arg);
+ramfail_status_t ramuix_rmtlskey(ramuix_tlskey_t *key_arg);
+#define ramuix_rcltls pthread_getspecific
+ramfail_status_t ramuix_stotls(ramuix_tlskey_t key_arg, void *value_arg);
 
-#endif /* RAMSYSDEF_H_IS_INCLUDED */
+ramfail_status_t ramuix_mkmutex(ramuix_mutex_t *mutex_arg);
+ramfail_status_t ramuix_rmmutex(ramuix_mutex_t *mutex_arg);
+ramfail_status_t ramuix_waitformutex(ramuix_mutex_t *mutex_arg);
+ramfail_status_t ramuix_quitmutex(ramuix_mutex_t *mutex_arg);
+
+ramfail_status_t ramuix_mkthread(ramuix_thread_t *thread_arg,
+      ramsys_threadmain_t main_arg, void *arg_arg);
+ramfail_status_t ramuix_jointhread(ramfail_status_t *reply_arg,
+      ramuix_thread_t thread_arg);
+
+ramfail_status_t ramuix_mkbarrier(ramuix_barrier_t *barrier_arg,
+      int capacity_arg);
+ramfail_status_t ramuix_rmbarrier(ramuix_barrier_t *barrier_arg);
+ramfail_status_t ramuix_waitonbarrier(ramuix_barrier_t *barrier_arg);
+
+#endif /* RAMSYS_PTHREADS */
+
+#endif /* RAMALLOC_PTHREADS_H_IS_INCLUDED */

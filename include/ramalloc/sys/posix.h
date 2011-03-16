@@ -31,51 +31,24 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#include <ramalloc/sys.h>
-#include <memory.h>
+#ifndef RAMALLOC_POSIX_H_IS_INCLUDED
+#define RAMALLOC_POSIX_H_IS_INCLUDED
 
-#ifdef RAMSYS_WINDOWS
-#  define ramsys_mkglobals ramwin_mkglobals
-#elif defined(RAMSYS_UNIX)
-#  define ramsys_mkglobals ramuix_mkglobals
-#else
-#  error <ramalloc/sys/detect.h> has not detected a platform i recognize.
-#endif /* platform check */
+/* this header isn't intended to be included directly. please include
+ * <ramalloc/sys.h> instead. */
+#ifdef RAMSYS_POSIX
 
-static ramsys_globals_t ramsys_theglobals;
+#include <ramalloc/fail.h>
 
-ramfail_status_t ramsys_initialize()
-{
-   if (!ramsys_theglobals.ramsysg_initflag)
-   {
-      RAMFAIL_RETURN(ramsys_mkglobals(&ramsys_theglobals));
+ramfail_status_t ramuix_pagesize(size_t *pagesz_arg);
+ramfail_status_t ramuix_mmapgran(size_t *mmapgran_arg);
+ramfail_status_t ramuix_commit(char *page_arg);
+ramfail_status_t ramuix_decommit(char *page_arg);
+ramfail_status_t ramuix_reset(char *page_arg);
+ramfail_status_t ramuix_reserve(char **pages_arg);
+ramfail_status_t ramuix_bulkalloc(char **pages_arg);
+ramfail_status_t ramuix_release(char *pages_arg);
 
-      /* i calculate the mask needed to obtain the page's address, given an address 
-       *on that page. */
-      ramsys_theglobals.ramsysg_pagemask = ~(ramsys_theglobals.ramsysg_pagesize - 1);
+#endif /* RAMSYS_POSIX */
 
-      /* something's wrong with the platform-specific modules if any fields
-       * in the structure are zero. */
-      RAMFAIL_CONFIRM(RAMFAIL_INSANE, ramsys_theglobals.ramsysg_granularity);
-      RAMFAIL_CONFIRM(RAMFAIL_INSANE, ramsys_theglobals.ramsysg_pagesize);
-
-      /* i depend upon the granularity being evenly divisible by the hardware
-       * page size. */
-      RAMFAIL_CONFIRM(RAMFAIL_UNSUPPORTED, 
-            0 == (ramsys_theglobals.ramsysg_granularity % ramsys_theglobals.ramsysg_pagesize));
-
-      ramsys_theglobals.ramsysg_initflag = 1;
-   }
-
-   return RAMFAIL_OK;
-}
-
-ramfail_status_t ramsys_getglobals(const ramsys_globals_t **globals_arg)
-{
-   RAMFAIL_DISALLOWZ(globals_arg);
-   *globals_arg = NULL;
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramsys_theglobals.ramsysg_initflag);
-
-   *globals_arg = &ramsys_theglobals;
-   return RAMFAIL_OK;
-}
+#endif /* RAMALLOC_POSIX_H_IS_INCLUDED */

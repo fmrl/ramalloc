@@ -94,6 +94,12 @@ typedef enum rampg_appetites
 #  define RAMOPT_DEFAULTRECLAIMGOAL 3
 #endif
 
+/* use *RAMOPT_BARRIERDEADLOCK* to demonstrate a non-deterministic deadlock
+ * i encountered in the NLPT implementation of pthread_barrier_wait(). */
+#ifndef RAMOPT_BARRIERDEADLOCK
+#  define RAMOPT_BARRIERDEADLOCK 0
+#endif
+
 typedef void * (*ramopt_malloc_t)(size_t);
 typedef void (*ramopt_free_t)(void *);
 

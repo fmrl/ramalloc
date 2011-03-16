@@ -77,6 +77,36 @@ typedef struct ramwin_barrier
 ramfail_status_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, int capacity_arg);
 ramfail_status_t ramwin_waitonbarrier(ramwin_barrier_t *barrier_arg);
 
+/* virtual memory mapping */
+#  define ramsys_getmemspecs ramwin_getmemspecs
+#  define ramsys_reserve ramwin_reserve
+#  define ramsys_commit ramwin_commit
+#  define ramsys_decommit ramwin_decommit
+#  define ramsys_reset ramwin_reset
+#  define ramsys_bulkalloc ramwin_bulkalloc
+#  define ramsys_release ramwin_release
+/* thread local storage */
+typedef ramwin_tlskey_t ramsys_tlskey_t;
+#  define ramsys_mktlskey ramwin_mktlskey
+#  define ramsys_rmtlskey ramwin_rmtlskey
+#  define ramsys_rcltls ramwin_rcltls
+#  define ramsys_stotls ramwin_stotls
+/* mutexes */
+typedef ramwin_mutex_t ramsys_mutex_t;
+#  define ramsys_mkmutex ramwin_mkmutex
+#  define ramsys_rmmutex ramwin_rmmutex
+#  define ramsys_waitformutex ramwin_waitformutex
+#  define ramsys_quitmutex ramwin_quitmutex
+/* threads */
+typedef ramsys_thread_t ramwin_thread_t;
+#define ramsys_mkthread ramwin_mkthread
+#define ramwin_jointhread ramwin_jointhread
+/* barriers */
+typedef ramwin_barrier_t ramsys_barrier_t;
+#define ramsys_mkbarrier ramwin_mkbarrier
+#define ramsys_rmbarrier ramwin_rmbarrier
+#define ramsys_waitonbarrier ramwin_waitonbarrier
+
 #endif /* RAMSYS_WINDOWS */
 
 #endif /* RAMWIN_H_IS_INCLUDED */

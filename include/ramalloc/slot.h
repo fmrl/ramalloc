@@ -37,7 +37,7 @@
 #include <ramalloc/vec.h>
 #include <ramalloc/fail.h>
 #include <ramalloc/opt.h>
-#include <ramalloc/sys/stdint.h>
+#include <ramalloc/stdint.h>
 
 #if RAMOPT_COMPACT
    typedef int16_t ramslot_index_t;

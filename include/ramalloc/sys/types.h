@@ -1,3 +1,5 @@
+/* ex: set softtabstop=3 shiftwidth=3 expandtab: */
+
 /* This file is part of the *ramalloc* project at <http://fmrl.org>.
  * Copyright (c) 2011, Michael Lowell Roberts.
  * All rights reserved.
@@ -29,17 +31,11 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMSYS_STDINT_H_IS_INCLUDED
-#define RAMSYS_STDINT_H_IS_INCLUDED
+#ifndef RAMSYS_TYPES_H_IS_INCLUDED
+#define RAMSYS_TYPES_H_IS_INCLUDED
 
-#include <ramalloc/sys/detect.h>
+#include <ramalloc/fail.h>
 
-#ifdef RAMSYS_WINDOWS
-#  include <pstdint.h>
-#elif defined(RAMSYS_UNIX)
-#  include <stdint.h>
-#else
-#  error <ramalloc/sys/detect.h> has not detected a platform i recognize.
-#endif
+typedef ramfail_status_t (*ramsys_threadmain_t)(void *);
 
-#endif /* RAMSYS_STDINT_H_IS_INCLUDED */
+#endif /* RAMSYS_TYPES_H_IS_INCLUDED */

@@ -38,7 +38,7 @@
 #include <ramalloc/barrier.h>
 #include <ramalloc/mtx.h>
 #include <ramalloc/test.h>
-#include <ramalloc/sys/stdint.h>
+#include <ramalloc/stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>

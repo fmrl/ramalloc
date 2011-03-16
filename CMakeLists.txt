@@ -74,12 +74,16 @@ add_library(ramalloc
 	include/ramalloc/sig.h
 	include/ramalloc/slot.h
 	include/ramalloc/slst.h
+	include/ramalloc/stdint.h
 	include/ramalloc/sys.h
-	include/ramalloc/sys/sysdef.h
-	include/ramalloc/sys/uix.h
+	include/ramalloc/sys/detect.h
+	include/ramalloc/sys/linux.h
+	include/ramalloc/sys/posix.h
+	include/ramalloc/sys/pthreads.h
+	include/ramalloc/sys/types.h
 	include/ramalloc/sys/win.h
-	include/ramalloc/thread.h
 	include/ramalloc/test.h
+	include/ramalloc/thread.h
 	include/ramalloc/tls.h
 	include/ramalloc/tra.h
 	include/ramalloc/vec.h
@@ -101,11 +105,12 @@ add_library(ramalloc
 	src/lib/sig.c
 	src/lib/slot.c
 	src/lib/slst.c
-	src/lib/sys.c
-	src/lib/sys/uix.c
+	src/lib/sys/linux.c
+	src/lib/sys/posix.c
+	src/lib/sys/pthreads.c
 	src/lib/sys/win.c
-	src/lib/thread.c
 	src/lib/test.c
+	src/lib/thread.c
 	src/lib/tls.c
 	src/lib/tra.c
 	src/lib/vec.c

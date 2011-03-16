@@ -73,10 +73,10 @@ typedef struct rampg_footer
 
 typedef struct rampg_globals
 {
-   const ramsys_globals_t *rampgg_sysglobals;
    ramfoot_spec_t rampgg_footerspec;
    size_t rampgg_nodecapacity;
    size_t rampgg_granularity;
+   size_t rampgg_pagesize;
    int rampgg_initflag;
 } rampg_globals_t;
 
@@ -85,14 +85,16 @@ static ramfail_status_t rampg_findvnode(rampg_vnode_t **node_arg, char *ptr_arg)
 static ramfail_status_t rampg_mkvnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg);
 static ramfail_status_t rampg_initvnode(rampg_vnode_t *node_arg);
 static ramfail_status_t rampg_rmvnode(rampg_vnode_t *node_arg);
-static char * rampg_getpage(rampg_vnode_t *node_arg, rampg_index_t index_arg);
-static rampg_index_t rampg_calcindex(const rampg_vnode_t *node_arg, const char *page_arg);
+static ramfail_status_t rampg_getpage(char **page_arg,
+      rampg_vnode_t *vpoolnode_arg, rampg_index_t index_arg);
+static ramfail_status_t rampg_calcindex(rampg_index_t *index_arg,
+      const rampg_vnode_t *vpoolnode_arg, const char *page_arg);
 static ramfail_status_t rampg_chkvnode(const ramvec_node_t *node_arg);
-#define RAMPG_ISFULL(Node) (0 == (Node)->rampgvn_freestksz)
-#define RAMPG_ISEMPTY(Node) (rampg_theglobals.rampgg_nodecapacity == (Node)->rampgvn_freestksz)
 static ramfail_status_t rampg_mksnode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg);
 static ramfail_status_t rampg_rmsnode(ramslot_node_t *node_arg, ramslot_pool_t *pool_arg);
 static ramfail_status_t rampg_initslot(void *slot_arg, ramslot_node_t *node_arg);
+#define RAMPG_ISFULL(Node) (0 == (Node)->rampgvn_freestksz)
+#define RAMPG_ISEMPTY(Node) (rampg_theglobals.rampgg_nodecapacity == (Node)->rampgvn_freestksz)
 
 static rampg_globals_t rampg_theglobals;
 
@@ -101,15 +103,16 @@ ramfail_status_t rampg_initialize()
    if (!rampg_theglobals.rampgg_initflag)
    {
       rampg_globals_t stage = {0};
+      size_t mmapgran = 0;
 
-      RAMFAIL_RETURN(ramsys_getglobals(&stage.rampgg_sysglobals));
+      RAMFAIL_RETURN(rammem_pagesize(&stage.rampgg_pagesize));
+      RAMFAIL_RETURN(rammem_mmapgran(&mmapgran));
       /* i am the page allocator, so i have access to the entire page 
        * (i.e. 'page_size' == 'writable_zone') */
       RAMFOOT_MKSPEC(&stage.rampgg_footerspec, rampg_footer_t, 
-            stage.rampgg_sysglobals->ramsysg_pagesize, "PAGE");
+            stage.rampgg_pagesize, "PAGE");
       /* the node capacity is the number of pages a node keeps track of. */
-      stage.rampgg_nodecapacity = stage.rampgg_sysglobals->ramsysg_granularity / 
-         stage.rampgg_sysglobals->ramsysg_pagesize;
+      stage.rampgg_nodecapacity = mmapgran / stage.rampgg_pagesize;
       RAMFAIL_CONFIRM(RAMFAIL_UNSUPPORTED, 
             stage.rampgg_nodecapacity <= RAMPG_MAXCAPACITY);
       stage.rampgg_granularity = stage.rampgg_footerspec.footer_offset;
@@ -140,6 +143,7 @@ ramfail_status_t rampg_mkpool(rampg_pool_t *pool_arg, ramopt_appetite_t appetite
 ramfail_status_t rampg_mkpool2(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg)
 {
    size_t snodecapacity = 0;
+   size_t mmapgran = 0;
 
    assert(pool_arg);
    assert(rampg_theglobals.rampgg_initflag);
@@ -148,10 +152,12 @@ ramfail_status_t rampg_mkpool2(rampg_pool_t *pool_arg, ramopt_appetite_t appetit
       &rampg_mkvnode));
    pool_arg->rampgp_appetite = appetite_arg;
 
-   /* slot pool initialization: i must determine how many slots i can store with a 
-    * slot allocator in 'stage.rampgg_sysglobals->ramsysg_granularity' bytes. */
-   snodecapacity = (rampg_theglobals.rampgg_sysglobals->ramsysg_granularity - sizeof(rampg_snode_t)) /
-      sizeof(rampg_slot_t);
+   /* slot pool initialization: i must determine how many slots i can store
+    * with a slot allocator in the amount of space specified by the virtual
+    * memory mapping granularity. */
+   RAMFAIL_RETURN(rammem_mmapgran(&mmapgran));
+   snodecapacity = (mmapgran - sizeof(rampg_snode_t))
+         / sizeof(rampg_slot_t);
    RAMFAIL_RETURN(ramslot_mkpool(&pool_arg->rampgp_slotpool, sizeof(rampg_slot_t),
       snodecapacity, rampg_mksnode, rampg_rmsnode, rampg_initslot));
    RAMFAIL_RETURN(ramsig_init(&pool_arg->rampgp_slotsig, "SLOT"));
@@ -181,7 +187,7 @@ ramfail_status_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
    assert(&pool_arg->rampgp_vpool == vnode->rampgvn_vnode.ramvecn_vpool);
 
    idx = vnode->rampgvn_freestk[vnode->rampgvn_freestksz - 1];
-   page = rampg_getpage(vnode, idx);
+   RAMFAIL_RETURN(rampg_getpage(&page, vnode, idx));
    RAMFAIL_RETURN(ramsys_commit(page));
 
    /* i mark the page as committed. */
@@ -222,7 +228,7 @@ ramfail_status_t rampg_release(void *ptr_arg)
 
    RAMFAIL_RETURN(rampg_findvnode(&vnode, (char *)ptr_arg));
    RAMMETA_BACKCAST(pool, rampg_pool_t, rampgp_vpool, vnode->rampgvn_vnode.ramvecn_vpool);
-   idx = rampg_calcindex(vnode, ptr_arg);
+   RAMFAIL_RETURN(rampg_calcindex(&idx, vnode, ptr_arg));
    /* depending upon the release strategy, i either return the page to the system
     * or i wipe it and deny access to it. */
    if (RAMOPT_FRUGAL == pool->rampgp_appetite)
@@ -341,25 +347,45 @@ ramfail_status_t rampg_rmvnode(rampg_vnode_t *node_arg)
    return RAMFAIL_OK;
 }
 
-char * rampg_getpage(rampg_vnode_t *node_arg, rampg_index_t index_arg)
+ramfail_status_t rampg_getpage(char **page_arg,
+      rampg_vnode_t *vpoolnode_arg, rampg_index_t index_arg)
 {
-   assert(rampg_theglobals.rampgg_initflag);
-   assert(node_arg);
-   assert(index_arg != RAMPG_MAXCAPACITY);
+   RAMFAIL_DISALLOWZ(page_arg);
+   *page_arg = NULL;
+   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
+         rampg_theglobals.rampgg_initflag);
+   RAMFAIL_DISALLOWZ(vpoolnode_arg);
+   RAMFAIL_CONFIRM(RAMFAIL_RANGE, index_arg != RAMPG_MAXCAPACITY);
 
-   return &node_arg->rampgvn_pages[index_arg * rampg_theglobals.rampgg_sysglobals->ramsysg_pagesize];
+   *page_arg =
+         &vpoolnode_arg->rampgvn_pages[index_arg *
+                                       rampg_theglobals.rampgg_pagesize];
+
+   return RAMFAIL_OK;
 }
 
-rampg_index_t rampg_calcindex(const rampg_vnode_t *node_arg, const char *page_arg)
+ramfail_status_t rampg_calcindex(rampg_index_t *index_arg,
+       const rampg_vnode_t *vpoolnode_arg, const char *page_arg)
 {
-   assert(rampg_theglobals.rampgg_initflag);
-   assert(node_arg);
-   assert(page_arg);
-   assert(RAMSYS_ISPAGE(page_arg, rampg_theglobals.rampgg_sysglobals));
-   assert(node_arg->rampgvn_pages <= page_arg);
-   assert(node_arg->rampgvn_pages + rampg_theglobals.rampgg_sysglobals->ramsysg_pagesize * rampg_theglobals.rampgg_nodecapacity > page_arg);
+   int ispage = 0;
+   ramfail_status_t e = RAMFAIL_INSANE;
 
-   return (page_arg - node_arg->rampgvn_pages) / rampg_theglobals.rampgg_sysglobals->ramsysg_pagesize;
+   RAMFAIL_DISALLOWZ(index_arg);
+   *index_arg = RAMPG_MAXCAPACITY;
+   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
+         rampg_theglobals.rampgg_initflag);
+   RAMFAIL_DISALLOWZ(vpoolnode_arg);
+   RAMFAIL_RETURN(rammem_ispage(&ispage, page_arg));
+   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
+   RAMFAIL_CONFIRM(RAMFAIL_RANGE, vpoolnode_arg->rampgvn_pages <= page_arg);
+   RAMFAIL_CONFIRM(RAMFAIL_RANGE, vpoolnode_arg->rampgvn_pages +
+         rampg_theglobals.rampgg_pagesize *
+         rampg_theglobals.rampgg_nodecapacity > page_arg);
+
+   *index_arg = (page_arg - vpoolnode_arg->rampgvn_pages) /
+         rampg_theglobals.rampgg_pagesize;
+
+   return RAMFAIL_OK;
 }
 
 ramfail_status_t rampg_chkpool(const rampg_pool_t *pool_arg)
@@ -377,6 +403,7 @@ ramfail_status_t rampg_chkvnode(const ramvec_node_t *node_arg)
 {
    const rampg_vnode_t *node = NULL;
    size_t i = 0;
+   int ispage = 0;
 
    assert(node_arg);
 
@@ -385,7 +412,8 @@ ramfail_status_t rampg_chkvnode(const ramvec_node_t *node_arg)
    /* the node cannot be empty. */
    RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, !RAMPG_ISEMPTY(node));
    /* the base address should be on a page boundary. */
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, RAMSYS_ISPAGE(node->rampgvn_pages, rampg_theglobals.rampgg_sysglobals));
+   RAMFAIL_RETURN(rammem_ispage(&ispage, node->rampgvn_pages));
+   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, ispage);
    /* the free list length should not exceed the node capacity. */
    RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, node->rampgvn_freestksz <= rampg_theglobals.rampgg_nodecapacity);
    /* the free list should only contain indices on the range of [0, ramvecvp_nodecapacity). */

@@ -38,12 +38,11 @@
 #include <ramalloc/sig.h>
 #include <ramalloc/meta.h>
 #include <ramalloc/sys.h>
-#include <ramalloc/sys/stdint.h>
+#include <ramalloc/stdint.h>
 #include <stdlib.h>
 
 typedef struct ramfoot_spec
 {
-   const ramsys_globals_t *ramfoots_sysspec;
    /* the footer offset is the distance, in bytes, from the page's base address to the footer's address. */
    size_t footer_offset;
    /* the storage offset is the distance, in bytes, from the footer to the footer's storage. this
@@ -71,8 +70,6 @@ ramfail_status_t ramfoot_mkspec(ramfoot_spec_t *spec_arg, size_t writezn_arg,
 ramfail_status_t ramfoot_mkfooter(void **storage_arg, const ramfoot_spec_t *spec_arg, void *page_arg);
 ramfail_status_t ramfoot_getstorage(void **result_arg,
       const ramfoot_spec_t *spec_arg, void *ptr_arg);
-
-#define RAMFOOT_GETPAGE(Spec, Ptr) (char *)((uintptr_t)(Ptr) & (Spec)->ramfoots_sysspec->ramsysg_pagemask)
 
 #define RAMFOOT_MKSPEC2(Spec, Type, WriteZone, Signature, FooterTag, TmpVar) \
    do { \

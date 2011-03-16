@@ -190,7 +190,7 @@ ramfail_status_t rampara_mktls(rampara_tls_t **newtls_arg, rampara_pool_t *parap
    RAMFAIL_DISALLOWZ(parapool_arg);
 
    /* i'm not terribly concerned about the use of a heap allocator here. it's an allocation
-    * that will occurr once per thread, which isn't going to impact performance. if the caller
+    * that will occur once per thread, which isn't going to impact performance. if the caller
     * is creating and destroying threads with frequency, i'm certainly not going to be the 
     * biggest performance headache. */
    RAMFAIL_CONFIRM(RAMFAIL_RESOURCE, p = rammem_supmalloc(sizeof(*p)));

@@ -53,7 +53,6 @@ typedef struct ramalgn_footer
 
 typedef struct ramalgn_globals
 {
-   const ramsys_globals_t *ramalgng_sysspec;
    ramfoot_spec_t ramalgng_footerspec;
    int ramalgng_initflag;
 } ramalgn_globals_t;
@@ -74,7 +73,6 @@ ramfail_status_t ramalgn_initialize()
       ramalgn_globals_t stage = {0};
       size_t writezone = 0;
 
-      RAMFAIL_RETURN(ramsys_getglobals(&stage.ramalgng_sysspec));
       /* the page pool's granularity is my writable zone. */
       RAMFAIL_RETURN(rampg_getgranularity(&writezone));
       RAMFOOT_MKSPEC(&stage.ramalgng_footerspec, ramalgn_footer_t, writezone, "ALIG");

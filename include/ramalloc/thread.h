@@ -34,10 +34,9 @@
 #ifndef RAMTHREAD_H_IS_INCLUDED
 #define RAMTHREAD_H_IS_INCLUDED
 
-#include <ramalloc/sys.h>
 #include <ramalloc/fail.h>
+#include <ramalloc/sys.h>
 
-typedef ramsys_threadmain_t ramthread_main_t;
 typedef ramsys_thread_t ramthread_thread_t;
 
 #define ramthread_mkthread ramsys_mkthread

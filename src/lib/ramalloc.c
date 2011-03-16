@@ -32,7 +32,6 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include <ramalloc/ramalloc.h>
-#include <ramalloc/sys.h>
 #include <ramalloc/pg.h>
 #include <ramalloc/algn.h>
 #include <ramalloc/para.h>
@@ -40,7 +39,6 @@
 
 ramfail_status_t ramalloc_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg)
 {
-   RAMFAIL_RETURN(ramsys_initialize());
    RAMFAIL_RETURN(rammem_initialize(supmalloc_arg, supfree_arg));
    RAMFAIL_RETURN(rampg_initialize());
    RAMFAIL_RETURN(ramalgn_initialize());

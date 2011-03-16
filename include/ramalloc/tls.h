@@ -38,7 +38,6 @@
 #include <ramalloc/sys.h>
 
 typedef ramsys_tlskey_t ramtls_key_t;
-#define RAMTLS_NILKEY RAMSYS_NILTLSKEY
 
 #define ramtls_mkkey ramsys_mktlskey
 #define ramtls_rmkey ramsys_rmtlskey

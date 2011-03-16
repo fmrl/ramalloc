@@ -40,6 +40,7 @@
 typedef ramsys_barrier_t rambarrier_barrier_t;
 
 #define rambarrier_mkbarrier ramsys_mkbarrier
+#define rambarrier_rmbarrier ramsys_rmbarrier
 #define rambarrier_wait ramsys_waitonbarrier
 
 #endif /* RAMBARRIER_H_IS_INCLUDED */

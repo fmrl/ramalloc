@@ -35,7 +35,7 @@
 #define RAMTEST_H_IS_INCLUDED
 
 #include <ramalloc/fail.h>
-#include <ramalloc/sys/stdint.h>
+#include <ramalloc/stdint.h>
 
 ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
       uint32_t n1_arg);

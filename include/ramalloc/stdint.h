@@ -29,17 +29,17 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMSYS_DETECT_H_IS_INCLUDED
-#define RAMSYS_DETECT_H_IS_INCLUDED
+#ifndef RAMSYS_STDINT_H_IS_INCLUDED
+#define RAMSYS_STDINT_H_IS_INCLUDED
 
-#ifdef _WIN32
-#  define RAMSYS_WINDOWS
-#elif defined(__linux__)
-#  define RAMSYS_LINUX
-#  define RAMSYS_PTHREADS
-#  define RAMSYS_POSIX
+#include <ramalloc/sys/detect.h>
+
+#ifdef RAMSYS_WINDOWS
+#  include <pstdint.h>
+#elif defined(RAMSYS_LINUX)
+#  include <stdint.h>
 #else
-#  error i do not recognize this platform.
+#  error <ramalloc/sys/detect.h> has not detected a platform i recognize.
 #endif
 
-#endif /* #ifndef RAMSYS_DETECT_H_IS_INCLUDED */
+#endif /* RAMSYS_STDINT_H_IS_INCLUDED */

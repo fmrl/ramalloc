@@ -35,16 +35,17 @@
 #include <assert.h>
 #include <memory.h>
 
-#define ramfoot_alignleft(Value, Alignment) ((Value) & (~((Alignment) - 1)))
-
 static uintptr_t ramfoot_alignright(uintptr_t value_arg, uintptr_t length_arg, uintptr_t alignment_arg);
-static char * ramgoot_getfooteru(const ramfoot_spec_t *spec_arg, void *ptr_arg);
+static ramfail_status_t ramfoot_footeraddr(char **footer_arg,
+      const ramfoot_spec_t *spec_arg, void *ptr_arg);
 static ramfail_status_t ramfoot_getfooter(char **result_arg, const ramfoot_spec_t *spec_arg, void *ptr_arg);
-#define RAMFOOT_ISSPECINIT(Spec) ((Spec)->ramfoots_sysspec)
+
+#define RAMFOOT_ALIGNLEFT(Value, Alignment) ((Value) & (~((Alignment) - 1)))
+#define RAMFOOT_ISSPECINIT(Spec) ((Spec)->footer_offset != 0)
 
 uintptr_t ramfoot_alignright(uintptr_t value_arg, uintptr_t length_arg, uintptr_t alignment_arg)
 {
-   return ramfoot_alignleft(value_arg, alignment_arg) + (alignment_arg - length_arg);
+   return RAMFOOT_ALIGNLEFT(value_arg, alignment_arg) + (alignment_arg - length_arg);
 }
 
 ramfail_status_t ramfoot_mkspec(ramfoot_spec_t *spec_arg, size_t writezn_arg, 
@@ -52,6 +53,7 @@ ramfail_status_t ramfoot_mkspec(ramfoot_spec_t *spec_arg, size_t writezn_arg,
 {
    ramfoot_spec_t stage = {0};
    uintptr_t n = 0;
+   size_t pgsz = 0;
 
    RAMFAIL_DISALLOWZ(spec_arg);
    memset(spec_arg, 0, sizeof(*spec_arg));
@@ -60,8 +62,8 @@ ramfail_status_t ramfoot_mkspec(ramfoot_spec_t *spec_arg, size_t writezn_arg,
    RAMFAIL_DISALLOWZ(footalign_arg);
    RAMFAIL_DISALLOWZ(sig_arg);
 
-   RAMFAIL_RETURN(ramsys_getglobals(&stage.ramfoots_sysspec));
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, writezn_arg <= stage.ramfoots_sysspec->ramsysg_pagesize);
+   RAMFAIL_RETURN(rammem_pagesize(&pgsz));
+   RAMFAIL_CONFIRM(RAMFAIL_RANGE, writezn_arg <= pgsz);
    stage.writable_zone = writezn_arg;
    stage.storage_offset = storofs_arg;
    stage.footer_size = footsz_arg;
@@ -69,7 +71,7 @@ ramfail_status_t ramfoot_mkspec(ramfoot_spec_t *spec_arg, size_t writezn_arg,
 
    /* i calculate the offset from a page'stage address to the footer'stage address. */
    n = ramfoot_alignright(0, footsz_arg, writezn_arg);
-   stage.footer_offset = ramfoot_alignleft(n, footalign_arg);
+   stage.footer_offset = RAMFOOT_ALIGNLEFT(n, footalign_arg);
 
    RAMFAIL_RETURN(ramsig_init(&stage.master_signature, sig_arg));
 
@@ -77,16 +79,22 @@ ramfail_status_t ramfoot_mkspec(ramfoot_spec_t *spec_arg, size_t writezn_arg,
    return RAMFAIL_OK;
 }
 
-char * ramgoot_getfooteru(const ramfoot_spec_t *spec_arg, void *ptr_arg)
+ramfail_status_t ramfoot_footeraddr(char **footer_arg,
+      const ramfoot_spec_t *spec_arg, void *ptr_arg)
 {
-   assert(spec_arg);
-   assert(RAMFOOT_ISSPECINIT(spec_arg));
-   assert(ptr_arg);
+   char *p = NULL;
 
-   return RAMFOOT_GETPAGE(spec_arg, ptr_arg) + spec_arg->footer_offset;
+   assert(spec_arg != NULL);
+   assert(RAMFOOT_ISSPECINIT(spec_arg));
+
+   RAMFAIL_RETURN(rammem_getpage(&p, ptr_arg));
+   *footer_arg = p + spec_arg->footer_offset;
+
+   return RAMFAIL_OK;
 }
 
-ramfail_status_t ramfoot_getfooter(char **result_arg, const ramfoot_spec_t *spec_arg, void *ptr_arg)
+ramfail_status_t ramfoot_getfooter(char **result_arg,
+      const ramfoot_spec_t *spec_arg, void *ptr_arg)
 {
    char *p = NULL;
 
@@ -95,7 +103,7 @@ ramfail_status_t ramfoot_getfooter(char **result_arg, const ramfoot_spec_t *spec
    RAMFAIL_DISALLOWZ(spec_arg);
    RAMFAIL_DISALLOWZ(ptr_arg);
 
-   p = ramgoot_getfooteru(spec_arg, ptr_arg);
+   RAMFAIL_RETURN(ramfoot_footeraddr(&p, spec_arg, ptr_arg));
 
    /* the first four bytes of the footer should always match the master signature. this is considered
     * an expected error, however, since it is used to detect whether an alternate solution should be
@@ -112,15 +120,17 @@ ramfail_status_t ramfoot_getfooter(char **result_arg, const ramfoot_spec_t *spec
 ramfail_status_t ramfoot_mkfooter(void **storage_arg, const ramfoot_spec_t *spec_arg, void *page_arg)
 {
    char *p = NULL;
+   int ispage = 0;
 
    RAMFAIL_DISALLOWZ(storage_arg);
    *storage_arg = NULL;
    RAMFAIL_DISALLOWZ(spec_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, RAMFOOT_ISSPECINIT(spec_arg));
    RAMFAIL_DISALLOWZ(page_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, RAMSYS_ISPAGE(page_arg, spec_arg->ramfoots_sysspec));
+   RAMFAIL_RETURN(rammem_ispage(&ispage, page_arg));
+   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
 
-   p = ramgoot_getfooteru(spec_arg, page_arg);
+   RAMFAIL_RETURN(ramfoot_footeraddr(&p, spec_arg, page_arg));
    *((ramsig_signature_t *)p) = spec_arg->master_signature;
 
    *storage_arg = p + spec_arg->storage_offset;

@@ -37,7 +37,7 @@
 #include <ramalloc/sig.h>
 #include <ramalloc/meta.h>
 #include <ramalloc/test.h>
-#include <ramalloc/sys/stdint.h>
+#include <ramalloc/stdint.h>
 #include <stdlib.h>
 
 #define ALLOCATION_COUNT 10000

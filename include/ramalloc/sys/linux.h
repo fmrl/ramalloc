@@ -31,68 +31,70 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMUIX_H_IS_INCLUDED
-#define RAMUIX_H_IS_INCLUDED
+#ifndef RAMALLOC_LINUX_H_IS_INCLUDED
+#define RAMALLOC_LINUX_H_IS_INCLUDED
 
 /* this header isn't intended to be included directly. please include
  * <ramalloc/sys.h> instead. */
-#ifdef RAMSYS_UNIX
+#ifdef RAMSYS_LINUX
 
+#include <ramalloc/sys/posix.h>
+#include <ramalloc/sys/pthreads.h>
 #include <ramalloc/fail.h>
-#include <ramalloc/sys/sysdef.h>
-#include <pthread.h>
-
-#undef RAMUIX_PTHREADBARRIER
-
-ramfail_status_t ramuix_mkglobals(ramsys_globals_t *globals_arg);
-ramfail_status_t ramuix_commit(char *page_arg);
-ramfail_status_t ramuix_decommit(char *page_arg);
-ramfail_status_t ramuix_reset(char *page_arg);
-ramfail_status_t ramuix_reserve(char **pages_arg);
-ramfail_status_t ramuix_bulkalloc(char **pages_arg);
-ramfail_status_t ramuix_release(char *pages_arg);
-
-typedef pthread_key_t ramuix_tlskey_t;
-
-ramfail_status_t ramuix_mktlskey(ramuix_tlskey_t *key_arg);
-ramfail_status_t ramuix_rmtlskey(ramuix_tlskey_t *key_arg);
-#define ramuix_rcltls pthread_getspecific
-ramfail_status_t ramuix_stotls(ramuix_tlskey_t key_arg, void *value_arg);
-
-typedef pthread_mutex_t ramuix_mutex_t;
-
-ramfail_status_t ramuix_mkmutex(ramuix_mutex_t *mutex_arg);
-ramfail_status_t ramuix_rmmutex(ramuix_mutex_t *mutex_arg);
-ramfail_status_t ramuix_waitformutex(ramuix_mutex_t *mutex_arg);
-ramfail_status_t ramuix_quitmutex(ramuix_mutex_t *mutex_arg);
-
-typedef pthread_t ramuix_thread_t;
-
-ramfail_status_t ramuix_mkthread(ramuix_thread_t *thread_arg,
-      ramsys_threadmain_t main_arg, void *arg_arg);
-ramfail_status_t ramuix_jointhread(ramfail_status_t *reply_arg,
-      ramuix_thread_t thread_arg);
+#include <ramalloc/stdint.h>
+#include <ramalloc/opt.h>
 
 typedef struct ramlin_barrier
 {
-   pthread_mutex_t ramlinb_mutex;
+   ramuix_mutex_t ramlinb_mutex;
    pthread_cond_t ramlinb_cond;
    volatile size_t ramlinb_vacancy;
    size_t ramlinb_capacity;
    uintptr_t ramlinb_cycle;
 } ramlin_barrier_t;
 
-#ifdef RAMUIX_PTHREADBARRIER
-typedef pthread_barrier_t ramuix_barrier_t;
+ramfail_status_t ramlin_mkbarrier(ramlin_barrier_t *barrier_arg,
+      int capacity_arg);
+ramfail_status_t ramlin_rmbarrier(ramlin_barrier_t *barrier_arg);
+ramfail_status_t ramlin_waitonbarrier(ramlin_barrier_t *barrier_arg);
+
+/* virtual memory mapping */
+#define ramsys_pagesize ramuix_pagesize
+#define ramsys_mmapgran ramuix_mmapgran
+#define ramsys_reserve ramuix_reserve
+#define ramsys_commit ramuix_commit
+#define ramsys_decommit ramuix_decommit
+#define ramsys_reset ramuix_reset
+#define ramsys_bulkalloc ramuix_bulkalloc
+#define ramsys_release ramuix_release
+/* thread local storage */
+typedef ramuix_tlskey_t ramsys_tlskey_t;
+#define ramsys_mktlskey ramuix_mktlskey
+#define ramsys_rmtlskey ramuix_rmtlskey
+#define ramsys_rcltls ramuix_rcltls
+#define ramsys_stotls ramuix_stotls
+/* mutexes */
+typedef ramuix_mutex_t ramsys_mutex_t;
+#define ramsys_mkmutex ramuix_mkmutex
+#define ramsys_rmmutex ramuix_rmmutex
+#define ramsys_waitformutex ramuix_waitformutex
+#define ramsys_quitmutex ramuix_quitmutex
+/* threads */
+typedef ramuix_thread_t ramsys_thread_t;
+#define ramsys_mkthread ramuix_mkthread
+#define ramsys_jointhread ramuix_jointhread
+/* barriers */
+#if RAMOPT_BARRIERDEADLOCK
+typedef ramuix_barrier_t ramsys_barrier_t;
+#  define ramsys_mkbarrier ramuix_mkbarrier
+#  define ramsys_waitonbarrier ramuix_waitonbarrier
 #else
-typedef ramlin_barrier_t ramuix_barrier_t;
+typedef ramlin_barrier_t ramsys_barrier_t;
+#  define ramsys_mkbarrier ramlin_mkbarrier
+#  define ramsys_rmbarrier ramlin_rmbarrier
+#  define ramsys_waitonbarrier ramlin_waitonbarrier
 #endif
 
-ramfail_status_t ramuix_mkbarrier(ramuix_barrier_t *barrier_arg,
-      int capacity_arg);
-ramfail_status_t ramuix_rmbarrier(ramuix_barrier_t *barrier_arg);
-ramfail_status_t ramuix_waitonbarrier(ramuix_barrier_t *barrier_arg);
+#endif /* RAMSYS_LINUX */
 
-#endif /* RAMSYS_UNIX */
-
-#endif /* RAMUIX_H_IS_INCLUDED */
+#endif /* RAMALLOC_LINUX_H_IS_INCLUDED */
