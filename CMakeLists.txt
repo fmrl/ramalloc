@@ -34,6 +34,8 @@
 cmake_minimum_required(VERSION 2.8)
 project(ramalloc)
 
+include(CTest)
+
 # currently, threads are required to compile ramalloc.
 #
 # TODO: if threads aren't available, it's still possible to produce
@@ -118,43 +120,51 @@ add_library(ramalloc
 	
 set(RAMALLOC_LIBRARIES ramalloc ${CMAKE_THREAD_LIBS_INIT})
 
-add_executable(pgtest
-	src/test/pgtest.c
-	)
-target_link_libraries(pgtest ${RAMALLOC_LIBRARIES})
-
 add_executable(slottest
 	src/test/slottest.c
 	)
 target_link_libraries(slottest ${RAMALLOC_LIBRARIES})
+add_test(slottest ${EXECUTABLE_OUTPUT_PATH}/slottest)
+
+add_executable(pgtest
+	src/test/pgtest.c
+	)
+target_link_libraries(pgtest ${RAMALLOC_LIBRARIES})
+add_test(pgtest ${EXECUTABLE_OUTPUT_PATH}/pgtest)
 
 add_executable(algntest
 	src/test/algntest.c
 	)
 target_link_libraries(algntest ${RAMALLOC_LIBRARIES})
+add_test(algntest ${EXECUTABLE_OUTPUT_PATH}/algntest)
 
 add_executable(muxtest
 	src/test/muxtest.c
 	)
 target_link_libraries(muxtest ${RAMALLOC_LIBRARIES})
+add_test(muxtest ${EXECUTABLE_OUTPUT_PATH}/muxtest)
 
 add_executable(lazytest
 	src/test/lazytest.c
 	)
 target_link_libraries(lazytest ${RAMALLOC_LIBRARIES})
+add_test(lazytest ${EXECUTABLE_OUTPUT_PATH}/lazytest)
 
 add_executable(paratest
 	src/test/paratest.c
 	)
 target_link_libraries(paratest ${RAMALLOC_LIBRARIES})
+add_test(paratest ${EXECUTABLE_OUTPUT_PATH}/paratest)
 
 add_executable(defaulttest
 	src/test/defaulttest.c
 	)
 target_link_libraries(defaulttest ${RAMALLOC_LIBRARIES})
+add_test(defaulttest ${EXECUTABLE_OUTPUT_PATH}/defaulttest)
 
 add_executable(compattest
 	src/test/compattest.c
 	)
 target_link_libraries(compattest ${RAMALLOC_LIBRARIES})
+add_test(compattest ${EXECUTABLE_OUTPUT_PATH}/compattest)
 
