@@ -95,5 +95,8 @@ typedef void (*ramfail_reporter_t)(ramfail_status_t code_arg, const char *expr_a
 void ramfail_epicfail(const char *why_arg);
 void ramfail_setreporter(ramfail_reporter_t reporter_arg);
 void ramfail_report(ramfail_status_t code_arg, const char *expr_arg, const char *funcn_arg, const char *filen_arg, int lineno_arg);
+ramfail_status_t ramfail_accumulate(ramfail_status_t *reply_arg,
+      ramfail_status_t newreply_arg);
+
 
 #endif /* RAMFAIL_H_IS_INCLUDED */

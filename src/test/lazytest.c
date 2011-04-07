@@ -49,248 +49,166 @@
 #define THREAD_COUNT 4
 #define MALLOC_PERCENTAGE 30
 
-typedef struct allocinfo
+typedef struct extra
 {
-   char *ptr;
-   size_t sz;
-   ramlazy_pool_t *pool;
-   rammtx_mutex_t mtx;
-} allocinfo_t;
+   ramlazy_pool_t *e_pools;
+   size_t e_poolcount;
+} extra_t;
 
-allocinfo_t allocinfos[ALLOCATION_COUNT] = {0};
-size_t sequence[ALLOCATION_COUNT * 2] = {0};
-ramlazy_pool_t pools[THREAD_COUNT] = {0};
-ramthread_thread_t threads[THREAD_COUNT] = {0};
-rammtx_mutex_t mtx;
-size_t next = 0;
-
-static ramfail_status_t fill(char *ptr_arg, size_t sz_arg);
-static ramfail_status_t chkfill(char *ptr_arg, size_t sz_arg);
-static ramfail_status_t inittest();
-static ramfail_status_t testthread(void *arg);
-static ramfail_status_t testthread2(int id_arg);
-static ramfail_status_t getnext(size_t *next_arg);
-static ramfail_status_t dotest();
+static ramfail_status_t newtest(size_t threadcount_arg);
+static ramfail_status_t newtest2(size_t threadcount_arg,
+      extra_t *extra_arg);
+static ramfail_status_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
+      int threadidx_arg);
+static ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
+      size_t size_arg, void *extra_arg, int threadidx_arg);
+static ramfail_status_t release(ramtest_allocdesc_t *desc_arg);
+static ramfail_status_t query(void **pool_arg, size_t *size_arg,
+      void *ptr_arg);
+static ramfail_status_t flush(void *extra_arg, int threadidx_arg);
+static ramfail_status_t check(void *extra_arg, int threadidx_arg);
 
 int main()
 {
    RAMFAIL_CONFIRM(-1, RAMFAIL_OK == ramalloc_initialize(NULL, NULL));
-   RAMFAIL_CONFIRM(1, RAMFAIL_OK == inittest());
-   RAMFAIL_CONFIRM(2, RAMFAIL_OK == dotest());
+   RAMFAIL_CONFIRM(3, RAMFAIL_OK == newtest(THREAD_COUNT));
 
    return 0;
 }
 
-ramfail_status_t inittest()
+ramfail_status_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
+      int threadidx_arg)
 {
-   size_t i = 0, j = 0;
+   extra_t *x = NULL;
 
-   memset(allocinfos, 0, sizeof(allocinfos));
+   RAMFAIL_DISALLOWZ(pool_arg);
+   *pool_arg = NULL;
+   RAMFAIL_DISALLOWZ(extra_arg);
+   x = (extra_t *)extra_arg;
+   RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg >= 0);
+   RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg < x->e_poolcount);
 
-   RAMFAIL_RETURN(rammtx_mkmutex(&mtx));
-   for (i = 0; i < ALLOCATION_COUNT; ++i)
-      RAMFAIL_RETURN(rammtx_mkmutex(&allocinfos[i].mtx));
-   /* the sequence array must contain two copies of each index into 'allocinfo'.
-    * the first will represent an allocation. the second a deallocation. */
-   for (i = 0, j = ALLOCATION_COUNT * 2; i < j; ++i)
-      sequence[i] = (i / 2);
-   /* i shuffle the sequence array to ensure a randomized order of operations. */
-   RAMFAIL_RETURN(ramtest_shuffle(sequence, sizeof(sequence[0]), j));
-   /* i need to initialize the pools that will be used by the test threads. */
-   for (i = 0; i < THREAD_COUNT; ++i)
-      RAMFAIL_RETURN(ramlazy_mkpool(&pools[i], RAMOPT_DEFAULTAPPETITE, RECLAIMRATIO));
+   *pool_arg = &x->e_pools[threadidx_arg];
    return RAMFAIL_OK;
 }
 
-static ramfail_status_t dotest()
+ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
+      size_t size_arg, void *extra_arg, int threadidx_arg)
 {
-   size_t i = 0;
-   ramfail_status_t e0 = RAMFAIL_OK;
+   ramlazy_pool_t *pool = NULL;
+   void *p = NULL;
 
-   for (i = 0; i < THREAD_COUNT; ++i)
-   {
-      fprintf(stderr, "[0] starting thread %d...\n", i + 1);
-      RAMFAIL_RETURN(ramthread_mkthread(&threads[i], &testthread, (void *)i));
-      fprintf(stderr, "[0] started thread %d.\n", i + 1);
-   }
+   RAMFAIL_DISALLOWZ(desc_arg);
+   memset(desc_arg, 0, sizeof(*desc_arg));
+   RAMFAIL_DISALLOWZ(size_arg);
 
-   fprintf(stderr, "[0] waiting for threads to finish...\n");
-   for (i = 0; i < THREAD_COUNT; ++i)
-   {
-      ramfail_status_t e = RAMFAIL_INSANE;
-
-      RAMFAIL_RETURN(ramthread_join(&e, threads[i]));
-      if (RAMFAIL_OK != e)
-      {
-         fprintf(stderr,
-               "[0] thread %d replied an unexpected failure (%d).\n",
-               i + 1, e);
-         if (RAMFAIL_OK == e0)
-            e0 = e;
-      }
-   }
-
-   if (RAMFAIL_OK != e0)
-      return e0;
-
-   /* now that the threads no longer run, i need to flush them out before
-    * quitting. */
-   fprintf(stderr, "[0] shutting down.\n");
-   for (i = 0; i < THREAD_COUNT; ++i)
-      RAMFAIL_RETURN(ramlazy_flush(&pools[i]));
+   RAMFAIL_RETURN(getpool(&pool, extra_arg, threadidx_arg));
+   RAMFAIL_RETURN(ramlazy_acquire(&p, pool, size_arg));
+   desc_arg->ramtestad_ptr = (char *)p;
+   desc_arg->ramtestad_pool = pool;
+   desc_arg->ramtestad_sz = size_arg;
 
    return RAMFAIL_OK;
 }
 
-ramfail_status_t testthread(void *arg)
+ramfail_status_t release(ramtest_allocdesc_t *desc_arg)
 {
-   fprintf(stderr, "[%d] testing...\n", ((int)arg) + 1);
-   return testthread2((int)arg);
-}
+   RAMFAIL_DISALLOWZ(desc_arg);
 
-ramfail_status_t getnext(size_t *next_arg)
-{
-   size_t i = 0;
-   size_t j = 0;
+   RAMFAIL_RETURN(ramlazy_release(desc_arg->ramtestad_ptr));
 
-   RAMFAIL_DISALLOWZ(next_arg);
-
-   j = ALLOCATION_COUNT * 2;
-
-   RAMFAIL_RETURN(rammtx_wait(&mtx));
-   i = next;
-   if (next < j)
-      ++next;
-   RAMFAIL_EPICFAIL(rammtx_quit(&mtx));
-
-   *next_arg = i;
    return RAMFAIL_OK;
 }
 
-ramfail_status_t testthread2(int id_arg)
+ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg)
 {
-   size_t i = 0;
-   int allocflag = 1;
-   void *nextptr = NULL;
-   int32_t nextsz = 0;
-   ramlazy_pool_t *nextpool = NULL;
+   ramlazy_pool_t *pool = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
+
+   RAMFAIL_DISALLOWZ(pool_arg);
+   *pool_arg = NULL;
+
+   e = ramlazy_query(&pool, size_arg, ptr_arg);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+      return RAMFAIL_INSANE;
+   case RAMFAIL_OK:
+      *pool_arg = pool;
+      return RAMFAIL_OK;
+   case RAMFAIL_NOTFOUND:
+      return e;
+   }
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t flush(void *extra_arg, int threadidx_arg)
+{
    ramlazy_pool_t *pool = NULL;
 
-   pool = &pools[id_arg];
-
-   while ((RAMFAIL_OK == (e = getnext(&i))) && i < ALLOCATION_COUNT)
-   {
-      allocinfo_t *info = NULL;
-      void *p = NULL;
-      size_t sz = 0;
-      ramlazy_pool_t *otherpool = NULL;
-
-      info = &allocinfos[sequence[i]];
-
-      /* i don't want to allocate while i'm holding the allocinfo mutex, so i'll
-       * prepare an allocation ahead of time. */
-      if (allocflag)
-      {
-         int32_t roll = 0;
-
-         RAMFAIL_RETURN(ramtest_randuint32(&nextsz, ALLOCATION_MINSIZE, ALLOCATION_MAXSIZE));
-         /* i want a certain percentage of allocations to be performed by a different
-          * allocator. */
-         RAMFAIL_RETURN(ramtest_randuint32(&roll, 0, 100));
-         if (roll < MALLOC_PERCENTAGE)
-         {
-            nextptr = malloc(nextsz);
-            nextpool = NULL;
-         }
-         else
-         {
-            RAMFAIL_RETURN(ramlazy_acquire(&nextptr, pool, nextsz));
-            nextpool = pool;
-         }
-
-         RAMFAIL_RETURN(fill(nextptr, nextsz));
-      }
-      
-      RAMFAIL_RETURN(rammtx_wait(&info->mtx));
-      /* if there's a pointer stored in 'info->ptr', we'll assume we need to allocate.
-       * otherwise, we need to deallocate it. */
-      if (NULL == info->ptr)
-      {
-         info->ptr = nextptr;
-         info->sz = nextsz;
-         info->pool = nextpool;
-         /* i signal to the next loop iteration that i'll need a new allocation. */
-         allocflag = 1;
-      }
-      else
-      {
-         p = info->ptr;
-         info->ptr = NULL;
-         sz = info->sz;
-         otherpool = info->pool;
-      }
-      RAMFAIL_EPICFAIL(rammtx_quit(&info->mtx));
-
-      if (p)
-      {
-         ramlazy_pool_t *querypool = NULL;
-         size_t querysz = 0;
-         ramfail_status_t f = RAMFAIL_INSANE;
-
-         RAMFAIL_RETURN(chkfill(p, sz));
-         f = ramlazy_query(&querypool, &querysz, p);
-         switch (f)
-         {
-         default:
-            RAMFAIL_RETURN(f);
-            return RAMFAIL_INSANE;
-         case RAMFAIL_OK:
-            RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, querypool == otherpool);
-            /* the size won't be identical due to the nature of muxpools. it won't smaller though. */
-            RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, querysz >= sz);
-            RAMFAIL_RETURN(ramlazy_release(p));
-            break;
-         case RAMFAIL_NOTFOUND:
-            RAMFAIL_CONFIRM(RAMFAIL_INSANE, NULL == otherpool);
-            free(p);
-            break;
-         }
-      }
-
-      RAMFAIL_RETURN(ramlazy_chkpool(pool));
-   }
-
+   RAMFAIL_RETURN(getpool(&pool, extra_arg, threadidx_arg));
    RAMFAIL_RETURN(ramlazy_flush(pool));
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t check(void *extra_arg, int threadidx_arg)
+{
+   ramlazy_pool_t *pool = NULL;
+
+   RAMFAIL_RETURN(getpool(&pool, extra_arg, threadidx_arg));
    RAMFAIL_RETURN(ramlazy_chkpool(pool));
 
    return RAMFAIL_OK;
 }
 
-ramfail_status_t fill(char *ptr_arg, size_t sz_arg)
+ramfail_status_t newtest(size_t threadcount_arg)
 {
-   RAMFAIL_DISALLOWZ(ptr_arg);
-   RAMFAIL_DISALLOWZ(sz_arg);
+   ramfail_status_t e = RAMFAIL_INSANE;
+   extra_t x = {0};
 
-   memset(ptr_arg, sz_arg & 0xff, sz_arg);
+   RAMFAIL_DISALLOWZ(threadcount_arg);
+
+   x.e_pools = calloc(threadcount_arg, sizeof(*x.e_pools));
+   x.e_poolcount = threadcount_arg;
+   e = newtest2(threadcount_arg, &x);
+   free(x.e_pools);
+   RAMFAIL_RETURN(e);
 
    return RAMFAIL_OK;
 }
 
-
-ramfail_status_t chkfill(char *ptr_arg, size_t sz_arg)
+ramfail_status_t newtest2(size_t threadcount_arg, extra_t *extra_arg)
 {
-   char *p = NULL, *z = NULL;
+   size_t i = 0;
+   ramtest_params_t tp = {0};
 
-   RAMFAIL_DISALLOWZ(ptr_arg);
-   RAMFAIL_DISALLOWZ(sz_arg);
+   for (i = 0; i < threadcount_arg; ++i)
+   {
+      RAMFAIL_RETURN(ramlazy_mkpool(&extra_arg->e_pools[i],
+            RAMOPT_DEFAULTAPPETITE, RECLAIMRATIO));
+   }
 
-   for (p = ptr_arg, z = ptr_arg + sz_arg; 
-      p < z && ((char)(sz_arg & 0xff)) == *p; ++p)
-      continue;
+   tp.ramtestp_alloccount = ALLOCATION_COUNT;
+   tp.ramtestp_threadcount = THREAD_COUNT;
+   /* i would like 30% of the allocations to come from malloc() instead
+    * of the allocator i'm testing. */
+   tp.ramtestp_mallocchance = MALLOC_PERCENTAGE;
+   /* i'm going to test a narrow band of allocations to exercise the
+    * allocator as deeply as possible. */
+   tp.ramtestp_minsize = ALLOCATION_MINSIZE;
+   tp.ramtestp_maxsize = ALLOCATION_MAXSIZE;
+   tp.ramtestp_extra = extra_arg;
 
-   if (p != z)
-      return RAMFAIL_CORRUPT;
+   tp.ramtestp_acquire = &acquire;
+   tp.ramtestp_release = &release;
+   tp.ramtestp_query = &query;
+   tp.ramtestp_flush = &flush;
+   tp.ramtestp_check = &check;
+
+   RAMFAIL_RETURN(ramtest_test(&tp));
 
    return RAMFAIL_OK;
 }

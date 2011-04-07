@@ -37,9 +37,44 @@
 #include <ramalloc/fail.h>
 #include <ramalloc/stdint.h>
 
+typedef struct ramtest_allocdesc
+{
+   char *ramtestad_ptr;
+   size_t ramtestad_sz;
+   void *ramtestad_pool;
+} ramtest_allocdesc_t;
+
+typedef ramfail_status_t (*ramtest_acquire_t)(ramtest_allocdesc_t *desc_arg,
+      size_t size_arg, void *extra_arg, int threadnum_arg);
+typedef ramfail_status_t
+      (*ramtest_release_t)(ramtest_allocdesc_t *desc_arg);
+typedef ramfail_status_t (*ramtest_query_t)(void **pool_arg,
+      size_t *size_arg, void *ptr_arg);
+typedef ramfail_status_t (*ramtest_flush_t)(void *extra_arg,
+      int threadnum_arg);
+typedef ramfail_status_t (*ramtest_check_t)(void *extra_arg,
+      int threadnum_arg);
+
+typedef struct ramtest_params
+{
+   void *ramtestp_extra;
+   size_t ramtestp_minsize;
+   size_t ramtestp_maxsize;
+   int ramtestp_mallocchance;
+   size_t ramtestp_threadcount;
+   size_t ramtestp_alloccount;
+   ramtest_acquire_t ramtestp_acquire;
+   ramtest_release_t ramtestp_release;
+   ramtest_query_t ramtestp_query;
+   ramtest_flush_t ramtestp_flush;
+   ramtest_check_t ramtestp_check;
+} ramtest_params_t;
+
 ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
       uint32_t n1_arg);
 ramfail_status_t ramtest_shuffle(void *array_arg, size_t size_arg,
       size_t count_arg);
+
+ramfail_status_t ramtest_test(const ramtest_params_t *params_arg);
 
 #endif /* RAMTEST_H_IS_INCLUDED */
