@@ -36,6 +36,22 @@ project(ramalloc)
 
 include(CTest)
 
+# the following code sets a default for cache variables (such as 
+# CMAKE_C_FLAGS) that can be changed by the user.
+IF(NOT RAMALLOC_IS_CONFIGURED)
+   # Change default values.
+   # TODO: this won't work for windows.
+   set(CMAKE_C_FLAGS -Wall)
+
+   # save default value in cache.
+   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING
+       "contains options always passed to the C compiler." FORCE)
+
+   # there's no longer any need to generate defaults.
+   SET(RAMALLOC_IS_CONFIGURED 1 CACHE INTERNAL
+       "indicates that ramalloc has been configured at least once.")
+ENDIF(NOT RAMALLOC_IS_CONFIGURED)
+
 # currently, threads are required to compile ramalloc.
 #
 # TODO: if threads aren't available, it's still possible to produce
