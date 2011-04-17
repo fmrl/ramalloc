@@ -41,7 +41,8 @@ include(CTest)
 IF(NOT RAMALLOC_IS_CONFIGURED)
    # Change default values.
    # TODO: this won't work for windows.
-   set(CMAKE_C_FLAGS -Wall)
+   # -Wmissing-braces appears to interfere with C89-defined behavior.
+   set(CMAKE_C_FLAGS "-Wall -Wno-missing-braces")
 
    # save default value in cache.
    SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING
