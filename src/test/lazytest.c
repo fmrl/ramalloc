@@ -31,23 +31,25 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
+#include "shared/parseargs.h"
+#include "shared/test.h"
 #include <ramalloc/ramalloc.h>
 #include <ramalloc/lazy.h>
 #include <ramalloc/misc.h>
 #include <ramalloc/thread.h>
 #include <ramalloc/barrier.h>
-#include <ramalloc/test.h>
 #include <ramalloc/stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
 
-#define ALLOCATION_COUNT 1024 * 100
-#define ALLOCATION_MINSIZE 4
-#define ALLOCATION_MAXSIZE 100
-#define RECLAIMRATIO 2
-#define THREAD_COUNT 4
-#define MALLOC_PERCENTAGE 30
+#define DEFAULT_ALLOCATION_COUNT 1024 * 100
+#define DEFAULT_MINIMUM_ALLOCATION_SIZE 4
+#define DEFAULT_MAXIMUM_ALLOCATION_SIZE 100
+#define DEFAULT_THREAD_COUNT 4
+#define DEFAULT_MALLOC_CHANCE 30
+/* currently, the reclaim ratio cannot be parameterized. */
+#define RECLAIM_RATIO 2
 
 typedef struct extra
 {
@@ -55,8 +57,10 @@ typedef struct extra
    size_t e_poolcount;
 } extra_t;
 
-static ramfail_status_t newtest(size_t threadcount_arg);
-static ramfail_status_t newtest2(size_t threadcount_arg,
+static ramfail_status_t main2(int argc, char *argv[]);
+static ramfail_status_t initdefaults(ramtest_params_t *params_arg);
+static ramfail_status_t runtest(const ramtest_params_t *params_arg);
+static ramfail_status_t runtest2(const ramtest_params_t *params_arg,
       extra_t *extra_arg);
 static ramfail_status_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
       int threadidx_arg);
@@ -68,12 +72,69 @@ static ramfail_status_t query(void **pool_arg, size_t *size_arg,
 static ramfail_status_t flush(void *extra_arg, int threadidx_arg);
 static ramfail_status_t check(void *extra_arg, int threadidx_arg);
 
-int main()
+int main(int argc, char *argv[])
 {
-   RAMFAIL_CONFIRM(-1, RAMFAIL_OK == ramalloc_initialize(NULL, NULL));
-   RAMFAIL_CONFIRM(3, RAMFAIL_OK == newtest(THREAD_COUNT));
+   ramfail_status_t e = RAMFAIL_INSANE;
 
-   return 0;
+   e = main2(argc, argv);
+   if (RAMFAIL_INPUT == e)
+   {
+      usage(e, argc, argv);
+      ramfail_epicfail("unreachable code.");
+      return RAMFAIL_INSANE;
+   }
+   else
+      return e;
+}
+
+ramfail_status_t main2(int argc, char *argv[])
+{
+   ramtest_params_t testparams;
+   ramfail_status_t e = RAMFAIL_INSANE;
+
+   RAMFAIL_RETURN(initdefaults(&testparams));
+
+   e = parseargs(&testparams, argc, argv);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+   case RAMFAIL_OK:
+      break;
+   case RAMFAIL_INPUT:
+      return e;
+   }
+
+   e = runtest(&testparams);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+   case RAMFAIL_OK:
+      break;
+   case RAMFAIL_INPUT:
+      return e;
+   }
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t initdefaults(ramtest_params_t *params_arg)
+{
+   RAMFAIL_DISALLOWZ(params_arg);
+   memset(params_arg, 0, sizeof(*params_arg));
+
+   params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
+   params_arg->ramtestp_threadcount = DEFAULT_THREAD_COUNT;
+   /* i would like 30% of the allocations to come from malloc() instead
+    * of the allocator i'm testing. */
+   params_arg->ramtestp_mallocchance = DEFAULT_MALLOC_CHANCE;
+   /* i'm going to test a narrow band of allocations to exercise the
+    * allocator as deeply as possible. */
+   params_arg->ramtestp_minsize = DEFAULT_MINIMUM_ALLOCATION_SIZE;
+   params_arg->ramtestp_maxsize = DEFAULT_MAXIMUM_ALLOCATION_SIZE;
+
+   return RAMFAIL_OK;
 }
 
 ramfail_status_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
@@ -164,51 +225,64 @@ ramfail_status_t check(void *extra_arg, int threadidx_arg)
    return RAMFAIL_OK;
 }
 
-ramfail_status_t newtest(size_t threadcount_arg)
+ramfail_status_t runtest(const ramtest_params_t *params_arg)
 {
    ramfail_status_t e = RAMFAIL_INSANE;
    extra_t x = {0};
 
-   RAMFAIL_DISALLOWZ(threadcount_arg);
+   RAMFAIL_DISALLOWZ(params_arg);
 
-   x.e_pools = calloc(threadcount_arg, sizeof(*x.e_pools));
-   x.e_poolcount = threadcount_arg;
-   e = newtest2(threadcount_arg, &x);
+   RAMFAIL_RETURN(ramalloc_initialize(NULL, NULL));
+
+   x.e_pools = calloc(params_arg->ramtestp_threadcount,
+         sizeof(*x.e_pools));
+   x.e_poolcount = params_arg->ramtestp_threadcount;
+   e = runtest2(params_arg, &x);
    free(x.e_pools);
    RAMFAIL_RETURN(e);
 
    return RAMFAIL_OK;
 }
 
-ramfail_status_t newtest2(size_t threadcount_arg, extra_t *extra_arg)
+ramfail_status_t runtest2(const ramtest_params_t *params_arg,
+      extra_t *extra_arg)
 {
    size_t i = 0;
-   ramtest_params_t tp = {0};
+   ramtest_params_t testparams = {0};
 
-   for (i = 0; i < threadcount_arg; ++i)
+   testparams = *params_arg;
+   /* i am responsible for policing the minimum and maximum allocation
+    * size here. */
+   if (testparams.ramtestp_minsize < sizeof(void *) ||
+         testparams.ramtestp_maxsize < sizeof(void *))
+   {
+      fprintf(stderr, "you cannot specify a size smaller than %u bytes.\n",
+            sizeof(void *));
+      return RAMFAIL_INPUT;
+   }
+   if (testparams.ramtestp_minsize > testparams.ramtestp_maxsize)
+   {
+      fprintf(stderr,
+            "please specify a minimum size (%u bytes) that is smaller than "
+            "or equal to the maximum (%u bytes).\n",
+            testparams.ramtestp_minsize, testparams.ramtestp_maxsize);
+      return RAMFAIL_INPUT;
+   }
+   /* TODO: how do i determine the maximum allocation size ahead of time? */
+   testparams.ramtestp_extra = extra_arg;
+   testparams.ramtestp_acquire = &acquire;
+   testparams.ramtestp_release = &release;
+   testparams.ramtestp_query = &query;
+   testparams.ramtestp_flush = &flush;
+   testparams.ramtestp_check = &check;
+
+   for (i = 0; i < testparams.ramtestp_threadcount; ++i)
    {
       RAMFAIL_RETURN(ramlazy_mkpool(&extra_arg->e_pools[i],
-            RAMOPT_DEFAULTAPPETITE, RECLAIMRATIO));
+            RAMOPT_DEFAULTAPPETITE, RECLAIM_RATIO));
    }
 
-   tp.ramtestp_alloccount = ALLOCATION_COUNT;
-   tp.ramtestp_threadcount = THREAD_COUNT;
-   /* i would like 30% of the allocations to come from malloc() instead
-    * of the allocator i'm testing. */
-   tp.ramtestp_mallocchance = MALLOC_PERCENTAGE;
-   /* i'm going to test a narrow band of allocations to exercise the
-    * allocator as deeply as possible. */
-   tp.ramtestp_minsize = ALLOCATION_MINSIZE;
-   tp.ramtestp_maxsize = ALLOCATION_MAXSIZE;
-   tp.ramtestp_extra = extra_arg;
-
-   tp.ramtestp_acquire = &acquire;
-   tp.ramtestp_release = &release;
-   tp.ramtestp_query = &query;
-   tp.ramtestp_flush = &flush;
-   tp.ramtestp_check = &check;
-
-   RAMFAIL_RETURN(ramtest_test(&tp));
+   RAMFAIL_RETURN(ramtest_test(&testparams));
 
    return RAMFAIL_OK;
 }

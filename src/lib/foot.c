@@ -32,6 +32,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include <ramalloc/foot.h>
+#include <ramalloc/mem.h>
 #include <assert.h>
 #include <memory.h>
 

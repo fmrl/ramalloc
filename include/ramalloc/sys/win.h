@@ -79,6 +79,7 @@ ramfail_status_t ramwin_waitonbarrier(ramwin_barrier_t *barrier_arg);
 
 /* virtual memory mapping */
 #  define ramsys_getmemspecs ramwin_getmemspecs
+#define ramsys_cpucount ramwin_cpucount
 #  define ramsys_reserve ramwin_reserve
 #  define ramsys_commit ramwin_commit
 #  define ramsys_decommit ramwin_decommit

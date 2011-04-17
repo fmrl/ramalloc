@@ -43,6 +43,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <ramalloc/mem.h>
 
 ramfail_status_t ramuix_pagesize(size_t *pagesz_arg)
 {
@@ -57,7 +58,7 @@ ramfail_status_t ramuix_pagesize(size_t *pagesz_arg)
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == errno);
    RAMFAIL_CONFIRM(RAMFAIL_INSANE, pgsz > 0);
 
-   *pagesz_arg = (size_t)pgsz;
+   *pagesz_arg = pgsz;
    return RAMFAIL_OK;
 }
 
@@ -66,6 +67,22 @@ ramfail_status_t ramuix_mmapgran(size_t *mmapgran_arg)
    /* on Linux, the memory mapping granularity is the page size. */
    RAMFAIL_RETURN(ramuix_pagesize(mmapgran_arg));
 
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramuix_cpucount(size_t *cpucount_arg)
+{
+   long cpucount = 0;
+
+   RAMFAIL_DISALLOWZ(cpucount_arg);
+   *cpucount_arg = 0;
+
+   errno = 0;
+   cpucount = sysconf(_SC_NPROCESSORS_ONLN);
+   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == errno);
+   RAMFAIL_CONFIRM(RAMFAIL_INSANE, cpucount > 0);
+
+   *cpucount_arg = cpucount;
    return RAMFAIL_OK;
 }
 

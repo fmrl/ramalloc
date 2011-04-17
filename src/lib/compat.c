@@ -70,7 +70,6 @@ void ramcompat_free(void *ptr_arg)
    else
    {
       ramfail_status_t e = RAMFAIL_INSANE;
-      void *p = NULL;
       size_t sz = 0;
 
       e = ramdefault_query(&sz, ptr_arg);

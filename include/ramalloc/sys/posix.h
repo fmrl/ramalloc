@@ -42,6 +42,7 @@
 
 ramfail_status_t ramuix_pagesize(size_t *pagesz_arg);
 ramfail_status_t ramuix_mmapgran(size_t *mmapgran_arg);
+ramfail_status_t ramuix_cpucount(size_t *cpucount_arg);
 ramfail_status_t ramuix_commit(char *page_arg);
 ramfail_status_t ramuix_decommit(char *page_arg);
 ramfail_status_t ramuix_reset(char *page_arg);

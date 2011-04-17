@@ -1,5 +1,3 @@
-/* ex: set softtabstop=3 shiftwidth=3 expandtab: */
-
 /* This file is part of the *ramalloc* project at <http://fmrl.org>.
  * Copyright (c) 2011, Michael Lowell Roberts.
  * All rights reserved.
@@ -31,50 +29,17 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMTEST_H_IS_INCLUDED
-#define RAMTEST_H_IS_INCLUDED
+#ifndef RAMALLOC_TEST_GETOPT_H_IS_INCLUDED
+#define RAMALLOC_TEST_GETOPT_H_IS_INCLUDED
 
-#include <ramalloc/fail.h>
-#include <ramalloc/stdint.h>
+#include <ramalloc/sys/detect.h>
 
-typedef struct ramtest_allocdesc
-{
-   char *ramtestad_ptr;
-   size_t ramtestad_sz;
-   void *ramtestad_pool;
-} ramtest_allocdesc_t;
+#ifdef RAMSYS_WINDOWS
+#  error getopt is not yet implemented for Windows.
+#elif defined(RAMSYS_LINUX)
+#  include <getopt.h>
+#else
+#  error <ramalloc/sys/detect.h> has not detected a platform i recognize.
+#endif
 
-typedef ramfail_status_t (*ramtest_acquire_t)(ramtest_allocdesc_t *desc_arg,
-      size_t size_arg, void *extra_arg, int threadnum_arg);
-typedef ramfail_status_t
-      (*ramtest_release_t)(ramtest_allocdesc_t *desc_arg);
-typedef ramfail_status_t (*ramtest_query_t)(void **pool_arg,
-      size_t *size_arg, void *ptr_arg);
-typedef ramfail_status_t (*ramtest_flush_t)(void *extra_arg,
-      int threadnum_arg);
-typedef ramfail_status_t (*ramtest_check_t)(void *extra_arg,
-      int threadnum_arg);
-
-typedef struct ramtest_params
-{
-   void *ramtestp_extra;
-   size_t ramtestp_minsize;
-   size_t ramtestp_maxsize;
-   int ramtestp_mallocchance;
-   size_t ramtestp_threadcount;
-   size_t ramtestp_alloccount;
-   ramtest_acquire_t ramtestp_acquire;
-   ramtest_release_t ramtestp_release;
-   ramtest_query_t ramtestp_query;
-   ramtest_flush_t ramtestp_flush;
-   ramtest_check_t ramtestp_check;
-} ramtest_params_t;
-
-ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
-      uint32_t n1_arg);
-ramfail_status_t ramtest_shuffle(void *array_arg, size_t size_arg,
-      size_t count_arg);
-
-ramfail_status_t ramtest_test(const ramtest_params_t *params_arg);
-
-#endif /* RAMTEST_H_IS_INCLUDED */
+#endif /* RAMALLOC_TEST_GETOPT_H_IS_INCLUDED */

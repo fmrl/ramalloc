@@ -100,7 +100,6 @@ add_library(ramalloc
 	include/ramalloc/sys/pthreads.h
 	include/ramalloc/sys/types.h
 	include/ramalloc/sys/win.h
-	include/ramalloc/test.h
 	include/ramalloc/thread.h
 	include/ramalloc/tls.h
 	include/ramalloc/tra.h
@@ -127,7 +126,6 @@ add_library(ramalloc
 	src/lib/sys/posix.c
 	src/lib/sys/pthreads.c
 	src/lib/sys/win.c
-	src/lib/test.c
 	src/lib/thread.c
 	src/lib/tls.c
 	src/lib/tra.c
@@ -138,42 +136,59 @@ set(RAMALLOC_LIBRARIES ramalloc ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(slottest
 	src/test/slottest.c
+	src/test/shared/test.c
+	src/test/shared/test.h
 	)
 target_link_libraries(slottest ${RAMALLOC_LIBRARIES})
 add_test(slottest ${EXECUTABLE_OUTPUT_PATH}/slottest)
 
 add_executable(pgtest
 	src/test/pgtest.c
+	src/test/shared/test.c
+	src/test/shared/test.h
 	)
 target_link_libraries(pgtest ${RAMALLOC_LIBRARIES})
 add_test(pgtest ${EXECUTABLE_OUTPUT_PATH}/pgtest)
 
 add_executable(algntest
 	src/test/algntest.c
+	src/test/shared/test.c
+	src/test/shared/test.h
 	)
 target_link_libraries(algntest ${RAMALLOC_LIBRARIES})
 add_test(algntest ${EXECUTABLE_OUTPUT_PATH}/algntest)
 
 add_executable(muxtest
 	src/test/muxtest.c
+	src/test/shared/test.c
+	src/test/shared/test.h
 	)
 target_link_libraries(muxtest ${RAMALLOC_LIBRARIES})
 add_test(muxtest ${EXECUTABLE_OUTPUT_PATH}/muxtest)
 
 add_executable(lazytest
 	src/test/lazytest.c
+	src/test/shared/parseargs.c
+	src/test/shared/parseargs.h
+	src/test/shared/getopt.h
+	src/test/shared/test.c
+	src/test/shared/test.h
 	)
 target_link_libraries(lazytest ${RAMALLOC_LIBRARIES})
 add_test(lazytest ${EXECUTABLE_OUTPUT_PATH}/lazytest)
 
 add_executable(paratest
 	src/test/paratest.c
+	src/test/shared/test.c
+	src/test/shared/test.h
 	)
 target_link_libraries(paratest ${RAMALLOC_LIBRARIES})
 add_test(paratest ${EXECUTABLE_OUTPUT_PATH}/paratest)
 
 add_executable(defaulttest
 	src/test/defaulttest.c
+	src/test/shared/test.c
+	src/test/shared/test.h
 	)
 target_link_libraries(defaulttest ${RAMALLOC_LIBRARIES})
 add_test(defaulttest ${EXECUTABLE_OUTPUT_PATH}/defaulttest)

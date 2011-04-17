@@ -31,9 +31,10 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#include <ramalloc/test.h>
+#include "test.h"
 #include <ramalloc/mtx.h>
 #include <ramalloc/thread.h>
+#include <ramalloc/misc.h>
 #include <string.h>
 #include <stdio.h>
 
@@ -65,6 +66,8 @@ static ramfail_status_t ramtest_inittest(ramtest_test_t *test_arg,
       const ramtest_params_t *params_arg);
 static ramfail_status_t ramtest_fintest(ramtest_test_t *test_arg);
 static ramfail_status_t ramtest_inittest2(ramtest_test_t *test_arg,
+      const ramtest_params_t *params_arg);
+static ramfail_status_t ramtest_describe(FILE *out_arg,
       const ramtest_params_t *params_arg);
 static ramfail_status_t ramtest_test2(ramtest_test_t *test_arg);
 static ramfail_status_t ramtest_start(ramtest_test_t *test_arg);
@@ -204,9 +207,6 @@ ramfail_status_t ramtest_inittest2(ramtest_test_t *test_arg,
 
 ramfail_status_t ramtest_fintest(ramtest_test_t *test_arg)
 {
-   size_t i = 0;
-   ramfail_status_t myreply = RAMFAIL_INSANE;
-
    RAMFAIL_DISALLOWZ(test_arg);
 
    if (NULL != test_arg->ramtestt_records)
@@ -218,6 +218,37 @@ ramfail_status_t ramtest_fintest(ramtest_test_t *test_arg)
    }
    if (NULL != test_arg->ramtestt_sequence)
       free(test_arg->ramtestt_sequence);
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramtest_describe(FILE *out_arg,
+      const ramtest_params_t *params_arg)
+{
+   RAMFAIL_DISALLOWZ(out_arg);
+   RAMFAIL_DISALLOWZ(params_arg);
+
+   if (params_arg->ramtestp_dryrun)
+      fprintf(out_arg, "you have specified the following test:\n\n");
+   else
+      fprintf(out_arg, "i will run the following test:\n\n");
+   fprintf(out_arg, "%u allocation(s) (and corresponding "
+         "deallocations).\n",
+         params_arg->ramtestp_alloccount);
+   fprintf(out_arg, "%u parallel operation(s) allowed.\n",
+         params_arg->ramtestp_threadcount);
+   fprintf(out_arg, "%d%% of the allocations will be managed by malloc() "
+         "and free().\n", params_arg->ramtestp_mallocchance);
+   fprintf(out_arg, "allocations will not be smaller than %u bytes.\n",
+         params_arg->ramtestp_minsize);
+   fprintf(out_arg, "allocations will not be larger than %u bytes.\n",
+         params_arg->ramtestp_maxsize);
+   if (params_arg->ramtestp_dryrun)
+      fprintf(out_arg, "\nto run this test, omit the --dry-run option.");
+   else
+      fprintf(out_arg, "-----\n\n");
+
+   return RAMFAIL_OK;
 }
 
 ramfail_status_t ramtest_test(const ramtest_params_t *params_arg)
@@ -226,6 +257,12 @@ ramfail_status_t ramtest_test(const ramtest_params_t *params_arg)
    ramtest_test_t test = {0};
 
    RAMFAIL_DISALLOWZ(params_arg);
+
+   RAMFAIL_RETURN(ramtest_describe(stderr, params_arg));
+
+   /* if a dry run has been specified, i'll quit now. */
+   if (params_arg->ramtestp_dryrun)
+      return RAMFAIL_OK;
 
    RAMFAIL_RETURN(ramtest_inittest(&test, params_arg));
 
@@ -359,9 +396,6 @@ ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
    {
       ramtest_allocrec_t *info = NULL;
       ramtest_allocdesc_t condemned = {0};
-      void *p = NULL;
-      size_t sz = 0;
-      void *pool = NULL;
 
       info = &test_arg->ramtestt_records[test_arg->ramtestt_sequence[i]];
       /* i don't want to allocate while i'm holding the allocation record
@@ -412,7 +446,7 @@ ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
 ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
       ramtest_test_t *test_arg, int threadidx_arg)
 {
-   int32_t roll = 0;
+   uint32_t roll = 0;
    ramtest_allocdesc_t desc = {0};
 
    RAMFAIL_DISALLOWZ(newptr_arg);

@@ -31,13 +31,13 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
+#include "shared/test.h"
 #include <ramalloc/ramalloc.h>
 #include <ramalloc/default.h>
 #include <ramalloc/misc.h>
 #include <ramalloc/thread.h>
 #include <ramalloc/barrier.h>
 #include <ramalloc/mtx.h>
-#include <ramalloc/test.h>
 #include <ramalloc/stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -170,7 +170,7 @@ ramfail_status_t testthread2(int id_arg)
    size_t i = 0;
    int allocflag = 1;
    void *nextptr = NULL;
-   int32_t nextsz = 0;
+   uint32_t nextsz = 0;
    int nextramallocflag = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
@@ -187,7 +187,7 @@ ramfail_status_t testthread2(int id_arg)
        * prepare an allocation ahead of time. */
       if (allocflag)
       {
-         int32_t roll = 0;
+         uint32_t roll = 0;
 
          RAMFAIL_RETURN(ramtest_randuint32(&nextsz, ALLOCATION_MINSIZE, ALLOCATION_MAXSIZE));
          /* i want a certain percentage of allocations to be performed by a different

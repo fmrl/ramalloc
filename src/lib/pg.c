@@ -35,6 +35,7 @@
 #include <ramalloc/foot.h>
 #include <ramalloc/sys.h>
 #include <ramalloc/slot.h>
+#include <ramalloc/mem.h>
 #include <assert.h>
 #include <memory.h>
 
@@ -127,7 +128,6 @@ ramfail_status_t rampg_initialize()
 ramfail_status_t rampg_mkpool(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg)
 {
    ramfail_status_t e = RAMFAIL_INSANE;
-   size_t slotnodecapacity = 0;
 
    RAMFAIL_DISALLOWZ(pool_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, rampg_theglobals.rampgg_initflag);
@@ -368,7 +368,6 @@ ramfail_status_t rampg_calcindex(rampg_index_t *index_arg,
        const rampg_vnode_t *vpoolnode_arg, const char *page_arg)
 {
    int ispage = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
 
    RAMFAIL_DISALLOWZ(index_arg);
    *index_arg = RAMPG_MAXCAPACITY;

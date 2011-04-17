@@ -34,7 +34,7 @@
 #include <ramalloc/ramalloc.h>
 #include <ramalloc/compat.h>
 #include <ramalloc/sys.h>
-#include <ramalloc/test.h>
+#include <ramalloc/mem.h>
 
 #define SMALL_SIZE 4
 #define LARGE_SIZE (1024 * 100)

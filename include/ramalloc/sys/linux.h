@@ -61,6 +61,7 @@ ramfail_status_t ramlin_waitonbarrier(ramlin_barrier_t *barrier_arg);
 /* virtual memory mapping */
 #define ramsys_pagesize ramuix_pagesize
 #define ramsys_mmapgran ramuix_mmapgran
+#define ramsys_cpucount ramuix_cpucount
 #define ramsys_reserve ramuix_reserve
 #define ramsys_commit ramuix_commit
 #define ramsys_decommit ramuix_decommit

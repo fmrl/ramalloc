@@ -212,7 +212,6 @@ ramfail_status_t rampara_mktls(rampara_tls_t **newtls_arg, rampara_pool_t *parap
 ramfail_status_t rampara_rcltls(rampara_tls_t **tls_arg, rampara_pool_t *parapool_arg)
 {
    rampara_tls_t *tls = NULL;
-   ramfail_status_t e = RAMFAIL_INSANE;
 
    RAMFAIL_DISALLOWZ(tls_arg);
    *tls_arg = NULL;

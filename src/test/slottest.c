@@ -31,12 +31,12 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
+#include "shared/test.h"
 #include <ramalloc/ramalloc.h>
 #include <ramalloc/slot.h>
 #include <ramalloc/misc.h>
 #include <ramalloc/sig.h>
 #include <ramalloc/meta.h>
-#include <ramalloc/test.h>
 #include <ramalloc/stdint.h>
 #include <stdlib.h>
 

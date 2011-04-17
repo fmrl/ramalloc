@@ -157,7 +157,6 @@ ramfail_status_t rammux_query(rammux_pool_t **mpool_arg, size_t *size_arg, void 
 {
    ramalgn_pool_t *apool = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
-   rammux_pool_t *muxpool = NULL;
    const ramalgn_tag_t *tag = NULL;
    ramsig_signature_t sig = {0};
 

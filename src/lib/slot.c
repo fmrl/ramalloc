@@ -55,7 +55,6 @@ static ramfail_status_t ramslot_mknode(ramvec_node_t **node_arg, ramvec_pool_t *
 static ramfail_status_t ramslot_initnode(ramslot_node_t *node_arg, ramslot_pool_t *pool_arg, char *slots_arg);
 static ramfail_status_t ramslot_calcindex(ramslot_index_t *idx_arg, const ramslot_node_t *node_arg, 
    const char *ptr_arg);
-static ramfail_status_t ramslot_rmnode(ramslot_node_t *node_arg);
 static ramfail_status_t ramslot_chknode(const ramvec_node_t *node_arg);
 static ramfail_status_t ramslot_chkfree(const ramslot_node_t *node_arg);
 #define RAMSLOT_ISFULL(Node) (RAMSLOT_NIL_INDEX == (Node)->ramslotn_freestk)
@@ -85,7 +84,6 @@ ramfail_status_t ramslot_mkpool2(ramslot_pool_t *pool_arg, size_t granularity_ar
    size_t nodecap_arg, ramslot_mknode_t mknode_arg, 
    ramslot_rmnode_t rmnode_arg, ramslot_initslot_t initslot_arg)
 {
-   size_t capacity = 0;
 
    assert(pool_arg);
    RAMFAIL_DISALLOWZ(granularity_arg);
@@ -107,9 +105,7 @@ ramfail_status_t ramslot_acquire(void **ptr_arg, ramslot_pool_t *pool_arg)
 {
    ramslot_index_t idx = 0;
    char *p = NULL;
-   size_t ofs = 0;
    ramslot_node_t *node = NULL;
-   ramslot_footer_t *foot = NULL;
    ramvec_node_t *vnode = NULL;
 
    RAMFAIL_DISALLOWZ(ptr_arg);
@@ -277,7 +273,6 @@ ramfail_status_t ramslot_chkpool(const ramslot_pool_t *pool_arg)
 ramfail_status_t ramslot_chknode(const ramvec_node_t *node_arg)
 {
    ramslot_node_t *node = NULL;
-   size_t i = 0;
 
    assert(node_arg);
 

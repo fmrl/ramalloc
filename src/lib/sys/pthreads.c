@@ -41,6 +41,7 @@
 #ifdef RAMSYS_PTHREADS
 
 #include <ramalloc/barrier.h>
+#include <errno.h>
 
 typedef struct ramuix_startroutine
 {
@@ -216,11 +217,12 @@ ramfail_status_t ramuix_rmbarrier(ramuix_barrier_t *barrier_arg)
 
 ramfail_status_t ramuix_waitonbarrier(ramuix_barrier_t *barrier_arg)
 {
-   int e = 0;
+   /* pthread_barrier_wait() will not return EINTR. */
+   int e = EINTR;
 
    RAMFAIL_DISALLOWZ(barrier_arg);
 
-   e == pthread_barrier_wait(barrier_arg);
+   e = pthread_barrier_wait(barrier_arg);
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
          0 == e || PTHREAD_BARRIER_SERIAL_THREAD == e);
 

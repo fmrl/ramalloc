@@ -53,6 +53,7 @@ typedef enum ramfail_status
    RAMFAIL_TRYAGAIN,
    RAMFAIL_CORRUPT,        /* a data structure failed a runtime check. */
    RAMFAIL_UNDERFLOW,
+   RAMFAIL_INPUT,
 } ramfail_status_t;
 
 typedef void (*ramfail_reporter_t)(ramfail_status_t code_arg, const char *expr_arg, 
