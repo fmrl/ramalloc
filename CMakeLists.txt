@@ -176,7 +176,10 @@ add_executable(lazytest
 	src/test/shared/test.h
 	)
 target_link_libraries(lazytest ${RAMALLOC_LIBRARIES})
-add_test(lazytest ${EXECUTABLE_OUTPUT_PATH}/lazytest)
+add_test(lazytest-serial ${EXECUTABLE_OUTPUT_PATH}/lazytest --parallelize=1 
+	--rng-seed=342795249)
+add_test(lazytest-parallel ${EXECUTABLE_OUTPUT_PATH}/lazytest 
+	--parallelize=4)
 
 add_executable(paratest
 	src/test/paratest.c

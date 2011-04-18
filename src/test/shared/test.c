@@ -37,6 +37,8 @@
 #include <ramalloc/misc.h>
 #include <string.h>
 #include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
 
 /* TODO: calls to fprinf() should be checked. */
 
@@ -200,6 +202,12 @@ ramfail_status_t ramtest_inittest2(ramtest_test_t *test_arg,
    RAMFAIL_RETURN(ramtest_shuffle(test_arg->ramtestt_sequence,
          sizeof(test_arg->ramtestt_sequence[0]), seqlen));
 
+   if (!test_arg->ramtestt_params.ramtestp_userngseed)
+      test_arg->ramtestt_params.ramtestp_rngseed = (unsigned int)time(NULL);
+   srand(test_arg->ramtestt_params.ramtestp_rngseed);
+   fprintf(stderr, "[0] i seeded the random generator with the value %u.\n",
+         test_arg->ramtestt_params.ramtestp_rngseed);
+
    test_arg->ramtestt_nextrec = 0;
 
    return RAMFAIL_OK;
@@ -243,10 +251,20 @@ ramfail_status_t ramtest_describe(FILE *out_arg,
          params_arg->ramtestp_minsize);
    fprintf(out_arg, "allocations will not be larger than %u bytes.\n",
          params_arg->ramtestp_maxsize);
+   if (params_arg->ramtestp_userngseed)
+   {
+      fprintf(out_arg, "the random number generator will use seed %u.\n",
+            params_arg->ramtestp_rngseed);
+   }
+   else
+   {
+      fprintf(out_arg, "the random number generator will use a randomly "
+            "selected seed.\n");
+   }
    if (params_arg->ramtestp_dryrun)
       fprintf(out_arg, "\nto run this test, omit the --dry-run option.");
    else
-      fprintf(out_arg, "-----\n\n");
+      fprintf(out_arg, "-----\n");
 
    return RAMFAIL_OK;
 }
@@ -268,7 +286,18 @@ ramfail_status_t ramtest_test(const ramtest_params_t *params_arg)
 
    e = ramtest_test2(&test);
    RAMFAIL_RETURN(ramfail_accumulate(&e, ramtest_fintest(&test)));
-   return e;
+
+   if (RAMFAIL_OK == e)
+   {
+      fprintf(stderr, "[0] the test succeeded.\n");
+      return RAMFAIL_OK;
+   }
+   else
+   {
+      fprintf(stderr, "[0] the test failed (reply code %d).\n", e);
+      RAMFAIL_RETURN(e);
+      return RAMFAIL_INSANE;
+   }
 }
 
 ramfail_status_t ramtest_test2(ramtest_test_t *test_arg)
@@ -277,8 +306,6 @@ ramfail_status_t ramtest_test2(ramtest_test_t *test_arg)
 
    RAMFAIL_RETURN(ramtest_start(test_arg));
    RAMFAIL_RETURN(ramtest_join(test_arg));
-
-   fprintf(stderr, "[0] test is finished.\n");
 
    return RAMFAIL_OK;
 }

@@ -52,6 +52,7 @@ static ramfail_status_t parsethreadcount(size_t *threadcount_arg);
 static ramfail_status_t parsemallocchance(int *mallocchance_arg);
 static ramfail_status_t parseminsize(size_t *minsize_arg);
 static ramfail_status_t parsemaxsize(size_t *maxsize_arg);
+static ramfail_status_t parserngseed(unsigned int *rngseed_arg);
 
 
 static const char usagemsg[] =
@@ -83,7 +84,11 @@ static const char usagemsg[] =
       "\tbytes.\n"
       "\n"
       "-n or --dry-run\n"
-      "\ti will describe the test but i will not run it.\n";
+      "\ti will describe the test but i will not run it.\n"
+      "\n"
+      "-S or --rng-seed\n"
+      "\tspecifies the random number generator's seed for non-\n"
+      "\tparallelized tests.\n";
 
 
 void usage(ramfail_status_t exit_arg, int argc_arg, char *argv_arg[])
@@ -129,6 +134,7 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
          { "malloc", 1, 0, 'm' },
          { "smallest", 1, 0, 's' },
          { "largest", 1, 0, 'l' },
+         { "rng-seed", 1, 0, 'S' },
          { "help", 0, 0, 'h' },
          { "dry-run", 0, 0, 'n' },
          { 0, 0, 0, 0 }
@@ -234,6 +240,24 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
          break;
       }
 
+      case 'S':
+      {
+         ramfail_status_t e = RAMFAIL_INSANE;
+
+         e = parserngseed(&params_arg->ramtestp_rngseed);
+         switch (e)
+         {
+         default:
+            RAMFAIL_RETURN(e);
+         case RAMFAIL_OK:
+            params_arg->ramtestp_userngseed = 1;
+            break;
+         case RAMFAIL_INPUT:
+            return e;
+         }
+         break;
+      }
+
       case 'n':
       {
          params_arg->ramtestp_dryrun = 1;
@@ -251,6 +275,17 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
   {
      fprintf(stderr, "i don't understand what you mean by \"%s\".\n",
            argv_arg[optind]);
+     return RAMFAIL_INPUT;
+  }
+
+  /* if the test is parallelized, it's meaningless to specify a seed. */
+  if (params_arg->ramtestp_userngseed &&
+        params_arg->ramtestp_threadcount > 1)
+  {
+     fprintf(stderr,
+           "it's meaningless to specify is seed value for a parallelized "
+           "test. either specify --parallelized=1 or omit the --rng-seed "
+           "option.\n");
      return RAMFAIL_INPUT;
   }
 
@@ -456,6 +491,32 @@ ramfail_status_t parsemaxsize(size_t *maxsize_arg)
       fprintf(stderr,
             "you must specify a numeric argument for the upper bound of "
             "the allocation size for the --largest (or -l) argument.\n");
+      return RAMFAIL_INPUT;
+   }
+}
+
+ramfail_status_t parserngseed(unsigned int *rngseed_arg)
+{
+   unsigned long n = 0;
+   ramfail_status_t e = RAMFAIL_INSANE;
+
+   RAMFAIL_DISALLOWZ(rngseed_arg);
+   *rngseed_arg = 0;
+
+   e = parseulong(&n, optarg);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+   case RAMFAIL_OK:
+      /* the upper and lower bounds for this argument must be policed by
+       * the individual tests. */
+      *rngseed_arg = n;
+      return RAMFAIL_OK;
+   case RAMFAIL_CRT:
+      fprintf(stderr,
+            "you must specify a numeric argument for the --rng-seed (or "
+            "-S) argument.\n");
       return RAMFAIL_INPUT;
    }
 }
