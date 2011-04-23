@@ -198,12 +198,17 @@ add_test(lazytest-parallel ${EXECUTABLE_OUTPUT_PATH}/lazytest
 
 add_executable(paratest
 	src/test/paratest.c
+	src/test/shared/parseargs.c
+	src/test/shared/parseargs.h
 	src/test/shared/test.c
 	src/test/shared/test.h
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(paratest ${RAMALLOC_LIBRARIES})
-add_test(paratest ${EXECUTABLE_OUTPUT_PATH}/paratest)
+add_test(paratest-serial ${EXECUTABLE_OUTPUT_PATH}/paratest --parallelize=1 
+	--rng-seed=2374434648)
+add_test(paratest-parallel ${EXECUTABLE_OUTPUT_PATH}/paratest 
+	--parallelize=3)
 
 add_executable(defaulttest
 	src/test/defaulttest.c
