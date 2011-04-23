@@ -31,7 +31,7 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#include <ramalloc/ramalloc.h>
+#include <ramalloc/default.h>
 #include <ramalloc/para.h>
 
 rampara_pool_t ramdefault_thepool;
