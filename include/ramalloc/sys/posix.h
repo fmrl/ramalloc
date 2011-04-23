@@ -39,7 +39,11 @@
 #ifdef RAMSYS_POSIX
 
 #include <ramalloc/fail.h>
+#include <limits.h>
 
+#define RAMUIX_PATH_MAX PATH_MAX
+
+ramfail_status_t ramuix_initialize();
 ramfail_status_t ramuix_pagesize(size_t *pagesz_arg);
 ramfail_status_t ramuix_mmapgran(size_t *mmapgran_arg);
 ramfail_status_t ramuix_cpucount(size_t *cpucount_arg);
@@ -49,6 +53,8 @@ ramfail_status_t ramuix_reset(char *page_arg);
 ramfail_status_t ramuix_reserve(char **pages_arg);
 ramfail_status_t ramuix_bulkalloc(char **pages_arg);
 ramfail_status_t ramuix_release(char *pages_arg);
+ramfail_status_t ramuix_basename(char *dest_arg, size_t len_arg,
+   const char *pathn_arg);
 
 #endif /* RAMSYS_POSIX */
 

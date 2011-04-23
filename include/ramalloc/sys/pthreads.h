@@ -48,8 +48,8 @@ typedef pthread_t ramuix_thread_t;
 typedef pthread_barrier_t ramuix_barrier_t;
 
 ramfail_status_t ramuix_mktlskey(ramuix_tlskey_t *key_arg);
-ramfail_status_t ramuix_rmtlskey(ramuix_tlskey_t *key_arg);
-#define ramuix_rcltls pthread_getspecific
+ramfail_status_t ramuix_rmtlskey(ramuix_tlskey_t key_arg);
+ramfail_status_t ramuix_rcltls(void **tls_arg, ramuix_tlskey_t key_arg);
 ramfail_status_t ramuix_stotls(ramuix_tlskey_t key_arg, void *value_arg);
 
 ramfail_status_t ramuix_mkmutex(ramuix_mutex_t *mutex_arg);

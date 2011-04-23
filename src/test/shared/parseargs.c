@@ -39,7 +39,6 @@
 #include <stdio.h>
 #include <memory.h>
 #include <errno.h>
-#include <limits.h>
 
 static ramfail_status_t parseargs2(ramtest_params_t *params_arg,
       int argc_arg, char *argv_arg[]);

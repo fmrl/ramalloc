@@ -58,6 +58,7 @@ ramfail_status_t ramlin_mkbarrier(ramlin_barrier_t *barrier_arg,
 ramfail_status_t ramlin_rmbarrier(ramlin_barrier_t *barrier_arg);
 ramfail_status_t ramlin_waitonbarrier(ramlin_barrier_t *barrier_arg);
 
+#define ramsys_initialize ramuix_initialize
 /* virtual memory mapping */
 #define ramsys_pagesize ramuix_pagesize
 #define ramsys_mmapgran ramuix_mmapgran
@@ -95,6 +96,9 @@ typedef ramlin_barrier_t ramsys_barrier_t;
 #  define ramsys_rmbarrier ramlin_rmbarrier
 #  define ramsys_waitonbarrier ramlin_waitonbarrier
 #endif
+/* file manipulation */
+#define RAMSYS_PATH_MAX RAMUIX_PATH_MAX
+#define ramsys_basename ramuix_basename
 
 #endif /* RAMSYS_LINUX */
 

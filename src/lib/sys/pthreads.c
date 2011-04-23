@@ -66,16 +66,22 @@ ramfail_status_t ramuix_mktlskey(ramuix_tlskey_t *key_arg)
    return RAMFAIL_OK;
 }
 
-ramfail_status_t ramuix_rmtlskey(ramuix_tlskey_t *key_arg)
+ramfail_status_t ramuix_rmtlskey(ramuix_tlskey_t key_arg)
 {
-   RAMFAIL_DISALLOWZ(key_arg);
-
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
-         0 == pthread_key_delete(*key_arg));
-   *key_arg = (ramuix_tlskey_t)-1;
+         0 == pthread_key_delete(key_arg));
 
    return RAMFAIL_OK;
 }
+
+ramfail_status_t ramuix_rcltls(void **tls_arg, ramuix_tlskey_t key_arg)
+{
+   RAMFAIL_DISALLOWZ(tls_arg);
+
+   *tls_arg = pthread_getspecific(key_arg);
+   return RAMFAIL_OK;
+}
+
 
 ramfail_status_t ramuix_stotls(ramuix_tlskey_t key_arg, void *value_arg)
 {

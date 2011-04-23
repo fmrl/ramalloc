@@ -40,10 +40,20 @@
  * case). */
 #ifdef RAMSYS_POSIX
 
+#include <ramalloc/mem.h>
 #include <errno.h>
 #include <unistd.h>
 #include <sys/mman.h>
-#include <ramalloc/mem.h>
+#include <string.h>
+#include <libgen.h>
+
+static ramfail_status_t ramuix_basename2(char *dest_arg, size_t len_arg,
+      const char *pathn_arg);
+
+ramfail_status_t ramuix_initialize()
+{
+   return RAMFAIL_OK;
+}
 
 ramfail_status_t ramuix_pagesize(size_t *pagesz_arg)
 {
@@ -151,6 +161,41 @@ ramfail_status_t ramuix_release(char *pages_arg)
 
    RAMFAIL_RETURN(rammem_pagesize(&pgsz));
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == munmap(pages_arg, pgsz));
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramuix_basename(char *dest_arg, size_t len_arg,
+   const char *pathn_arg)
+{
+   ramfail_status_t e = RAMFAIL_INSANE;
+
+   e = ramuix_basename2(dest_arg, len_arg, pathn_arg);
+   if (RAMFAIL_OK == e)
+      return RAMFAIL_OK;
+   else
+   {
+      if (0 < len_arg)
+         dest_arg[0] = '\0';
+      return e;
+   }
+}
+
+ramfail_status_t ramuix_basename2(char *dest_arg, size_t len_arg,
+   const char *pathn_arg)
+{
+   char pathn[RAMSYS_PATH_MAX];
+   const char *bn = NULL;
+
+   RAMFAIL_DISALLOWZ(dest_arg);
+   RAMFAIL_DISALLOWZ(len_arg);
+   RAMFAIL_DISALLOWZ(pathn_arg);
+
+   strncpy(pathn, pathn_arg, RAMSYS_PATH_MAX);
+   pathn[RAMSYS_PATH_MAX - 1] = '\0';
+   bn = basename(pathn);
+   strncpy(dest_arg, bn, len_arg);
+   dest_arg[len_arg - 1] = '\0';
 
    return RAMFAIL_OK;
 }
