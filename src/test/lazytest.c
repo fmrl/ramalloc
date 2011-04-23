@@ -278,7 +278,7 @@ ramfail_status_t runtest2(const ramtest_params_t *params_arg,
    testparams.ramtestp_flush = &flush;
    testparams.ramtestp_check = &check;
 
-   for (i = 0; i < testparams.ramtestp_threadcount; ++i)
+   for (i = 0; i < extra_arg->e_poolcount; ++i)
    {
       RAMFAIL_RETURN(ramlazy_mkpool(&extra_arg->e_pools[i],
             RAMOPT_DEFAULTAPPETITE, RECLAIM_RATIO));
