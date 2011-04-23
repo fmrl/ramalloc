@@ -46,7 +46,7 @@
 #define DEFAULT_ALLOCATION_COUNT 1024 * 100
 #define DEFAULT_MINIMUM_ALLOCATION_SIZE 4
 #define DEFAULT_MAXIMUM_ALLOCATION_SIZE 100
-#define DEFAULT_THREAD_COUNT 4
+#define DEFAULT_THREAD_COUNT 3
 #define DEFAULT_MALLOC_CHANCE 30
 /* currently, the reclaim ratio cannot be parameterized. */
 #define RECLAIM_RATIO 2
