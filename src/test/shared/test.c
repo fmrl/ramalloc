@@ -75,14 +75,14 @@ static ramfail_status_t ramtest_test2(ramtest_test_t *test_arg);
 static ramfail_status_t ramtest_start(ramtest_test_t *test_arg);
 static ramfail_status_t ramtest_thread(void *arg);
 static ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
-      int threadidx_arg);
+      size_t threadidx_arg);
 static ramfail_status_t ramtest_next(size_t *next_arg,
       ramtest_test_t *test_arg);
 static ramfail_status_t ramtest_join(ramtest_test_t *test_arg);
 static ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *desc_arg,
-      ramtest_test_t *test_arg, int threadidx_arg);
+      ramtest_test_t *test_arg, size_t threadidx_arg);
 static ramfail_status_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
-      ramtest_test_t *test_arg, int threadidx_arg);
+      ramtest_test_t *test_arg, size_t threadidx_arg);
 static ramfail_status_t ramtest_fill(char *ptr_arg, size_t sz_arg);
 static ramfail_status_t ramtest_chkfill(char *ptr_arg, size_t sz_arg);
 
@@ -312,7 +312,7 @@ ramfail_status_t ramtest_test2(ramtest_test_t *test_arg)
 
 ramfail_status_t ramtest_start(ramtest_test_t *test_arg)
 {
-   int i = 0;
+   size_t i = 0;
 
    RAMFAIL_DISALLOWZ(test_arg);
 
@@ -337,7 +337,7 @@ ramfail_status_t ramtest_start(ramtest_test_t *test_arg)
 
 ramfail_status_t ramtest_join(ramtest_test_t *test_arg)
 {
-   int i = 0;
+   size_t i = 0;
    ramfail_status_t myreply = RAMFAIL_OK;
 
    RAMFAIL_DISALLOWZ(test_arg);
@@ -406,7 +406,7 @@ ramfail_status_t ramtest_thread(void *arg)
 }
 
 ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
-      int threadidx_arg)
+      size_t threadidx_arg)
 {
    size_t i = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
@@ -471,7 +471,7 @@ ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
 }
 
 ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
-      ramtest_test_t *test_arg, int threadidx_arg)
+      ramtest_test_t *test_arg, size_t threadidx_arg)
 {
    uint32_t roll = 0;
    ramtest_allocdesc_t desc = {0};
@@ -508,7 +508,7 @@ ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
 }
 
 ramfail_status_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
-      ramtest_test_t *test_arg, int threadidx_arg)
+      ramtest_test_t *test_arg, size_t threadidx_arg)
 {
    void *pool = NULL;
    size_t sz = 0;

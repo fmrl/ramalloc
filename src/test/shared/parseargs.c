@@ -32,15 +32,14 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include "parseargs.h"
-#include "getopt.h"
 #include <ramalloc/stdint.h>
 #include <ramalloc/sys.h>
+#include <getopt.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
 #include <errno.h>
 #include <limits.h>
-#include <libgen.h>
 
 static ramfail_status_t parseargs2(ramtest_params_t *params_arg,
       int argc_arg, char *argv_arg[]);
@@ -93,8 +92,7 @@ static const char usagemsg[] =
 
 void usage(ramfail_status_t exit_arg, int argc_arg, char *argv_arg[])
 {
-   const char *bn = NULL;
-   char arg0[PATH_MAX] = "";
+   char bn[RAMSYS_PATH_MAX];
 
    /* i expect argv_arg to contain at least one element. */
    if (1 > argc_arg)
@@ -102,9 +100,8 @@ void usage(ramfail_status_t exit_arg, int argc_arg, char *argv_arg[])
    if (NULL == argv_arg)
       ramfail_epicfail("i encountered an unexpected NULL pointer.");
 
-   strncpy(arg0, argv_arg[0], PATH_MAX);
-   arg0[PATH_MAX - 1] = '\0';
-   bn = basename(arg0);
+   if (RAMFAIL_OK != ramsys_basename(bn, RAMSYS_PATH_MAX, argv_arg[0]))
+      ramfail_epicfail("i failed to get the basename of the process.");
 
    fprintf(stderr, usagemsg, bn, bn);
    exit(exit_arg);

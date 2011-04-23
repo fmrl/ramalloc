@@ -38,35 +38,14 @@
  * <ramalloc/sys.h> instead. */
 #ifdef RAMSYS_WINDOWS
 
+#include <ramalloc/sys/types.h>
 #include <ramalloc/fail.h>
-#include <ramalloc/sys/sysdef.h>
 #include <Windows.h>
-
-ramfail_status_t ramwin_mkglobals(ramsys_globals_t *globals_arg);
-ramfail_status_t ramwin_commit(char *page_arg);
-ramfail_status_t ramwin_decommit(char *page_arg);
-ramfail_status_t ramwin_reset(char *page_arg);
-ramfail_status_t ramwin_reserve(char **pages_arg);
-ramfail_status_t ramwin_bulkalloc(char **pages_arg);
-ramfail_status_t ramwin_release(char *pages_arg);
 
 typedef DWORD ramwin_tlskey_t;
 #define RAMWIN_NILTLSKEY TLS_OUT_OF_INDEXES
-
-ramfail_status_t ramwin_mktlskey(ramwin_tlskey_t *key_arg);
-ramfail_status_t ramwin_rmtlskey(ramwin_tlskey_t key_arg);
-ramfail_status_t ramwin_rcltls(void **value_arg, ramwin_tlskey_t key_arg);
-ramfail_status_t ramwin_stotls(ramwin_tlskey_t key_arg, void *value_arg);
-
 typedef CRITICAL_SECTION ramwin_mutex_t;
-
-ramfail_status_t ramwin_mkmutex(ramwin_mutex_t *mutex_arg);
-ramfail_status_t ramwin_rmmutex(ramwin_mutex_t *mutex_arg);
-ramfail_status_t ramwin_waitformutex(ramwin_mutex_t *mutex_arg);
-ramfail_status_t ramwin_quitmutex(ramwin_mutex_t *mutex_arg);
-
-ramfail_status_t ramwin_mkthread(ramsys_threadmain_t main_arg, void *arg_arg);
-
+typedef HANDLE ramwin_thread_t;
 typedef struct ramwin_barrier
 {
    HANDLE ramwinb_event;
@@ -74,39 +53,76 @@ typedef struct ramwin_barrier
    LONG ramwinb_capacity;
 } ramwin_barrier_t;
 
-ramfail_status_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, int capacity_arg);
+ramfail_status_t ramwin_initialize();
+
+ramfail_status_t ramwin_pagesize(size_t *pagesz_arg);
+ramfail_status_t ramwin_mmapgran(size_t *mmapgran_arg);
+ramfail_status_t ramwin_cpucount(size_t *cpucount_arg);
+ramfail_status_t ramwin_commit(char *page_arg);
+ramfail_status_t ramwin_decommit(char *page_arg);
+ramfail_status_t ramwin_reset(char *page_arg);
+ramfail_status_t ramwin_reserve(char **pages_arg);
+ramfail_status_t ramwin_bulkalloc(char **pages_arg);
+ramfail_status_t ramwin_release(char *pages_arg);
+
+ramfail_status_t ramwin_mktlskey(ramwin_tlskey_t *key_arg);
+ramfail_status_t ramwin_rmtlskey(ramwin_tlskey_t key_arg);
+ramfail_status_t ramwin_rcltls(void **value_arg, ramwin_tlskey_t key_arg);
+ramfail_status_t ramwin_stotls(ramwin_tlskey_t key_arg, void *value_arg);
+
+ramfail_status_t ramwin_mkmutex(ramwin_mutex_t *mutex_arg);
+ramfail_status_t ramwin_rmmutex(ramwin_mutex_t *mutex_arg);
+ramfail_status_t ramwin_waitformutex(ramwin_mutex_t *mutex_arg);
+ramfail_status_t ramwin_quitmutex(ramwin_mutex_t *mutex_arg);
+
+ramfail_status_t ramwin_mkthread(ramwin_thread_t *thread_arg, 
+      ramsys_threadmain_t main_arg, void *arg_arg);
+ramfail_status_t ramwin_jointhread(ramfail_status_t *reply_arg,
+      ramwin_thread_t thread_arg);
+
+ramfail_status_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, 
+      int capacity_arg);
+ramfail_status_t ramwin_rmbarrier(ramwin_barrier_t *barrier_arg);
 ramfail_status_t ramwin_waitonbarrier(ramwin_barrier_t *barrier_arg);
 
+ramfail_status_t ramwin_basename(char *dest_arg, size_t len_arg, 
+   const char *pathn_arg);
+
+#define ramsys_initialize ramwin_initialize
 /* virtual memory mapping */
-#  define ramsys_getmemspecs ramwin_getmemspecs
+#define ramsys_pagesize ramwin_pagesize
+#define ramsys_mmapgran ramwin_mmapgran
 #define ramsys_cpucount ramwin_cpucount
-#  define ramsys_reserve ramwin_reserve
-#  define ramsys_commit ramwin_commit
-#  define ramsys_decommit ramwin_decommit
-#  define ramsys_reset ramwin_reset
-#  define ramsys_bulkalloc ramwin_bulkalloc
-#  define ramsys_release ramwin_release
+#define ramsys_reserve ramwin_reserve
+#define ramsys_commit ramwin_commit
+#define ramsys_decommit ramwin_decommit
+#define ramsys_reset ramwin_reset
+#define ramsys_bulkalloc ramwin_bulkalloc
+#define ramsys_release ramwin_release
 /* thread local storage */
 typedef ramwin_tlskey_t ramsys_tlskey_t;
-#  define ramsys_mktlskey ramwin_mktlskey
-#  define ramsys_rmtlskey ramwin_rmtlskey
-#  define ramsys_rcltls ramwin_rcltls
-#  define ramsys_stotls ramwin_stotls
+#define ramsys_mktlskey ramwin_mktlskey
+#define ramsys_rmtlskey ramwin_rmtlskey
+#define ramsys_rcltls ramwin_rcltls
+#define ramsys_stotls ramwin_stotls
 /* mutexes */
 typedef ramwin_mutex_t ramsys_mutex_t;
-#  define ramsys_mkmutex ramwin_mkmutex
-#  define ramsys_rmmutex ramwin_rmmutex
-#  define ramsys_waitformutex ramwin_waitformutex
-#  define ramsys_quitmutex ramwin_quitmutex
+#define ramsys_mkmutex ramwin_mkmutex
+#define ramsys_rmmutex ramwin_rmmutex
+#define ramsys_waitformutex ramwin_waitformutex
+#define ramsys_quitmutex ramwin_quitmutex
 /* threads */
-typedef ramsys_thread_t ramwin_thread_t;
+typedef ramwin_thread_t ramsys_thread_t;
 #define ramsys_mkthread ramwin_mkthread
-#define ramwin_jointhread ramwin_jointhread
+#define ramsys_jointhread ramwin_jointhread
 /* barriers */
 typedef ramwin_barrier_t ramsys_barrier_t;
 #define ramsys_mkbarrier ramwin_mkbarrier
 #define ramsys_rmbarrier ramwin_rmbarrier
 #define ramsys_waitonbarrier ramwin_waitonbarrier
+/* filename manipulation */
+#define RAMSYS_PATH_MAX MAX_PATH
+#define ramsys_basename ramwin_basename
 
 #endif /* RAMSYS_WINDOWS */
 

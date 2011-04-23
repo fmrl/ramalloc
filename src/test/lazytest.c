@@ -63,7 +63,7 @@ static ramfail_status_t runtest(const ramtest_params_t *params_arg);
 static ramfail_status_t runtest2(const ramtest_params_t *params_arg,
       extra_t *extra_arg);
 static ramfail_status_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
-      int threadidx_arg);
+      size_t threadidx_arg);
 static ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
       size_t size_arg, void *extra_arg, int threadidx_arg);
 static ramfail_status_t release(ramtest_allocdesc_t *desc_arg);
@@ -84,7 +84,10 @@ int main(int argc, char *argv[])
       return RAMFAIL_INSANE;
    }
    else
+   {
+      fprintf(stderr, "fail (%d).", e);
       return e;
+   }
 }
 
 ramfail_status_t main2(int argc, char *argv[])
@@ -92,8 +95,9 @@ ramfail_status_t main2(int argc, char *argv[])
    ramtest_params_t testparams;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_RETURN(initdefaults(&testparams));
+   RAMFAIL_RETURN(ramalloc_initialize(NULL, NULL));
 
+   RAMFAIL_RETURN(initdefaults(&testparams));
    e = parseargs(&testparams, argc, argv);
    switch (e)
    {
@@ -138,7 +142,7 @@ ramfail_status_t initdefaults(ramtest_params_t *params_arg)
 }
 
 ramfail_status_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
-      int threadidx_arg)
+      size_t threadidx_arg)
 {
    extra_t *x = NULL;
 
@@ -231,8 +235,6 @@ ramfail_status_t runtest(const ramtest_params_t *params_arg)
    extra_t x = {0};
 
    RAMFAIL_DISALLOWZ(params_arg);
-
-   RAMFAIL_RETURN(ramalloc_initialize(NULL, NULL));
 
    x.e_pools = calloc(params_arg->ramtestp_threadcount,
          sizeof(*x.e_pools));

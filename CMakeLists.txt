@@ -38,20 +38,21 @@ include(CTest)
 
 # the following code sets a default for cache variables (such as 
 # CMAKE_C_FLAGS) that can be changed by the user.
-IF(NOT RAMALLOC_IS_CONFIGURED)
-   # Change default values.
-   # TODO: this won't work for windows.
-   # -Wmissing-braces appears to interfere with C89-defined behavior.
-   set(CMAKE_C_FLAGS "-Wall -Wno-missing-braces")
-
-   # save default value in cache.
-   SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING
-       "contains options always passed to the C compiler." FORCE)
-
-   # there's no longer any need to generate defaults.
-   SET(RAMALLOC_IS_CONFIGURED 1 CACHE INTERNAL
-       "indicates that ramalloc has been configured at least once.")
-ENDIF(NOT RAMALLOC_IS_CONFIGURED)
+if(NOT RAMALLOC_IS_CONFIGURED)
+	# CMake doesn't enable any warnings by default.
+	if(CMAKE_COMPILER_IS_GNUCC)
+		# -Wmissing-braces appears to interfere with C89-defined behavior.
+		set(CMAKE_C_FLAGS "-Wall -Wno-missing-braces")
+	elseif(MSVC)
+		set(CMAKE_C_FLAGS "/W3")
+	endif()
+	# save defaults to cache.
+	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING
+	   "contains options always passed to the C compiler." FORCE)
+	# there's no longer any need to generate defaults.
+	set(RAMALLOC_IS_CONFIGURED 1 CACHE INTERNAL
+	   "indicates that ramalloc has been configured at least once.")
+endif(NOT RAMALLOC_IS_CONFIGURED)
 
 # currently, threads are required to compile ramalloc.
 #
@@ -64,10 +65,20 @@ ENDIF(NOT RAMALLOC_IS_CONFIGURED)
 #	from the build.
 find_package(Threads REQUIRED)
 
-# for Microsoft platforms, i use pstdint to emulate <stdint.h>.
-# new versions can be fetched from 
-# <http://www.azillionmonkeys.com/qed/pstdint.h>.
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/pstdint)
+# on Windows platforms, i have some extra dependencies.
+if(WIN32)
+	# i use pstdint to emulate <stdint.h>. new versions can be fetched from 
+	# <http://www.azillionmonkeys.com/qed/pstdint.h>.
+	# TODO: this may not be necessary for VS2010 and later.
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/pstdint)
+	# i use the BSD implementation of getopt.
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/freebsd/include)
+	set(RAMALLOC_WINDOWS_GETOPT_SOURCES 
+		dep/freebsd/include/getopt.h
+		dep/freebsd/src/getopt.c
+		dep/freebsd/src/getopt_long.c
+		)
+endif(WIN32)
 
 # ramalloc's headers.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -139,6 +150,7 @@ add_executable(slottest
 	src/test/slottest.c
 	src/test/shared/test.c
 	src/test/shared/test.h
+	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(slottest ${RAMALLOC_LIBRARIES})
 add_test(slottest ${EXECUTABLE_OUTPUT_PATH}/slottest)
@@ -147,6 +159,7 @@ add_executable(pgtest
 	src/test/pgtest.c
 	src/test/shared/test.c
 	src/test/shared/test.h
+	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(pgtest ${RAMALLOC_LIBRARIES})
 add_test(pgtest ${EXECUTABLE_OUTPUT_PATH}/pgtest)
@@ -155,6 +168,7 @@ add_executable(algntest
 	src/test/algntest.c
 	src/test/shared/test.c
 	src/test/shared/test.h
+	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(algntest ${RAMALLOC_LIBRARIES})
 add_test(algntest ${EXECUTABLE_OUTPUT_PATH}/algntest)
@@ -163,6 +177,7 @@ add_executable(muxtest
 	src/test/muxtest.c
 	src/test/shared/test.c
 	src/test/shared/test.h
+	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(muxtest ${RAMALLOC_LIBRARIES})
 add_test(muxtest ${EXECUTABLE_OUTPUT_PATH}/muxtest)
@@ -171,20 +186,21 @@ add_executable(lazytest
 	src/test/lazytest.c
 	src/test/shared/parseargs.c
 	src/test/shared/parseargs.h
-	src/test/shared/getopt.h
 	src/test/shared/test.c
 	src/test/shared/test.h
+	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(lazytest ${RAMALLOC_LIBRARIES})
 add_test(lazytest-serial ${EXECUTABLE_OUTPUT_PATH}/lazytest --parallelize=1 
 	--rng-seed=342795249)
 add_test(lazytest-parallel ${EXECUTABLE_OUTPUT_PATH}/lazytest 
-	--parallelize=4)
+	--parallelize=3)
 
 add_executable(paratest
 	src/test/paratest.c
 	src/test/shared/test.c
 	src/test/shared/test.h
+	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(paratest ${RAMALLOC_LIBRARIES})
 add_test(paratest ${EXECUTABLE_OUTPUT_PATH}/paratest)
@@ -193,6 +209,7 @@ add_executable(defaulttest
 	src/test/defaulttest.c
 	src/test/shared/test.c
 	src/test/shared/test.h
+	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(defaulttest ${RAMALLOC_LIBRARIES})
 add_test(defaulttest ${EXECUTABLE_OUTPUT_PATH}/defaulttest)

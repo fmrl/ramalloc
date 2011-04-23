@@ -78,7 +78,7 @@ ramfail_status_t rampara_rmpool(rampara_pool_t *parapool_arg)
 {
    RAMFAIL_DISALLOWZ(parapool_arg);
 
-   RAMFAIL_RETURN(ramtls_rmkey(&parapool_arg->ramparap_tlskey));
+   RAMFAIL_RETURN(ramtls_rmkey(parapool_arg->ramparap_tlskey));
    memset(parapool_arg, 0, sizeof(*parapool_arg));
 
    return RAMFAIL_OK;
@@ -212,12 +212,14 @@ ramfail_status_t rampara_mktls(rampara_tls_t **newtls_arg, rampara_pool_t *parap
 ramfail_status_t rampara_rcltls(rampara_tls_t **tls_arg, rampara_pool_t *parapool_arg)
 {
    rampara_tls_t *tls = NULL;
+   void *p = NULL;
 
    RAMFAIL_DISALLOWZ(tls_arg);
    *tls_arg = NULL;
    RAMFAIL_DISALLOWZ(parapool_arg);
 
-   tls = ramtls_rcl(parapool_arg->ramparap_tlskey);
+   RAMFAIL_RETURN(ramtls_rcl(&p, parapool_arg->ramparap_tlskey));
+   tls = (rampara_tls_t *)p;
    if (NULL == tls)
    {
       /* BUG: the pool is leaked here if ramtls_sto() fails-- also when threads are destroyed. */
