@@ -212,12 +212,17 @@ add_test(paratest-parallel ${EXECUTABLE_OUTPUT_PATH}/paratest
 
 add_executable(defaulttest
 	src/test/defaulttest.c
+	src/test/shared/parseargs.c
+	src/test/shared/parseargs.h
 	src/test/shared/test.c
 	src/test/shared/test.h
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(defaulttest ${RAMALLOC_LIBRARIES})
-add_test(defaulttest ${EXECUTABLE_OUTPUT_PATH}/defaulttest)
+add_test(defaulttest-serial ${EXECUTABLE_OUTPUT_PATH}/defaulttest --defaultllelize=1 
+	--rng-seed=2828559559)
+add_test(defaulttest-parallel ${EXECUTABLE_OUTPUT_PATH}/defaulttest 
+	--defaultllelize=3)
 
 add_executable(compattest
 	src/test/compattest.c

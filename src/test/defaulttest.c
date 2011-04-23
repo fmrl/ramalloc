@@ -31,260 +31,227 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
+#include "shared/parseargs.h"
 #include "shared/test.h"
 #include <ramalloc/ramalloc.h>
 #include <ramalloc/default.h>
 #include <ramalloc/misc.h>
 #include <ramalloc/thread.h>
 #include <ramalloc/barrier.h>
-#include <ramalloc/mtx.h>
 #include <ramalloc/stdint.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
 
-#define ALLOCATION_COUNT 1024 * 100
-#define ALLOCATION_MINSIZE 4
-#define ALLOCATION_MAXSIZE 100
-#define RECLAIMRATIO 2
-#define THREAD_COUNT 4
-#define MALLOC_PERCENTAGE 30
+#define DEFAULT_ALLOCATION_COUNT 1024 * 100
+#define DEFAULT_MINIMUM_ALLOCATION_SIZE 4
+#define DEFAULT_MAXIMUM_ALLOCATION_SIZE 100
+#define DEFAULT_THREAD_COUNT 3
+#define DEFAULT_MALLOC_CHANCE 30
+/* currently, the reclaim ratio cannot be parameterized. */
+#define RECLAIM_RATIO 2
 
-typedef struct allocinfo
+/* currently, i don't need to store extra state to test the default module.
+ * i want to keep this test congruent with other tests, so i chose to put
+ * a placeholder value inside of it instead of removing the struct. */
+typedef struct extra
 {
-   char *ptr;
-   size_t sz;
-   int ramallocflag;
-   rammtx_mutex_t mtx;
-} allocinfo_t;
+   int e_unused;
+} extra_t;
 
-allocinfo_t allocinfos[ALLOCATION_COUNT] = {0};
-size_t sequence[ALLOCATION_COUNT * 2] = {0};
-ramthread_thread_t threads[THREAD_COUNT] = {0};
-rammtx_mutex_t mtx;
-size_t next = 0;
+static ramfail_status_t main2(int argc, char *argv[]);
+static ramfail_status_t initdefaults(ramtest_params_t *params_arg);
+static ramfail_status_t runtest(const ramtest_params_t *params_arg);
+static ramfail_status_t runtest2(const ramtest_params_t *params_arg,
+      extra_t *extra_arg);
+static ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
+      size_t size_arg, void *extra_arg, int threadidx_arg);
+static ramfail_status_t release(ramtest_allocdesc_t *desc_arg);
+static ramfail_status_t query(void **pool_arg, size_t *size_arg,
+      void *ptr_arg);
+static ramfail_status_t flush(void *extra_arg, int threadidx_arg);
+static ramfail_status_t check(void *extra_arg, int threadidx_arg);
 
-static ramfail_status_t fill(char *ptr_arg, size_t sz_arg);
-static ramfail_status_t chkfill(char *ptr_arg, size_t sz_arg);
-static ramfail_status_t inittest();
-static ramfail_status_t testthread(void *arg);
-static ramfail_status_t testthread2(int id_arg);
-static ramfail_status_t getnext(size_t *next_arg);
-static ramfail_status_t dotest();
-
-int main()
+int main(int argc, char *argv[])
 {
-   RAMFAIL_CONFIRM(-1, RAMFAIL_OK == ramalloc_initialize(NULL, NULL));
-   RAMFAIL_CONFIRM(1, RAMFAIL_OK == inittest());
-   RAMFAIL_CONFIRM(2, RAMFAIL_OK == dotest());
-
-   return 0;
-}
-
-ramfail_status_t inittest()
-{
-   size_t i = 0, j = 0;
-
-   memset(allocinfos, 0, sizeof(allocinfos));
-
-   RAMFAIL_RETURN(rammtx_mkmutex(&mtx));
-   for (i = 0; i < ALLOCATION_COUNT; ++i)
-      RAMFAIL_RETURN(rammtx_mkmutex(&allocinfos[i].mtx));
-   /* the sequence array must contain two copies of each index into 'allocinfo'.
-    * the first will represent an allocation. the second a deallocation. */
-   for (i = 0, j = ALLOCATION_COUNT * 2; i < j; ++i)
-      sequence[i] = (i / 2);
-   /* i shuffle the sequence array to ensure a randomized order of operations. */
-   RAMFAIL_RETURN(ramtest_shuffle(sequence, sizeof(sequence[0]), j));
-   return RAMFAIL_OK;
-}
-
-static ramfail_status_t dotest()
-{
-   size_t i = 0;
-   ramfail_status_t e0 = RAMFAIL_OK;
-
-   for (i = 0; i < THREAD_COUNT; ++i)
-   {
-      fprintf(stderr, "[0] starting thread %d...\n", i + 1);
-      RAMFAIL_RETURN(ramthread_mkthread(&threads[i], &testthread, (void *)i));
-      fprintf(stderr, "[0] started thread %d.\n", i + 1);
-   }
-
-   fprintf(stderr, "[0] waiting for threads to finish...\n");
-
-   for (i = 0; i < THREAD_COUNT; ++i)
-   {
-      ramfail_status_t e = RAMFAIL_INSANE;
-
-      RAMFAIL_RETURN(ramthread_join(&e, threads[i]));
-      if (RAMFAIL_OK != e)
-      {
-         fprintf(stderr,
-               "[0] thread %d replied an unexpected failure (%d).\n",
-               i + 1, e);
-         if (RAMFAIL_OK == e0)
-            e0 = e;
-      }
-   }
-
-   if (RAMFAIL_OK != e0)
-      return e0;
-
-   /* now that the threads no longer run, i need to flush them out before
-    * quitting. */
-   fprintf(stderr, "[0] shutting down.\n");
-   for (i = 0; i < THREAD_COUNT; ++i)
-      RAMFAIL_RETURN(ramdefault_flush());
-
-   return RAMFAIL_OK;
-}
-
-ramfail_status_t testthread(void *arg)
-{
-   fprintf(stderr, "[%d] testing...\n", ((int)arg) + 1);
-   return testthread2((int)arg);
-}
-
-ramfail_status_t getnext(size_t *next_arg)
-{
-   size_t i = 0;
-   size_t j = 0;
-
-   RAMFAIL_DISALLOWZ(next_arg);
-
-   j = ALLOCATION_COUNT * 2;
-
-   RAMFAIL_RETURN(rammtx_wait(&mtx));
-   i = next;
-   if (next < j)
-      ++next;
-   RAMFAIL_EPICFAIL(rammtx_quit(&mtx));
-
-   *next_arg = i;
-   return RAMFAIL_OK;
-}
-
-ramfail_status_t testthread2(int id_arg)
-{
-   size_t i = 0;
-   int allocflag = 1;
-   void *nextptr = NULL;
-   uint32_t nextsz = 0;
-   int nextramallocflag = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   while ((RAMFAIL_OK == (e = getnext(&i))) && i < ALLOCATION_COUNT)
+   e = main2(argc, argv);
+   if (RAMFAIL_INPUT == e)
    {
-      allocinfo_t *info = NULL;
-      void *p = NULL;
-      size_t sz = 0;
-      int otherramallocflag = 0;
+      usage(e, argc, argv);
+      ramfail_epicfail("unreachable code.");
+      return RAMFAIL_INSANE;
+   }
+   else
+   {
+      fprintf(stderr, "fail (%d).", e);
+      return e;
+   }
+}
 
-      info = &allocinfos[sequence[i]];
+ramfail_status_t main2(int argc, char *argv[])
+{
+   ramtest_params_t testparams;
+   ramfail_status_t e = RAMFAIL_INSANE;
 
-      /* i don't want to allocate while i'm holding the allocinfo mutex, so i'll
-       * prepare an allocation ahead of time. */
-      if (allocflag)
-      {
-         uint32_t roll = 0;
+   RAMFAIL_RETURN(ramalloc_initialize(NULL, NULL));
 
-         RAMFAIL_RETURN(ramtest_randuint32(&nextsz, ALLOCATION_MINSIZE, ALLOCATION_MAXSIZE));
-         /* i want a certain percentage of allocations to be performed by a different
-          * allocator. */
-         RAMFAIL_RETURN(ramtest_randuint32(&roll, 0, 100));
-         if (roll < MALLOC_PERCENTAGE)
-         {
-            nextptr = malloc(nextsz);
-            nextramallocflag = 0;
-         }
-         else
-         {
-            RAMFAIL_RETURN(ramdefault_acquire(&nextptr, nextsz));
-            nextramallocflag = 1;
-         }
-
-         RAMFAIL_RETURN(fill(nextptr, nextsz));
-      }
-      
-      RAMFAIL_RETURN(rammtx_wait(&info->mtx));
-      /* if there's a pointer stored in 'info->ptr', we'll assume we need to allocate.
-       * otherwise, we need to deallocate it. */
-      if (NULL == info->ptr)
-      {
-         info->ptr = nextptr;
-         info->sz = nextsz;
-         info->ramallocflag = nextramallocflag;
-         /* i signal to the next loop iteration that i'll need a new allocation. */
-         allocflag = 1;
-      }
-      else
-      {
-         p = info->ptr;
-         info->ptr = NULL;
-         sz = info->sz;
-         otherramallocflag = info->ramallocflag;
-      }
-      RAMFAIL_EPICFAIL(rammtx_quit(&info->mtx));
-
-      if (p)
-      {
-         size_t querysz = 0;
-         ramfail_status_t f = RAMFAIL_INSANE;
-
-         RAMFAIL_RETURN(chkfill(p, sz));
-         f = ramdefault_query(&querysz, p);
-         switch (f)
-         {
-         default:
-            RAMFAIL_RETURN(f);
-            return RAMFAIL_INSANE;
-         case RAMFAIL_OK:
-            RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, otherramallocflag);
-            /* the size won't be identical due to the nature of muxpools. it won't smaller though. */
-            RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, querysz >= sz);
-            RAMFAIL_RETURN(ramdefault_discard(p));
-            break;
-         case RAMFAIL_NOTFOUND:
-            RAMFAIL_CONFIRM(RAMFAIL_INSANE, !otherramallocflag);
-            free(p);
-            break;
-         }
-      }
-
-      RAMFAIL_RETURN(ramdefault_check());
+   RAMFAIL_RETURN(initdefaults(&testparams));
+   e = parseargs(&testparams, argc, argv);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+   case RAMFAIL_OK:
+      break;
+   case RAMFAIL_INPUT:
+      return e;
    }
 
+   e = runtest(&testparams);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+   case RAMFAIL_OK:
+      break;
+   case RAMFAIL_INPUT:
+      return e;
+   }
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t initdefaults(ramtest_params_t *params_arg)
+{
+   RAMFAIL_DISALLOWZ(params_arg);
+   memset(params_arg, 0, sizeof(*params_arg));
+
+   params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
+   params_arg->ramtestp_threadcount = DEFAULT_THREAD_COUNT;
+   /* i would like 30% of the allocations to come from malloc() instead
+    * of the allocator i'm testing. */
+   params_arg->ramtestp_mallocchance = DEFAULT_MALLOC_CHANCE;
+   /* i'm going to test a narrow band of allocations to exercise the
+    * allocator as deeply as possible. */
+   params_arg->ramtestp_minsize = DEFAULT_MINIMUM_ALLOCATION_SIZE;
+   params_arg->ramtestp_maxsize = DEFAULT_MAXIMUM_ALLOCATION_SIZE;
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
+      size_t size_arg, void *extra_arg, int threadidx_arg)
+{
+   void *p = NULL;
+
+   RAMFAIL_DISALLOWZ(desc_arg);
+   memset(desc_arg, 0, sizeof(*desc_arg));
+   RAMFAIL_DISALLOWZ(size_arg);
+
+   RAMFAIL_RETURN(ramdefault_acquire(&p, size_arg));
+   desc_arg->ramtestad_ptr = (char *)p;
+   /* the default module doesn't use explicit pool instances. i only need
+    * to note whether i'm using the pool or not. i shall use the value of
+    * 1 to indicate this. */
+   desc_arg->ramtestad_pool = (void *)1;
+   desc_arg->ramtestad_sz = size_arg;
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t release(ramtest_allocdesc_t *desc_arg)
+{
+   RAMFAIL_DISALLOWZ(desc_arg);
+
+   RAMFAIL_RETURN(ramdefault_discard(desc_arg->ramtestad_ptr));
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg)
+{
+   ramfail_status_t e = RAMFAIL_INSANE;
+
+   RAMFAIL_DISALLOWZ(pool_arg);
+   *pool_arg = NULL;
+
+   e = ramdefault_query(size_arg, ptr_arg);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+      return RAMFAIL_INSANE;
+   case RAMFAIL_OK:
+      *pool_arg = (void *)1;
+      return RAMFAIL_OK;
+   case RAMFAIL_NOTFOUND:
+      return e;
+   }
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t flush(void *extra_arg, int threadidx_arg)
+{
    RAMFAIL_RETURN(ramdefault_flush());
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t check(void *extra_arg, int threadidx_arg)
+{
    RAMFAIL_RETURN(ramdefault_check());
 
    return RAMFAIL_OK;
 }
 
-ramfail_status_t fill(char *ptr_arg, size_t sz_arg)
+ramfail_status_t runtest(const ramtest_params_t *params_arg)
 {
-   RAMFAIL_DISALLOWZ(ptr_arg);
-   RAMFAIL_DISALLOWZ(sz_arg);
+   ramfail_status_t e = RAMFAIL_INSANE;
+   extra_t x = {0};
 
-   memset(ptr_arg, sz_arg & 0xff, sz_arg);
+   RAMFAIL_DISALLOWZ(params_arg);
+
+   e = runtest2(params_arg, &x);
+   RAMFAIL_RETURN(e);
 
    return RAMFAIL_OK;
 }
 
-
-ramfail_status_t chkfill(char *ptr_arg, size_t sz_arg)
+ramfail_status_t runtest2(const ramtest_params_t *params_arg,
+      extra_t *extra_arg)
 {
-   char *p = NULL, *z = NULL;
+   ramtest_params_t testparams = {0};
 
-   RAMFAIL_DISALLOWZ(ptr_arg);
-   RAMFAIL_DISALLOWZ(sz_arg);
+   testparams = *params_arg;
+   /* i am responsible for policing the minimum and maximum allocation
+    * size here. */
+   if (testparams.ramtestp_minsize < sizeof(void *) ||
+         testparams.ramtestp_maxsize < sizeof(void *))
+   {
+      fprintf(stderr, "you cannot specify a size smaller than %u bytes.\n",
+            sizeof(void *));
+      return RAMFAIL_INPUT;
+   }
+   if (testparams.ramtestp_minsize > testparams.ramtestp_maxsize)
+   {
+      fprintf(stderr,
+            "please specify a minimum size (%u bytes) that is smaller than "
+            "or equal to the maximum (%u bytes).\n",
+            testparams.ramtestp_minsize, testparams.ramtestp_maxsize);
+      return RAMFAIL_INPUT;
+   }
+   /* TODO: how do i determine the maximum allocation size ahead of time? */
+   testparams.ramtestp_extra = extra_arg;
+   testparams.ramtestp_acquire = &acquire;
+   testparams.ramtestp_release = &release;
+   testparams.ramtestp_query = &query;
+   testparams.ramtestp_flush = &flush;
+   testparams.ramtestp_check = &check;
 
-   for (p = ptr_arg, z = ptr_arg + sz_arg; 
-      p < z && ((char)(sz_arg & 0xff)) == *p; ++p)
-      continue;
-
-   if (p != z)
-      return RAMFAIL_CORRUPT;
+   RAMFAIL_RETURN(ramtest_test(&testparams));
 
    return RAMFAIL_OK;
 }
