@@ -166,12 +166,19 @@ add_test(pgtest ${EXECUTABLE_OUTPUT_PATH}/pgtest)
 
 add_executable(algntest
 	src/test/algntest.c
+	src/test/shared/parseargs.c
+	src/test/shared/parseargs.h
 	src/test/shared/test.c
 	src/test/shared/test.h
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(algntest ${RAMALLOC_LIBRARIES})
-add_test(algntest ${EXECUTABLE_OUTPUT_PATH}/algntest)
+add_test(algntest-8 ${EXECUTABLE_OUTPUT_PATH}/algntest
+	--smallest=8 --largest=8
+	--rng-seed=2426525316)
+add_test(algntest-128 ${EXECUTABLE_OUTPUT_PATH}/algntest
+	--smallest=128 --largest=128
+	--rng-seed=2694545209)
 
 add_executable(muxtest
 	src/test/muxtest.c

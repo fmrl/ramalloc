@@ -96,7 +96,7 @@ ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
    uint32_t n = 0;
 
    RAMFAIL_DISALLOWZ(result_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, n0_arg <= n1_arg);
+   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, n0_arg < n1_arg);
 
    /* this assertion tests the boundaries of the scaling formula. */
    assert(RAMTEST_RANDUINT32(0, n0_arg, n1_arg) >= n0_arg);
@@ -485,7 +485,7 @@ ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
 
    RAMFAIL_RETURN(ramtest_randuint32(&desc.ramtestad_sz,
          test_arg->ramtestt_params.ramtestp_minsize,
-         test_arg->ramtestt_params.ramtestp_maxsize));
+         test_arg->ramtestt_params.ramtestp_maxsize + 1));
    /* i want a certain percentage of allocations to be performed by
     * an alternate allocator. */
    RAMFAIL_RETURN(ramtest_randuint32(&roll, 0, 100));
@@ -524,7 +524,8 @@ ramfail_status_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
    RAMFAIL_RETURN(ramtest_chkfill(ptrdesc_arg->ramtestad_ptr,
          ptrdesc_arg->ramtestad_sz));
    e = test_arg->ramtestt_params.ramtestp_query(&pool, &sz,
-         ptrdesc_arg->ramtestad_ptr);
+         ptrdesc_arg->ramtestad_ptr,
+         test_arg->ramtestt_params.ramtestp_extra);
    switch (e)
    {
    default:

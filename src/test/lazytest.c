@@ -68,7 +68,7 @@ static ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
       size_t size_arg, void *extra_arg, int threadidx_arg);
 static ramfail_status_t release(ramtest_allocdesc_t *desc_arg);
 static ramfail_status_t query(void **pool_arg, size_t *size_arg,
-      void *ptr_arg);
+      void *ptr_arg, void *extra_arg);
 static ramfail_status_t flush(void *extra_arg, int threadidx_arg);
 static ramfail_status_t check(void *extra_arg, int threadidx_arg);
 
@@ -185,13 +185,15 @@ ramfail_status_t release(ramtest_allocdesc_t *desc_arg)
    return RAMFAIL_OK;
 }
 
-ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg)
+ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
+      void *extra_arg)
 {
    ramlazy_pool_t *pool = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
 
    RAMFAIL_DISALLOWZ(pool_arg);
    *pool_arg = NULL;
+   RAMFAIL_DISALLOWZ(extra_arg);
 
    e = ramlazy_query(&pool, size_arg, ptr_arg);
    switch (e)

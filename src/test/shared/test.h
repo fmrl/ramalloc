@@ -49,7 +49,7 @@ typedef ramfail_status_t (*ramtest_acquire_t)(ramtest_allocdesc_t *desc_arg,
 typedef ramfail_status_t
       (*ramtest_release_t)(ramtest_allocdesc_t *desc_arg);
 typedef ramfail_status_t (*ramtest_query_t)(void **pool_arg,
-      size_t *size_arg, void *ptr_arg);
+      size_t *size_arg, void *ptr_arg, void *extra_arg);
 typedef ramfail_status_t (*ramtest_flush_t)(void *extra_arg,
       int threadidx_arg);
 typedef ramfail_status_t (*ramtest_check_t)(void *extra_arg,
