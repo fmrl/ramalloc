@@ -77,6 +77,8 @@ int main(int argc, char *argv[])
    ramfail_status_t e = RAMFAIL_INSANE;
 
    e = main2(argc, argv);
+   if (RAMFAIL_OK != e)
+      fprintf(stderr, "fail (%d).", e);
    if (RAMFAIL_INPUT == e)
    {
       usage(e, argc, argv);
@@ -84,10 +86,7 @@ int main(int argc, char *argv[])
       return RAMFAIL_INSANE;
    }
    else
-   {
-      fprintf(stderr, "fail (%d).", e);
       return e;
-   }
 }
 
 ramfail_status_t main2(int argc, char *argv[])
