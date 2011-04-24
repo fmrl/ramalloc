@@ -260,10 +260,14 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
          break;
       }
 
-      case '?':
+      case ':':   /* missing argument. */
+      case '?':   /* unrecognized option */
+         usage(RAMFAIL_INPUT, argc_arg, argv_arg);
+         return RAMFAIL_INSANE;
+
       case 'h':
          usage(RAMFAIL_OK, argc_arg, argv_arg);
-         break;
+         return RAMFAIL_INSANE;
       }
   }
 
