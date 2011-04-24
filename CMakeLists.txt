@@ -175,12 +175,15 @@ add_test(algntest ${EXECUTABLE_OUTPUT_PATH}/algntest)
 
 add_executable(muxtest
 	src/test/muxtest.c
+	src/test/shared/parseargs.c
+	src/test/shared/parseargs.h
 	src/test/shared/test.c
 	src/test/shared/test.h
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(muxtest ${RAMALLOC_LIBRARIES})
-add_test(muxtest ${EXECUTABLE_OUTPUT_PATH}/muxtest)
+add_test(muxtest ${EXECUTABLE_OUTPUT_PATH}/muxtest
+	--rng-seed=2596644741)
 
 add_executable(lazytest
 	src/test/lazytest.c
