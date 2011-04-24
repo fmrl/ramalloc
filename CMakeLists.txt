@@ -229,10 +229,10 @@ add_executable(defaulttest
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(defaulttest ${RAMALLOC_LIBRARIES})
-add_test(defaulttest-serial ${EXECUTABLE_OUTPUT_PATH}/defaulttest --defaultllelize=1 
-	--rng-seed=2828559559)
+add_test(defaulttest-serial ${EXECUTABLE_OUTPUT_PATH}/defaulttest 
+	--parallelize=1	--rng-seed=2828559559)
 add_test(defaulttest-parallel ${EXECUTABLE_OUTPUT_PATH}/defaulttest 
-	--defaultllelize=3)
+	--parallelize=3)
 
 add_executable(compattest
 	src/test/compattest.c
