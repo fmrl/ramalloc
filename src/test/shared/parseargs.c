@@ -372,13 +372,13 @@ ramfail_status_t parsethreadcount(size_t *threadcount_arg)
       if (n > toomany)
       {
          fprintf(stderr, "you cannot specify more than %u parallel "
-               "operations.", toomany);
+               "operations.\n", toomany);
          return RAMFAIL_INPUT;
       }
       else if (n < 1)
       {
          fprintf(stderr, "you cannot specify fewer than 1 parallel "
-               "operations.");
+               "operations.\n");
          return RAMFAIL_INPUT;
 
       }

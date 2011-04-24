@@ -231,9 +231,8 @@ ramfail_status_t runtest(const ramtest_params_t *params_arg)
    RAMFAIL_DISALLOWZ(params_arg);
 
    e = runtest2(params_arg, &x);
-   RAMFAIL_RETURN(e);
 
-   return RAMFAIL_OK;
+   return e;
 }
 
 ramfail_status_t runtest2(const ramtest_params_t *params_arg,

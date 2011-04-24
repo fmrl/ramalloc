@@ -241,9 +241,8 @@ ramfail_status_t runtest(const ramtest_params_t *params_arg)
    x.e_poolcount = params_arg->ramtestp_threadcount;
    e = runtest2(params_arg, &x);
    free(x.e_pools);
-   RAMFAIL_RETURN(e);
 
-   return RAMFAIL_OK;
+   return e;
 }
 
 ramfail_status_t runtest2(const ramtest_params_t *params_arg,
