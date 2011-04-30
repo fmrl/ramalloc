@@ -157,12 +157,15 @@ add_test(slottest ${EXECUTABLE_OUTPUT_PATH}/slottest)
 
 add_executable(pgtest
 	src/test/pgtest.c
+	src/test/shared/parseargs.c
+	src/test/shared/parseargs.h
 	src/test/shared/test.c
 	src/test/shared/test.h
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(pgtest ${RAMALLOC_LIBRARIES})
-add_test(pgtest ${EXECUTABLE_OUTPUT_PATH}/pgtest)
+add_test(pgtest ${EXECUTABLE_OUTPUT_PATH}/pgtest
+	--allocations=10240 --rng-seed=1342375263)
 
 add_executable(algntest
 	src/test/algntest.c
