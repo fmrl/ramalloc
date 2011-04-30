@@ -31,16 +31,21 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
+#include "shared/parseargs.h"
 #include "shared/test.h"
 #include <ramalloc/ramalloc.h>
-#include <ramalloc/slot.h>
+#include <ramalloc/algn.h>
 #include <ramalloc/misc.h>
-#include <ramalloc/sig.h>
-#include <ramalloc/meta.h>
+#include <ramalloc/thread.h>
+#include <ramalloc/barrier.h>
 #include <ramalloc/stdint.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <memory.h>
 
-#define ALLOCATION_COUNT 10000
+#define DEFAULT_ALLOCATION_COUNT 1024 * 100
+#define THREAD_COUNT 1
+#define MALLOC_CHANCE 0
 #define NODE_CAPACITY 10
 
 struct node;
@@ -58,86 +63,250 @@ typedef struct node
    slot_t n_slots[NODE_CAPACITY];
 } node_t;
 
+typedef struct extra
+{
+   ramslot_pool_t e_thepool;
+} extra_t;
+
 #define ALLOCATION_SIZE sizeof(slot_t)
-#define NODE_SIZE (ALLOCATION_SIZE * NODE_CAPACITY)
 
-static ramfail_status_t sequentialtest();
-static ramfail_status_t randomtest();
-static ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg);
-static ramfail_status_t rmnode(ramslot_node_t *node_arg, ramslot_pool_t *pool_arg);
+static ramfail_status_t main2(int argc, char *argv[]);
+static ramfail_status_t initdefaults(ramtest_params_t *params_arg);
+static ramfail_status_t runtest(const ramtest_params_t *params_arg);
+static ramfail_status_t runtest2(const ramtest_params_t *params_arg,
+      extra_t *extra_arg);
+static ramfail_status_t getpool(ramslot_pool_t **pool_arg, void *extra_arg,
+      size_t threadidx_arg);
+static ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
+      size_t size_arg, void *extra_arg, int threadidx_arg);
+static ramfail_status_t release(ramtest_allocdesc_t *desc_arg);
+static ramfail_status_t query(void **pool_arg, size_t *size_arg,
+      void *ptr_arg, void *extra_arg);
+static ramfail_status_t flush(void *extra_arg, int threadidx_arg);
+static ramfail_status_t check(void *extra_arg, int threadidx_arg);
+static ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg,
+      ramslot_pool_t *pool_arg);
+static ramfail_status_t rmnode(ramslot_node_t *node_arg,
+      ramslot_pool_t *pool_arg);
 static ramfail_status_t initslot(void *slot_arg, ramslot_node_t *node_arg);
-static ramfail_status_t release(void *ptr_arg);
-
 
 static ramsig_signature_t thesig;
 
-int main()
-{
-   RAMFAIL_CONFIRM(-1, RAMFAIL_OK == ramalloc_initialize(NULL, NULL));
-   RAMFAIL_CONFIRM(1, RAMFAIL_OK == sequentialtest());
-   RAMFAIL_CONFIRM(2, RAMFAIL_OK == randomtest());
 
-   return 0;
+int main(int argc, char *argv[])
+{
+   ramfail_status_t e = RAMFAIL_INSANE;
+
+   e = main2(argc, argv);
+   if (RAMFAIL_OK != e)
+      fprintf(stderr, "fail (%d).", e);
+   if (RAMFAIL_INPUT == e)
+   {
+      usage(e, argc, argv);
+      ramfail_epicfail("unreachable code.");
+      return RAMFAIL_INSANE;
+   }
+   else
+      return e;
 }
 
-ramfail_status_t sequentialtest()
+ramfail_status_t main2(int argc, char *argv[])
 {
-   void *(p[ALLOCATION_COUNT]) = {0};
-   size_t i = 0;
-   ramslot_pool_t pool;
+   ramtest_params_t testparams;
+   ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_RETURN(ramsig_init(&thesig, "SEQU"));
-   RAMFAIL_RETURN(ramslot_mkpool(&pool, ALLOCATION_SIZE, NODE_CAPACITY, &mknode, &rmnode, &initslot));
-   RAMFAIL_RETURN(ramslot_chkpool(&pool));
-   for (i = 0; i < ALLOCATION_COUNT; ++i)
+   RAMFAIL_RETURN(ramalloc_initialize(NULL, NULL));
+
+   RAMFAIL_RETURN(initdefaults(&testparams));
+   e = parseargs(&testparams, argc, argv);
+   switch (e)
    {
-      RAMFAIL_RETURN(ramslot_acquire(&p[i], &pool));
-      RAMFAIL_RETURN(ramslot_chkpool(&pool));
+   default:
+      RAMFAIL_RETURN(e);
+   case RAMFAIL_OK:
+      break;
+   case RAMFAIL_INPUT:
+      return e;
    }
 
-   for (i = 0; i < ALLOCATION_COUNT; ++i)
+   e = runtest(&testparams);
+   switch (e)
    {
-      RAMFAIL_RETURN(release(p[i]));
-      RAMFAIL_RETURN(ramslot_chkpool(&pool));
+   default:
+      RAMFAIL_RETURN(e);
+   case RAMFAIL_OK:
+      break;
+   case RAMFAIL_INPUT:
+      return e;
    }
 
    return RAMFAIL_OK;
 }
 
-ramfail_status_t randomtest()
+ramfail_status_t initdefaults(ramtest_params_t *params_arg)
 {
-   void *(p[ALLOCATION_COUNT]) = {0};
-   size_t idx[ALLOCATION_COUNT] = {0};
-   size_t i = 0;
-   ramslot_pool_t pool;
+   RAMFAIL_DISALLOWZ(params_arg);
+   memset(params_arg, 0, sizeof(*params_arg));
 
-   srand(0/*(unsigned int)time(0)*/);
-
-   for (i = 0; i < ALLOCATION_COUNT; ++i)
-      idx[i] = i;
-   RAMFAIL_RETURN(ramtest_shuffle(idx, sizeof(idx[0]), ALLOCATION_COUNT));
-
-   RAMFAIL_RETURN(ramsig_init(&thesig, "RAND"));
-   RAMFAIL_RETURN(ramslot_mkpool(&pool, ALLOCATION_SIZE, NODE_CAPACITY, &mknode, &rmnode, &initslot));
-   RAMFAIL_RETURN(ramslot_chkpool(&pool));
-   for (i = 0; i < ALLOCATION_COUNT; ++i)
-   {
-      RAMFAIL_RETURN(ramslot_acquire(&p[i], &pool));
-      RAMFAIL_RETURN(ramslot_chkpool(&pool));
-   }
-
-   for (i = 0; i < ALLOCATION_COUNT; ++i)
-   {
-      RAMFAIL_RETURN(release(p[i]));
-      RAMFAIL_RETURN(ramslot_chkpool(&pool));
-   }
+   params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
+   params_arg->ramtestp_threadcount = THREAD_COUNT;
+   /* i would like 30% of the allocations to come from malloc() instead
+    * of the allocator i'm testing. */
+   params_arg->ramtestp_mallocchance = MALLOC_CHANCE;
+   /* i'm going to test a narrow band of allocations to exercise the
+    * allocator as deeply as possible. */
+   params_arg->ramtestp_minsize = ALLOCATION_SIZE;
+   params_arg->ramtestp_maxsize = ALLOCATION_SIZE;
 
    return RAMFAIL_OK;
 }
 
+ramfail_status_t getpool(ramslot_pool_t **pool_arg, void *extra_arg,
+      size_t threadidx_arg)
+{
+   extra_t *x = NULL;
 
+   RAMFAIL_DISALLOWZ(pool_arg);
+   *pool_arg = NULL;
+   RAMFAIL_DISALLOWZ(extra_arg);
+   x = (extra_t *)extra_arg;
+   RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg >= 0);
 
-ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg)
+   *pool_arg = &x->e_thepool;
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
+      size_t size_arg, void *extra_arg, int threadidx_arg)
+{
+   ramslot_pool_t *pool = NULL;
+   void *p = NULL;
+
+   RAMFAIL_DISALLOWZ(desc_arg);
+   memset(desc_arg, 0, sizeof(*desc_arg));
+   RAMFAIL_DISALLOWZ(size_arg);
+
+   RAMFAIL_RETURN(getpool(&pool, extra_arg, threadidx_arg));
+   RAMFAIL_RETURN(ramslot_acquire(&p, pool));
+   desc_arg->ramtestad_ptr = (char *)p;
+   desc_arg->ramtestad_pool = pool;
+   desc_arg->ramtestad_sz = size_arg;
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t release(ramtest_allocdesc_t *desc_arg)
+{
+   slot_t *s = NULL;
+
+   RAMFAIL_DISALLOWZ(desc_arg);
+
+   s = (slot_t *)desc_arg->ramtestad_ptr;
+   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, 0 == RAMSIG_CMP(s->s_sig, thesig));
+   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, s->s_value == s - s->s_node->n_slots);
+   RAMFAIL_RETURN(ramslot_release(s, &s->s_node->n_slotnode));
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
+      void *extra_arg)
+{
+   extra_t *x = NULL;
+
+   RAMFAIL_DISALLOWZ(pool_arg);
+   *pool_arg = NULL;
+   RAMFAIL_DISALLOWZ(extra_arg);
+
+   x = (extra_t *)extra_arg;
+   /* page pools don't support the query option, so i emulate it by
+    * returning the pointer stored in the extra info. */
+   *pool_arg = &x->e_thepool;
+   RAMFAIL_RETURN(ramslot_getgranularity(size_arg, &x->e_thepool));
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t flush(void *extra_arg, int threadidx_arg)
+{
+   /* algn pools don't support the flush operation. */
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t check(void *extra_arg, int threadidx_arg)
+{
+   ramslot_pool_t *pool = NULL;
+
+   RAMFAIL_RETURN(getpool(&pool, extra_arg, threadidx_arg));
+   RAMFAIL_RETURN(ramslot_chkpool(pool));
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t runtest(const ramtest_params_t *params_arg)
+{
+   ramfail_status_t e = RAMFAIL_INSANE;
+   extra_t x = {0};
+
+   RAMFAIL_DISALLOWZ(params_arg);
+
+   e = runtest2(params_arg, &x);
+
+   return e;
+}
+
+ramfail_status_t runtest2(const ramtest_params_t *params_arg,
+      extra_t *extra_arg)
+{
+   ramtest_params_t testparams = {0};
+
+   testparams = *params_arg;
+
+   if (ALLOCATION_SIZE != testparams.ramtestp_maxsize ||
+         ALLOCATION_SIZE != testparams.ramtestp_minsize)
+   {
+      fprintf(stderr,
+            "warning: this test doesn't support customized sizes. i will "
+            "use the predetermined size (%u bytes) for all "
+            "allocations.\n", ALLOCATION_SIZE);
+      testparams.ramtestp_maxsize = ALLOCATION_SIZE;
+      testparams.ramtestp_minsize = ALLOCATION_SIZE;
+   }
+   /* the pgpool doesn't support multi-threaded access. */
+   if (testparams.ramtestp_threadcount > 1)
+   {
+      fprintf(stderr,
+            "the --parallelize option is not supported in this test.\n");
+      return RAMFAIL_INPUT;
+   }
+   /* the pgpool is unable to detect whether it allocated a given
+    * object. */
+   if (testparams.ramtestp_mallocchance != 0)
+   {
+      fprintf(stderr,
+            "the --mallocchance option is not supported in this test.\n");
+      return RAMFAIL_INPUT;
+   }
+
+   testparams.ramtestp_nofill = 1;
+
+   testparams.ramtestp_extra = extra_arg;
+   testparams.ramtestp_acquire = &acquire;
+   testparams.ramtestp_release = &release;
+   testparams.ramtestp_query = &query;
+   testparams.ramtestp_flush = &flush;
+   testparams.ramtestp_check = &check;
+
+   RAMFAIL_RETURN(ramsig_init(&thesig, "TEST"));
+   RAMFAIL_RETURN(ramslot_mkpool(&extra_arg->e_thepool, ALLOCATION_SIZE,
+         NODE_CAPACITY, &mknode, &rmnode, &initslot));
+
+   RAMFAIL_RETURN(ramtest_test(&testparams));
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg,
+      ramslot_pool_t *pool_arg)
 {
    node_t *node = NULL;
 
@@ -181,20 +350,6 @@ ramfail_status_t initslot(void *slot_arg, ramslot_node_t *node_arg)
    slot->s_sig = thesig;
    slot->s_node = node;
    slot->s_value = slot - node->n_slots;
-
-   return RAMFAIL_OK;
-}
-
-ramfail_status_t release(void *ptr_arg)
-{
-   slot_t *s = NULL;
-
-   RAMFAIL_DISALLOWZ(ptr_arg);
-
-   s = (slot_t *)ptr_arg;
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, 0 == RAMSIG_CMP(s->s_sig, thesig));
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, s->s_value == s - s->s_node->n_slots);
-   RAMFAIL_RETURN(ramslot_release(s, &s->s_node->n_slotnode));
 
    return RAMFAIL_OK;
 }

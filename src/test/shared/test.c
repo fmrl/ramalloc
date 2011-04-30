@@ -501,7 +501,8 @@ ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
             threadidx_arg));
    }
 
-   RAMFAIL_RETURN(ramtest_fill(desc.ramtestad_ptr, desc.ramtestad_sz));
+   if (!test_arg->ramtestt_params.ramtestp_nofill)
+      RAMFAIL_RETURN(ramtest_fill(desc.ramtestad_ptr, desc.ramtestad_sz));
 
    *newptr_arg = desc;
    return RAMFAIL_OK;
@@ -521,8 +522,11 @@ ramfail_status_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
    RAMFAIL_CONFIRM(RAMFAIL_RANGE,
          threadidx_arg < test_arg->ramtestt_params.ramtestp_threadcount);
 
-   RAMFAIL_RETURN(ramtest_chkfill(ptrdesc_arg->ramtestad_ptr,
-         ptrdesc_arg->ramtestad_sz));
+   if (!test_arg->ramtestt_params.ramtestp_nofill)
+   {
+      RAMFAIL_RETURN(ramtest_chkfill(ptrdesc_arg->ramtestad_ptr,
+            ptrdesc_arg->ramtestad_sz));
+   }
    e = test_arg->ramtestt_params.ramtestp_query(&pool, &sz,
          ptrdesc_arg->ramtestad_ptr,
          test_arg->ramtestt_params.ramtestp_extra);

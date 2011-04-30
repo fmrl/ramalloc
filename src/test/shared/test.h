@@ -71,6 +71,7 @@ typedef struct ramtest_params
    int ramtestp_dryrun;
    unsigned int ramtestp_rngseed;
    int ramtestp_userngseed;
+   int ramtestp_nofill;
 } ramtest_params_t;
 
 ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,

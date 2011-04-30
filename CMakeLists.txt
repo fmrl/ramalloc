@@ -148,12 +148,15 @@ set(RAMALLOC_LIBRARIES ramalloc ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(slottest
 	src/test/slottest.c
+	src/test/shared/parseargs.c
+	src/test/shared/parseargs.h
 	src/test/shared/test.c
 	src/test/shared/test.h
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(slottest ${RAMALLOC_LIBRARIES})
-add_test(slottest ${EXECUTABLE_OUTPUT_PATH}/slottest)
+add_test(slottest ${EXECUTABLE_OUTPUT_PATH}/slottest
+	--rng-seed=1564740528)
 
 add_executable(pgtest
 	src/test/pgtest.c
