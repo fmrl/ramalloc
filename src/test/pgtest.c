@@ -44,13 +44,6 @@
 #include <memory.h>
 
 #define DEFAULT_ALLOCATION_COUNT 1024 * 100
-/* the size of the allocation in this test is determined by the hardware
- * page size, so these values don't have much meaning. */
-/* TODO: clean this up by detecting the proper size by default. */
-#define DEFAULT_MINIMUM_ALLOCATION_SIZE 0
-#define DEFAULT_MAXIMUM_ALLOCATION_SIZE 0
-#define DEFAULT_THREAD_COUNT 1
-#define DEFAULT_MALLOC_CHANCE 0
 
 typedef struct extra
 {
@@ -128,14 +121,14 @@ ramfail_status_t initdefaults(ramtest_params_t *params_arg)
    memset(params_arg, 0, sizeof(*params_arg));
 
    params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
-   params_arg->ramtestp_threadcount = DEFAULT_THREAD_COUNT;
-   /* i would like 30% of the allocations to come from malloc() instead
-    * of the allocator i'm testing. */
-   params_arg->ramtestp_mallocchance = DEFAULT_MALLOC_CHANCE;
-   /* i'm going to test a narrow band of allocations to exercise the
-    * allocator as deeply as possible. */
-   params_arg->ramtestp_minsize = DEFAULT_MINIMUM_ALLOCATION_SIZE;
-   params_arg->ramtestp_maxsize = DEFAULT_MAXIMUM_ALLOCATION_SIZE;
+   /* the page pool doesn't support parallelized access. */
+   params_arg->ramtestp_threadcount = 1;
+   /* the page pool doesn't detect detection of foreign pointers. */
+   params_arg->ramtestp_mallocchance = 0;
+   /* the allocation size has to be determined from the hardware 
+    * page size, so i set these to 0 for now. */
+   params_arg->ramtestp_minsize = 0;
+   params_arg->ramtestp_maxsize = 0;
 
    return RAMFAIL_OK;
 }

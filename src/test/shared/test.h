@@ -81,4 +81,7 @@ ramfail_status_t ramtest_shuffle(void *array_arg, size_t size_arg,
 
 ramfail_status_t ramtest_test(const ramtest_params_t *params_arg);
 
+ramfail_status_t ramtest_defaultthreadcount(size_t *count_arg);
+ramfail_status_t ramtest_maxthreadcount(size_t *count_arg);
+
 #endif /* RAMTEST_H_IS_INCLUDED */

@@ -157,10 +157,10 @@ ramfail_status_t ramtest_inittest2(ramtest_test_t *test_arg,
 {
    size_t i = 0;
    size_t seqlen = 0;
+   size_t maxthreads = 0;
 
    RAMFAIL_DISALLOWZ(params_arg);
    RAMFAIL_DISALLOWZ(params_arg->ramtestp_alloccount);
-   RAMFAIL_DISALLOWZ(params_arg->ramtestp_threadcount);
    RAMFAIL_CONFIRM(RAMFAIL_RANGE, params_arg->ramtestp_minsize > 0);
    RAMFAIL_CONFIRM(RAMFAIL_RANGE,
          params_arg->ramtestp_minsize <= params_arg->ramtestp_maxsize);
@@ -172,7 +172,16 @@ ramfail_status_t ramtest_inittest2(ramtest_test_t *test_arg,
    /* *params_arg->ramtestp_flush* is allowed to be NULL. */
    RAMFAIL_DISALLOWZ(params_arg->ramtestp_check);
 
+   RAMFAIL_RETURN(ramtest_maxthreadcount(&maxthreads));
+   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED,
+         params_arg->ramtestp_threadcount <= maxthreads);
+
    test_arg->ramtestt_params = *params_arg;
+   if (0 == test_arg->ramtestt_params.ramtestp_threadcount)
+   {
+      RAMFAIL_RETURN(ramtest_defaultthreadcount(
+            &test_arg->ramtestt_params.ramtestp_threadcount));
+   }
    test_arg->ramtestt_records =
          calloc(test_arg->ramtestt_params.ramtestp_alloccount,
          sizeof(*test_arg->ramtestt_records));
@@ -243,8 +252,13 @@ ramfail_status_t ramtest_describe(FILE *out_arg,
    fprintf(out_arg, "%u allocation(s) (and corresponding "
          "deallocations).\n",
          params_arg->ramtestp_alloccount);
-   fprintf(out_arg, "%u parallel operation(s) allowed.\n",
-         params_arg->ramtestp_threadcount);
+   if (1 == params_arg->ramtestp_threadcount)
+      fprintf(out_arg, "this test will not be parallelized.\n");
+   else
+   {
+      fprintf(out_arg, "%u parallel operation(s) allowed.\n",
+            params_arg->ramtestp_threadcount);
+   }
    fprintf(out_arg, "%d%% of the allocations will be managed by malloc() "
          "and free().\n", params_arg->ramtestp_mallocchance);
    fprintf(out_arg, "allocations will not be smaller than %u bytes.\n",
@@ -576,6 +590,37 @@ ramfail_status_t ramtest_chkfill(char *ptr_arg, size_t sz_arg)
 
    if (p != z)
       return RAMFAIL_CORRUPT;
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramtest_defaultthreadcount(size_t *count_arg)
+{
+   size_t cpucount = 0;
+
+   RAMFAIL_DISALLOWZ(count_arg);
+   *count_arg = 0;
+
+   RAMFAIL_RETURN(ramsys_cpucount(&cpucount));
+   /* the default level of parallelism shall be 2.5 * the number of CPUs
+    * detected on the system. tests that only support single-threaded
+    * configurations will want to set this parameter in advance. */
+   *count_arg = cpucount * 2.5;
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramtest_maxthreadcount(size_t *count_arg)
+{
+   size_t cpucount = 0;
+
+   RAMFAIL_DISALLOWZ(count_arg);
+   *count_arg = 0;
+
+   RAMFAIL_RETURN(ramsys_cpucount(&cpucount));
+   /* if the thread count is greater than 5 times the number of CPU's,
+    * i'm going to disallow it. */
+   *count_arg = cpucount * 5;
 
    return RAMFAIL_OK;
 }

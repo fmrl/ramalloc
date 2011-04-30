@@ -209,8 +209,7 @@ add_executable(lazytest
 target_link_libraries(lazytest ${RAMALLOC_LIBRARIES})
 add_test(lazytest-serial ${EXECUTABLE_OUTPUT_PATH}/lazytest --parallelize=1 
 	--rng-seed=342795249)
-add_test(lazytest-parallel ${EXECUTABLE_OUTPUT_PATH}/lazytest 
-	--parallelize=3)
+add_test(lazytest-parallel ${EXECUTABLE_OUTPUT_PATH}/lazytest)
 
 add_executable(paratest
 	src/test/paratest.c
@@ -223,8 +222,7 @@ add_executable(paratest
 target_link_libraries(paratest ${RAMALLOC_LIBRARIES})
 add_test(paratest-serial ${EXECUTABLE_OUTPUT_PATH}/paratest --parallelize=1 
 	--rng-seed=2374434648)
-add_test(paratest-parallel ${EXECUTABLE_OUTPUT_PATH}/paratest 
-	--parallelize=3)
+add_test(paratest-parallel ${EXECUTABLE_OUTPUT_PATH}/paratest)
 
 add_executable(defaulttest
 	src/test/defaulttest.c
@@ -237,8 +235,7 @@ add_executable(defaulttest
 target_link_libraries(defaulttest ${RAMALLOC_LIBRARIES})
 add_test(defaulttest-serial ${EXECUTABLE_OUTPUT_PATH}/defaulttest 
 	--parallelize=1	--rng-seed=2828559559)
-add_test(defaulttest-parallel ${EXECUTABLE_OUTPUT_PATH}/defaulttest 
-	--parallelize=3)
+add_test(defaulttest-parallel ${EXECUTABLE_OUTPUT_PATH}/defaulttest)
 
 add_executable(compattest
 	src/test/compattest.c

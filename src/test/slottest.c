@@ -44,8 +44,6 @@
 #include <memory.h>
 
 #define DEFAULT_ALLOCATION_COUNT 1024 * 100
-#define THREAD_COUNT 1
-#define MALLOC_CHANCE 0
 #define NODE_CAPACITY 10
 
 struct node;
@@ -91,7 +89,6 @@ static ramfail_status_t rmnode(ramslot_node_t *node_arg,
 static ramfail_status_t initslot(void *slot_arg, ramslot_node_t *node_arg);
 
 static ramsig_signature_t thesig;
-
 
 int main(int argc, char *argv[])
 {
@@ -149,12 +146,10 @@ ramfail_status_t initdefaults(ramtest_params_t *params_arg)
    memset(params_arg, 0, sizeof(*params_arg));
 
    params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
-   params_arg->ramtestp_threadcount = THREAD_COUNT;
-   /* i would like 30% of the allocations to come from malloc() instead
-    * of the allocator i'm testing. */
-   params_arg->ramtestp_mallocchance = MALLOC_CHANCE;
-   /* i'm going to test a narrow band of allocations to exercise the
-    * allocator as deeply as possible. */
+   /* the slot pool doesn't support parallelized access. */
+   params_arg->ramtestp_threadcount = 1;
+   /* the slot pool doesn't detect detection of foreign pointers. */
+   params_arg->ramtestp_mallocchance = 0;
    params_arg->ramtestp_minsize = ALLOCATION_SIZE;
    params_arg->ramtestp_maxsize = ALLOCATION_SIZE;
 
@@ -219,7 +214,7 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
    RAMFAIL_DISALLOWZ(extra_arg);
 
    x = (extra_t *)extra_arg;
-   /* page pools don't support the query option, so i emulate it by
+   /* slot pools don't support the query option, so i emulate it by
     * returning the pointer stored in the extra info. */
    *pool_arg = &x->e_thepool;
    RAMFAIL_RETURN(ramslot_getgranularity(size_arg, &x->e_thepool));

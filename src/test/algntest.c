@@ -44,9 +44,8 @@
 #include <memory.h>
 
 #define DEFAULT_ALLOCATION_COUNT 1024 * 100
-#define DEFAULT_MINIMUM_ALLOCATION_SIZE 4
-#define DEFAULT_MAXIMUM_ALLOCATION_SIZE 4
-#define DEFAULT_THREAD_COUNT 1
+#define DEFAULT_MINIMUM_ALLOCATION_SIZE 8
+#define DEFAULT_MAXIMUM_ALLOCATION_SIZE 8
 #define DEFAULT_MALLOC_CHANCE 30
 
 typedef struct extra
@@ -126,12 +125,9 @@ ramfail_status_t initdefaults(ramtest_params_t *params_arg)
    memset(params_arg, 0, sizeof(*params_arg));
 
    params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
-   params_arg->ramtestp_threadcount = DEFAULT_THREAD_COUNT;
-   /* i would like 30% of the allocations to come from malloc() instead
-    * of the allocator i'm testing. */
+   /* the muxpool doesn't support multi-threaded access. */
+   params_arg->ramtestp_threadcount = 1;
    params_arg->ramtestp_mallocchance = DEFAULT_MALLOC_CHANCE;
-   /* i'm going to test a narrow band of allocations to exercise the
-    * allocator as deeply as possible. */
    params_arg->ramtestp_minsize = DEFAULT_MINIMUM_ALLOCATION_SIZE;
    params_arg->ramtestp_maxsize = DEFAULT_MAXIMUM_ALLOCATION_SIZE;
 
