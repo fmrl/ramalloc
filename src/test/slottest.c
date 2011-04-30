@@ -148,7 +148,7 @@ ramfail_status_t initdefaults(ramtest_params_t *params_arg)
    params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
    /* the slot pool doesn't support parallelized access. */
    params_arg->ramtestp_threadcount = 1;
-   /* the slot pool doesn't detect detection of foreign pointers. */
+   /* the slot pool doesn't support detection of foreign pointers. */
    params_arg->ramtestp_mallocchance = 0;
    params_arg->ramtestp_minsize = ALLOCATION_SIZE;
    params_arg->ramtestp_maxsize = ALLOCATION_SIZE;

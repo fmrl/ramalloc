@@ -43,7 +43,7 @@
 #include <stdio.h>
 #include <memory.h>
 
-#define DEFAULT_ALLOCATION_COUNT 1024 * 100
+#define DEFAULT_ALLOCATION_COUNT 1024 * 10
 
 typedef struct extra
 {
@@ -123,7 +123,7 @@ ramfail_status_t initdefaults(ramtest_params_t *params_arg)
    params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
    /* the page pool doesn't support parallelized access. */
    params_arg->ramtestp_threadcount = 1;
-   /* the page pool doesn't detect detection of foreign pointers. */
+   /* the page pool doesn't support detection of foreign pointers. */
    params_arg->ramtestp_mallocchance = 0;
    /* the allocation size has to be determined from the hardware 
     * page size, so i set these to 0 for now. */

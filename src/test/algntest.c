@@ -125,7 +125,7 @@ ramfail_status_t initdefaults(ramtest_params_t *params_arg)
    memset(params_arg, 0, sizeof(*params_arg));
 
    params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
-   /* the muxpool doesn't support multi-threaded access. */
+   /* aligned pools don't support multi-threaded access. */
    params_arg->ramtestp_threadcount = 1;
    params_arg->ramtestp_mallocchance = DEFAULT_MALLOC_CHANCE;
    params_arg->ramtestp_minsize = DEFAULT_MINIMUM_ALLOCATION_SIZE;
