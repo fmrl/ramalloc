@@ -58,7 +58,6 @@ if(UNIX)
 else(UNIX)
 	set(CPACK_GENERATOR "ZIP")
 endif(UNIX)
-
 include(CPack)
 
 # the following code sets a default for cache variables (such as 
@@ -175,9 +174,9 @@ add_library(ramalloc
 	)
 install(TARGETS ramalloc DESTINATION lib)
 
-# other files that need to be installed.
-install(FILES LICENSE README.md ROFLME.md DESTINATION .)
-	
+# tests
+# -----
+
 set(RAMALLOC_LIBRARIES ramalloc ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(slottest
@@ -276,4 +275,14 @@ add_executable(compattest
 	)
 target_link_libraries(compattest ${RAMALLOC_LIBRARIES})
 add_test(compattest ${EXECUTABLE_OUTPUT_PATH}/compattest)
+
+# install the README and LICENSE files.
+if(UNIX)
+	install(FILES LICENSE README.md	ROFLME.md 
+		DESTINATION share/ramalloc
+		)
+else(UNIX)
+	install(FILES LICENSE README.md ROFLME.md DESTINATION .)
+endif(UNIX)
+
 
