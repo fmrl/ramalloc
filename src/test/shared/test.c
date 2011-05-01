@@ -605,7 +605,7 @@ ramfail_status_t ramtest_defaultthreadcount(size_t *count_arg)
    /* the default level of parallelism shall be 2.5 * the number of CPUs
     * detected on the system. tests that only support single-threaded
     * configurations will want to set this parameter in advance. */
-   *count_arg = cpucount * 2.5;
+   *count_arg = (size_t)(cpucount * 2.5);
 
    return RAMFAIL_OK;
 }

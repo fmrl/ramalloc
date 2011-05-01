@@ -51,9 +51,14 @@ set(CPACK_RESOURCE_FILE_LICENSE
 # TODO: the following should probably be set in a variable and perhaps in
 # a separate file.
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_MINOR "0")
 set(CPACK_PACKAGE_VERSION_PATCH "0")
-set(CPACK_GENERATOR "TGZ;ZIP")
+if(UNIX)
+	set(CPACK_GENERATOR "TGZ")
+else(UNIX)
+	set(CPACK_GENERATOR "ZIP")
+endif(UNIX)
+
 include(CPack)
 
 # the following code sets a default for cache variables (such as 
@@ -94,7 +99,7 @@ if(WIN32)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/pstdint)
 	install(FILES dep/pstdint/pstdint.h DESTINATION include)
 	# i use the BSD implementation of getopt.
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/pstdint)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/freebsd/include)
 	install(FILES dep/freebsd/include/getopt.h DESTINATION include)
 	set(RAMALLOC_WINDOWS_GETOPT_SOURCES 
 		dep/freebsd/include/getopt.h
