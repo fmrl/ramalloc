@@ -36,12 +36,33 @@ project(ramalloc)
 
 include(CTest)
 
+# CPack integration
+# -----------------
+# TODO: i'm not yet sure how to write the following include file but i'm
+# interested...
+#include(InstallRequiredSystemLibraries)
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "a parallelized, amortized-constant time allocator for objects smaller than a hardware page.")
+set(CPACK_PACKAGE_DESCRIPTION "ramalloc is a parallelized, amortized-constant time allocator for objects smaller than a hardware page. it exhibits deterministic performance characteristics, which is necessary for soft real-time applications. it also reduces memory fragmentation, which is important for long-running processes. ramalloc is designed for game and interpreter development but should be useful for other applications as well. ramalloc is also parallelized; there is no global resource that requires serialized access.")
+set(CPACK_PACKAGE_VENDOR "fmrl")
+set(CPACK_PACKAGE_DESCRIPTION_FILE 
+	"${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+set(CPACK_RESOURCE_FILE_LICENSE
+	"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+# TODO: the following should probably be set in a variable and perhaps in
+# a separate file.
+set(CPACK_PACKAGE_VERSION_MAJOR "0")
+set(CPACK_PACKAGE_VERSION_MINOR "1")
+set(CPACK_PACKAGE_VERSION_PATCH "0")
+set(CPACK_GENERATOR "TGZ;ZIP")
+include(CPack)
+
 # the following code sets a default for cache variables (such as 
 # CMAKE_C_FLAGS) that can be changed by the user.
 if(NOT RAMALLOC_IS_CONFIGURED)
 	# CMake doesn't enable any warnings by default.
 	if(CMAKE_COMPILER_IS_GNUCC)
-		# -Wmissing-braces appears to interfere with C89-defined behavior.
+		# -Wmissing-braces appears to interfere with C89-defined 
+		# behavior.
 		set(CMAKE_C_FLAGS "-Wall -Wno-missing-braces")
 	elseif(MSVC)
 		set(CMAKE_C_FLAGS "/W3")
@@ -71,8 +92,10 @@ if(WIN32)
 	# <http://www.azillionmonkeys.com/qed/pstdint.h>.
 	# TODO: this may not be necessary for VS2010 and later.
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/pstdint)
+	install(FILES dep/pstdint/pstdint.h DESTINATION include)
 	# i use the BSD implementation of getopt.
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/freebsd/include)
+	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/pstdint)
+	install(FILES dep/freebsd/include/getopt.h DESTINATION include)
 	set(RAMALLOC_WINDOWS_GETOPT_SOURCES 
 		dep/freebsd/include/getopt.h
 		dep/freebsd/src/getopt.c
@@ -82,6 +105,8 @@ endif(WIN32)
 
 # ramalloc's headers.
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ramalloc 
+	DESTINATION include)
 
 add_library(ramalloc
 	include/ramalloc/algn.h
@@ -143,6 +168,10 @@ add_library(ramalloc
 	src/lib/tra.c
 	src/lib/vec.c
 	)
+install(TARGETS ramalloc DESTINATION lib)
+
+# other files that need to be installed.
+install(FILES LICENSE README.md ROFLME.md DESTINATION .)
 	
 set(RAMALLOC_LIBRARIES ramalloc ${CMAKE_THREAD_LIBS_INIT})
 
