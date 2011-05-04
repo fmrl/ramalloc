@@ -61,7 +61,7 @@ typedef struct ramtest_test
 typedef struct ramtest_start
 {
    ramtest_test_t *ramtests_test;
-   int ramtests_threadidx;
+   size_t ramtests_threadidx;
 } ramtest_start_t;
 
 static ramfail_status_t ramtest_inittest(ramtest_test_t *test_arg,
@@ -361,7 +361,7 @@ ramfail_status_t ramtest_start(ramtest_test_t *test_arg)
       start->ramtests_threadidx = i;
       RAMFAIL_RETURN(ramthread_mkthread(&test_arg->ramtestt_threads[i],
             &ramtest_thread, start));
-      fprintf(stderr, "[0] started thread %d.\n", i + 1);
+      fprintf(stderr, "[0] started thread %u.\n", i + 1);
    }
 
    return RAMFAIL_OK;
@@ -420,7 +420,7 @@ ramfail_status_t ramtest_thread(void *arg)
 {
    ramtest_start_t *start = (ramtest_start_t *)arg;
    ramtest_test_t *test = NULL;
-   int threadidx = -1;
+   size_t threadidx = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
    RAMFAIL_DISALLOWZ(arg);
@@ -430,9 +430,9 @@ ramfail_status_t ramtest_thread(void *arg)
    /* i'm the sole consumer of this memory; *ramtest_start()* is the sole
     * producer. */
    free(start);
-   fprintf(stderr, "[%d] testing...\n", threadidx + 1);
+   fprintf(stderr, "[%u] testing...\n", threadidx + 1);
    e = ramtest_thread2(test, threadidx);
-   fprintf(stderr, "[%d] finished.\n", threadidx + 1);
+   fprintf(stderr, "[%u] finished.\n", threadidx + 1);
 
    return e;
 }

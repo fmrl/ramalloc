@@ -65,12 +65,12 @@ static ramfail_status_t runtest(const ramtest_params_t *params_arg);
 static ramfail_status_t runtest2(const ramtest_params_t *params_arg,
       extra_t *extra_arg);
 static ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
-      size_t size_arg, void *extra_arg, int threadidx_arg);
+      size_t size_arg, void *extra_arg, size_t threadidx_arg);
 static ramfail_status_t release(ramtest_allocdesc_t *desc_arg);
 static ramfail_status_t query(void **pool_arg, size_t *size_arg,
       void *ptr_arg, void *extra_arg);
-static ramfail_status_t flush(void *extra_arg, int threadidx_arg);
-static ramfail_status_t check(void *extra_arg, int threadidx_arg);
+static ramfail_status_t flush(void *extra_arg, size_t threadidx_arg);
+static ramfail_status_t check(void *extra_arg, size_t threadidx_arg);
 
 int main(int argc, char *argv[])
 {
@@ -139,7 +139,7 @@ ramfail_status_t initdefaults(ramtest_params_t *params_arg)
 }
 
 ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
-      size_t size_arg, void *extra_arg, int threadidx_arg)
+      size_t size_arg, void *extra_arg, size_t threadidx_arg)
 {
    void *p = NULL;
 
@@ -194,7 +194,7 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
    return RAMFAIL_OK;
 }
 
-ramfail_status_t flush(void *extra_arg, int threadidx_arg)
+ramfail_status_t flush(void *extra_arg, size_t threadidx_arg)
 {
    RAMANNOTATE_UNUSEDARG(extra_arg);
    RAMANNOTATE_UNUSEDARG(threadidx_arg);
@@ -203,7 +203,7 @@ ramfail_status_t flush(void *extra_arg, int threadidx_arg)
    return RAMFAIL_OK;
 }
 
-ramfail_status_t check(void *extra_arg, int threadidx_arg)
+ramfail_status_t check(void *extra_arg, size_t threadidx_arg)
 {
    RAMANNOTATE_UNUSEDARG(extra_arg);
    RAMANNOTATE_UNUSEDARG(threadidx_arg);

@@ -77,12 +77,12 @@ static ramfail_status_t runtest2(const ramtest_params_t *params_arg,
 static ramfail_status_t getpool(ramslot_pool_t **pool_arg, void *extra_arg,
       size_t threadidx_arg);
 static ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
-      size_t size_arg, void *extra_arg, int threadidx_arg);
+      size_t size_arg, void *extra_arg, size_t threadidx_arg);
 static ramfail_status_t release(ramtest_allocdesc_t *desc_arg);
 static ramfail_status_t query(void **pool_arg, size_t *size_arg,
       void *ptr_arg, void *extra_arg);
-static ramfail_status_t flush(void *extra_arg, int threadidx_arg);
-static ramfail_status_t check(void *extra_arg, int threadidx_arg);
+static ramfail_status_t flush(void *extra_arg, size_t threadidx_arg);
+static ramfail_status_t check(void *extra_arg, size_t threadidx_arg);
 static ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg,
       ramslot_pool_t *pool_arg);
 static ramfail_status_t rmnode(ramslot_node_t *node_arg);
@@ -172,7 +172,7 @@ ramfail_status_t getpool(ramslot_pool_t **pool_arg, void *extra_arg,
 }
 
 ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
-      size_t size_arg, void *extra_arg, int threadidx_arg)
+      size_t size_arg, void *extra_arg, size_t threadidx_arg)
 {
    ramslot_pool_t *pool = NULL;
    void *p = NULL;
@@ -222,7 +222,7 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
    return RAMFAIL_OK;
 }
 
-ramfail_status_t flush(void *extra_arg, int threadidx_arg)
+ramfail_status_t flush(void *extra_arg, size_t threadidx_arg)
 {
    RAMANNOTATE_UNUSEDARG(extra_arg);
    RAMANNOTATE_UNUSEDARG(threadidx_arg);
@@ -230,7 +230,7 @@ ramfail_status_t flush(void *extra_arg, int threadidx_arg)
    return RAMFAIL_OK;
 }
 
-ramfail_status_t check(void *extra_arg, int threadidx_arg)
+ramfail_status_t check(void *extra_arg, size_t threadidx_arg)
 {
    ramslot_pool_t *pool = NULL;
 
