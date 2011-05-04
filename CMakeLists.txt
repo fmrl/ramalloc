@@ -65,9 +65,9 @@ include(CPack)
 if(NOT RAMALLOC_IS_CONFIGURED)
 	# CMake doesn't enable any warnings by default.
 	if(CMAKE_COMPILER_IS_GNUCC)
-		# -Wmissing-braces appears to interfere with C89-defined 
-		# behavior.
-		set(CMAKE_C_FLAGS "-Wall -Wno-missing-braces")
+		# -Wmissing-braces and -Wmissing-field-initializers appears
+		# to interfere with C89-defined behavior.
+		set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-missing-braces -Wno-missing-field-initializers")
 	elseif(MSVC)
 		set(CMAKE_C_FLAGS "/W3")
 	endif()

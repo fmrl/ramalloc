@@ -31,55 +31,15 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMSLOT_H_IS_INCLUDED
-#define RAMSLOT_H_IS_INCLUDED
+#ifndef RAMANNOTATE_H_IS_INCLUDED
+#define RAMANNOTATE_H_IS_INCLUDED
 
-#include <ramalloc/vec.h>
-#include <ramalloc/fail.h>
 #include <ramalloc/opt.h>
-#include <ramalloc/stdint.h>
 
-#if RAMOPT_COMPACT
-   typedef int16_t ramslot_index_t;
-#  define RAMSLOT_MAXCAPACITY INT16_MAX
-   typedef uint16_t ramslot_size_t;
+#if RAMOPT_DEBUGUNUSEDARGS
+#  define RAMANNOTATE_UNUSEDARG(ArgName) do {} while(0)
 #else
-   typedef int32_t ramslot_index_t;
-#  define RAMSLOT_MAXCAPACITY INT32_MAX
-   typedef uint32_t ramslot_size_t;
+#  define RAMANNOTATE_UNUSEDARG(ArgName) (void)(ArgName)
 #endif
 
-typedef struct ramslot_node ramslot_node_t;
-typedef struct ramslot_pool ramslot_pool_t;
-
-typedef ramfail_status_t (*ramslot_mknode_t)(ramslot_node_t **node_arg, void **slots_arg, 
-   ramslot_pool_t *pool_arg);
-typedef ramfail_status_t (*ramslot_rmnode_t)(ramslot_node_t *ptr_arg);
-typedef ramfail_status_t (*ramslot_initslot_t)(void *slot_arg, ramslot_node_t *node_arg);
-
-struct ramslot_node
-{
-   ramvec_node_t ramslotn_vnode;
-   char *ramslotn_slots;
-   ramslot_size_t ramslotn_count;
-   ramslot_index_t ramslotn_freestk;
-};
-
-struct ramslot_pool
-{
-   ramslot_mknode_t ramslotp_mknode;
-   ramslot_rmnode_t ramslotp_rmnode;
-   ramslot_initslot_t ramslotp_initslot;
-   ramvec_pool_t ramslotp_vpool;
-   size_t ramslotp_granularity;
-};
-
-ramfail_status_t ramslot_mkpool(ramslot_pool_t *pool_arg, size_t granularity_arg, 
-   size_t nodesz_arg, ramslot_mknode_t mknode_arg, ramslot_rmnode_t rnnode_arg, 
-   ramslot_initslot_t initslot_arg);
-ramfail_status_t ramslot_acquire(void **newptr_arg, ramslot_pool_t *pool_arg);
-ramfail_status_t ramslot_release(void *ptr_arg, ramslot_node_t *node_arg);
-ramfail_status_t ramslot_chkpool(const ramslot_pool_t *pool_arg);
-ramfail_status_t ramslot_getgranularity(size_t *granularity_arg, const ramslot_pool_t *slotpool_arg);
-
-#endif /* RAMSLOT_H_IS_INCLUDED */
+#endif /* RAMANNOTATE_H_IS_INCLUDED */

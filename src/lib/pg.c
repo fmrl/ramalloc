@@ -92,7 +92,7 @@ static ramfail_status_t rampg_calcindex(rampg_index_t *index_arg,
       const rampg_vnode_t *vpoolnode_arg, const char *page_arg);
 static ramfail_status_t rampg_chkvnode(const ramvec_node_t *node_arg);
 static ramfail_status_t rampg_mksnode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg);
-static ramfail_status_t rampg_rmsnode(ramslot_node_t *node_arg, ramslot_pool_t *pool_arg);
+static ramfail_status_t rampg_rmsnode(ramslot_node_t *node_arg);
 static ramfail_status_t rampg_initslot(void *slot_arg, ramslot_node_t *node_arg);
 #define RAMPG_ISFULL(Node) (0 == (Node)->rampgvn_freestksz)
 #define RAMPG_ISEMPTY(Node) (rampg_theglobals.rampgg_nodecapacity == (Node)->rampgvn_freestksz)
@@ -445,12 +445,11 @@ ramfail_status_t rampg_mksnode(ramslot_node_t **node_arg, void **slots_arg, rams
    return RAMFAIL_OK;
 }
 
-ramfail_status_t rampg_rmsnode(ramslot_node_t *node_arg, ramslot_pool_t *pool_arg)
+ramfail_status_t rampg_rmsnode(ramslot_node_t *node_arg)
 {
    rampg_snode_t *snode = NULL;
 
    RAMFAIL_DISALLOWZ(node_arg);
-   RAMFAIL_DISALLOWZ(pool_arg);
    assert(rampg_theglobals.rampgg_initflag);
 
    RAMMETA_BACKCAST(snode, rampg_snode_t, rampgsn_slotnode, node_arg);

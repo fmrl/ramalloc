@@ -62,7 +62,7 @@ static ramfail_status_t ramalgn_mkpool2(ramalgn_pool_t *pool_arg, ramopt_appetit
 static ramfail_status_t ramalgn_findnode(ramalgn_node_t **node_arg, char *ptr_arg);
 static ramfail_status_t ramalgn_mknode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg);
 static ramfail_status_t ramalgn_mknode2(ramalgn_node_t **node_arg, ramalgn_pool_t *pool_arg, char *page_arg);
-static ramfail_status_t ramalgn_rmnode(ramslot_node_t *node_arg, ramslot_pool_t *pool_arg);
+static ramfail_status_t ramalgn_rmnode(ramslot_node_t *node_arg);
 
 static ramalgn_globals_t ramalgn_theglobals;
 
@@ -234,7 +234,7 @@ ramfail_status_t ramalgn_mknode2(ramalgn_node_t **node_arg, ramalgn_pool_t *pool
    return RAMFAIL_OK;
 }
 
-ramfail_status_t ramalgn_rmnode(ramslot_node_t *node_arg, ramslot_pool_t *pool_arg)
+ramfail_status_t ramalgn_rmnode(ramslot_node_t *node_arg)
 {
    RAMFAIL_DISALLOWZ(node_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);

@@ -76,6 +76,8 @@ typedef struct ramtest_params
 
 ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
       uint32_t n1_arg);
+ramfail_status_t ramtest_randint32(int32_t *result_arg, int32_t n0_arg,
+      int32_t n1_arg);
 ramfail_status_t ramtest_shuffle(void *array_arg, size_t size_arg,
       size_t count_arg);
 

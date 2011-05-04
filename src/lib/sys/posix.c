@@ -34,6 +34,7 @@
 /* <ramalloc/sys/posix.h> is included by <ramalloc/sys.h> if it's
  * appropriate for the platform. */
 #include <ramalloc/sys.h>
+#include <ramalloc/annotate.h>
 
 /* this file should not compile anything if the appropriate platform
  * preprocessor definition isn't available (*RAMSYS_POSIX* in this
@@ -98,6 +99,8 @@ ramfail_status_t ramuix_cpucount(size_t *cpucount_arg)
 
 ramfail_status_t ramuix_commit(char *page_arg)
 {
+   RAMANNOTATE_UNUSEDARG(page_arg);
+
    /* there's no difference between commit and reserve on POSIX platforms.
     * everything was already taken care of in ramuix_reserve(). */
    return RAMFAIL_OK;
@@ -105,6 +108,8 @@ ramfail_status_t ramuix_commit(char *page_arg)
 
 ramfail_status_t ramuix_decommit(char *page_arg)
 {
+   RAMANNOTATE_UNUSEDARG(page_arg);
+
    /* there's no difference between commit and reserve on POSIX platforms.
     * everything will be taken care of in ramuix_release(). */
    return RAMFAIL_OK;

@@ -39,6 +39,7 @@
 #include <ramalloc/thread.h>
 #include <ramalloc/barrier.h>
 #include <ramalloc/stdint.h>
+#include <ramalloc/annotate.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
@@ -144,7 +145,7 @@ ramfail_status_t getpool(rammux_pool_t **pool_arg, void *extra_arg,
    *pool_arg = NULL;
    RAMFAIL_DISALLOWZ(extra_arg);
    x = (extra_t *)extra_arg;
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg >= 0);
+   RAMANNOTATE_UNUSEDARG(threadidx_arg);
 
    *pool_arg = &x->e_thepool;
    return RAMFAIL_OK;
@@ -206,6 +207,8 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
 
 ramfail_status_t flush(void *extra_arg, int threadidx_arg)
 {
+   RAMANNOTATE_UNUSEDARG(extra_arg);
+   RAMANNOTATE_UNUSEDARG(threadidx_arg);
    /* mux pools don't support the flush operation. */
    return RAMFAIL_OK;
 }

@@ -146,7 +146,6 @@ ramfail_status_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
    *pool_arg = NULL;
    RAMFAIL_DISALLOWZ(extra_arg);
    x = (extra_t *)extra_arg;
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg >= 0);
    RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg < x->e_poolcount);
 
    *pool_arg = &x->e_pools[threadidx_arg];

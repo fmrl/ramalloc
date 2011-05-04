@@ -39,6 +39,7 @@
 #include <ramalloc/thread.h>
 #include <ramalloc/barrier.h>
 #include <ramalloc/stdint.h>
+#include <ramalloc/annotate.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
@@ -84,8 +85,7 @@ static ramfail_status_t flush(void *extra_arg, int threadidx_arg);
 static ramfail_status_t check(void *extra_arg, int threadidx_arg);
 static ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg,
       ramslot_pool_t *pool_arg);
-static ramfail_status_t rmnode(ramslot_node_t *node_arg,
-      ramslot_pool_t *pool_arg);
+static ramfail_status_t rmnode(ramslot_node_t *node_arg);
 static ramfail_status_t initslot(void *slot_arg, ramslot_node_t *node_arg);
 
 static ramsig_signature_t thesig;
@@ -165,7 +165,7 @@ ramfail_status_t getpool(ramslot_pool_t **pool_arg, void *extra_arg,
    *pool_arg = NULL;
    RAMFAIL_DISALLOWZ(extra_arg);
    x = (extra_t *)extra_arg;
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg >= 0);
+   RAMANNOTATE_UNUSEDARG(threadidx_arg);
 
    *pool_arg = &x->e_thepool;
    return RAMFAIL_OK;
@@ -211,6 +211,7 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
 
    RAMFAIL_DISALLOWZ(pool_arg);
    *pool_arg = NULL;
+   RAMFAIL_DISALLOWZ(ptr_arg);
    RAMFAIL_DISALLOWZ(extra_arg);
 
    x = (extra_t *)extra_arg;
@@ -223,7 +224,9 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
 
 ramfail_status_t flush(void *extra_arg, int threadidx_arg)
 {
-   /* algn pools don't support the flush operation. */
+   RAMANNOTATE_UNUSEDARG(extra_arg);
+   RAMANNOTATE_UNUSEDARG(threadidx_arg);
+   /* slot pools don't support the flush operation. */
    return RAMFAIL_OK;
 }
 
@@ -322,10 +325,9 @@ ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg,
       return RAMFAIL_CRT;
 }
 
-ramfail_status_t rmnode(ramslot_node_t *node_arg, ramslot_pool_t *pool_arg)
+ramfail_status_t rmnode(ramslot_node_t *node_arg)
 {
    RAMFAIL_DISALLOWZ(node_arg);
-   RAMFAIL_DISALLOWZ(pool_arg);
 
    free(node_arg);
 

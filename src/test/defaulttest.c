@@ -39,6 +39,7 @@
 #include <ramalloc/thread.h>
 #include <ramalloc/barrier.h>
 #include <ramalloc/stdint.h>
+#include <ramalloc/annotate.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
@@ -145,6 +146,8 @@ ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
    RAMFAIL_DISALLOWZ(desc_arg);
    memset(desc_arg, 0, sizeof(*desc_arg));
    RAMFAIL_DISALLOWZ(size_arg);
+   RAMANNOTATE_UNUSEDARG(extra_arg);
+   RAMANNOTATE_UNUSEDARG(threadidx_arg);
 
    RAMFAIL_RETURN(ramdefault_acquire(&p, size_arg));
    desc_arg->ramtestad_ptr = (char *)p;
@@ -193,15 +196,19 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
 
 ramfail_status_t flush(void *extra_arg, int threadidx_arg)
 {
-   RAMFAIL_RETURN(ramdefault_flush());
+   RAMANNOTATE_UNUSEDARG(extra_arg);
+   RAMANNOTATE_UNUSEDARG(threadidx_arg);
 
+   RAMFAIL_RETURN(ramdefault_flush());
    return RAMFAIL_OK;
 }
 
 ramfail_status_t check(void *extra_arg, int threadidx_arg)
 {
-   RAMFAIL_RETURN(ramdefault_check());
+   RAMANNOTATE_UNUSEDARG(extra_arg);
+   RAMANNOTATE_UNUSEDARG(threadidx_arg);
 
+   RAMFAIL_RETURN(ramdefault_check());
    return RAMFAIL_OK;
 }
 

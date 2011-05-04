@@ -103,5 +103,9 @@ typedef enum rampg_appetites
 typedef void * (*ramopt_malloc_t)(size_t);
 typedef void (*ramopt_free_t)(void *);
 
+#ifndef RAMOPT_DEBUGUNUSEDARGS
+#  define RAMOPT_DEBUGUNUSEDARGS 0
+#endif
+
 #endif /* RAMOPT_H_IS_INCLUDED */
 

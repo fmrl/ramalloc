@@ -177,7 +177,7 @@ ramfail_status_t ramslot_release(void *ptr_arg, ramslot_node_t *node_arg)
    {
       /* if i fail to destroy the node, it doesn't leave anything in an inconsistent state.
        * it just means i'm leaking resources. recovery is technically possible. */
-      RAMFAIL_RETURN(pool->ramslotp_rmnode(node_arg, pool));
+      RAMFAIL_RETURN(pool->ramslotp_rmnode(node_arg));
    }
 
    return RAMFAIL_OK;
@@ -203,7 +203,7 @@ ramfail_status_t ramslot_mknode(ramvec_node_t **node_arg, ramvec_pool_t *pool_ar
    }
    else
    {
-      RAMFAIL_EPICFAIL(pool->ramslotp_rmnode(node, pool));
+      RAMFAIL_EPICFAIL(pool->ramslotp_rmnode(node));
       return e;
    }
 }

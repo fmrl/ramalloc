@@ -65,7 +65,18 @@ void ramfail_report(ramfail_status_t code_arg, const char *expr_arg, const char 
 void ramfail_defaultreporter(ramfail_status_t code_arg, const char *expr_arg, 
    const char *funcn_arg, const char *filen_arg, int lineno_arg)
 {
-   fprintf(stderr, "FAIL %d in %s, line %d: %s\n", code_arg, filen_arg, lineno_arg, expr_arg);
+   /* to my knowledge, Windows doesn't support providing the function name,
+    * so i need to tolerate a NULL value for funcn_arg. */
+   if (NULL == funcn_arg)
+   {
+      fprintf(stderr, "FAIL %d at %s, line %d: %s\n", code_arg,
+            filen_arg, lineno_arg, expr_arg);
+   }
+   else
+   {
+      fprintf(stderr, "FAIL %d in %s, at %s, line %d: %s\n", code_arg,
+            funcn_arg, filen_arg, lineno_arg, expr_arg);
+   }
 }
 
 ramfail_status_t ramfail_accumulate(ramfail_status_t *reply_arg,

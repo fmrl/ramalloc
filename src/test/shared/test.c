@@ -86,9 +86,9 @@ static ramfail_status_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
 static ramfail_status_t ramtest_fill(char *ptr_arg, size_t sz_arg);
 static ramfail_status_t ramtest_chkfill(char *ptr_arg, size_t sz_arg);
 
-#define RAMTEST_RANDUINT32(R, N0, N1) \
-         (((uint32_t)((double)((N1) - (N0)) * (R) / \
-         ((double)RAND_MAX + 1))) + (N0))
+#define RAMTEST_SCALERAND(Type, Rand, LowerBound, UpperBound) \
+         (((Type)((double)((UpperBound) - (LowerBound)) * (Rand) / \
+         ((double)RAND_MAX + 1))) + (LowerBound))
 
 ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
       uint32_t n1_arg)
@@ -99,10 +99,28 @@ ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, n0_arg < n1_arg);
 
    /* this assertion tests the boundaries of the scaling formula. */
-   assert(RAMTEST_RANDUINT32(0, n0_arg, n1_arg) >= n0_arg);
-   assert(RAMTEST_RANDUINT32(RAND_MAX, n0_arg, n1_arg) < n1_arg);
-   n = RAMTEST_RANDUINT32(rand(), n0_arg, n1_arg);
-#undef RAMTEST_RANDUINT32
+   assert(RAMTEST_SCALERAND(uint32_t, 0, n0_arg, n1_arg) >= n0_arg);
+   assert(RAMTEST_SCALERAND(uint32_t, RAND_MAX, n0_arg, n1_arg) < n1_arg);
+   n = RAMTEST_SCALERAND(uint32_t, rand(), n0_arg, n1_arg);
+
+   assert(n >= n0_arg);
+   assert(n < n1_arg);
+   *result_arg = n;
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramtest_randint32(int32_t *result_arg, int32_t n0_arg,
+      int32_t n1_arg)
+{
+   int32_t n = 0;
+
+   RAMFAIL_DISALLOWZ(result_arg);
+   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, n0_arg < n1_arg);
+
+   /* this assertion tests the boundaries of the scaling formula. */
+   assert(RAMTEST_SCALERAND(int32_t, 0, n0_arg, n1_arg) >= n0_arg);
+   assert(RAMTEST_SCALERAND(int32_t, RAND_MAX, n0_arg, n1_arg) < n1_arg);
+   n = RAMTEST_SCALERAND(int32_t, rand(), n0_arg, n1_arg);
 
    assert(n >= n0_arg);
    assert(n < n1_arg);
@@ -428,7 +446,6 @@ ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
    ramtest_allocdesc_t cached = {0};
 
    RAMFAIL_DISALLOWZ(test_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg >= 0);
    RAMFAIL_CONFIRM(RAMFAIL_RANGE,
          threadidx_arg < test_arg->ramtestt_params.ramtestp_threadcount);
 
@@ -487,13 +504,12 @@ ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
 ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
       ramtest_test_t *test_arg, size_t threadidx_arg)
 {
-   uint32_t roll = 0;
+   int32_t roll = 0;
    ramtest_allocdesc_t desc = {0};
 
    RAMFAIL_DISALLOWZ(newptr_arg);
    memset(newptr_arg, 0, sizeof(*newptr_arg));
    RAMFAIL_DISALLOWZ(test_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg >= 0);
    RAMFAIL_CONFIRM(RAMFAIL_RANGE,
          threadidx_arg < test_arg->ramtestt_params.ramtestp_threadcount);
 
@@ -502,7 +518,7 @@ ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
          test_arg->ramtestt_params.ramtestp_maxsize + 1));
    /* i want a certain percentage of allocations to be performed by
     * an alternate allocator. */
-   RAMFAIL_RETURN(ramtest_randuint32(&roll, 0, 100));
+   RAMFAIL_RETURN(ramtest_randint32(&roll, 0, 100));
    if (roll < test_arg->ramtestt_params.ramtestp_mallocchance)
    {
       desc.ramtestad_pool = NULL;
@@ -532,7 +548,6 @@ ramfail_status_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
    RAMFAIL_DISALLOWZ(ptrdesc_arg);
    RAMFAIL_DISALLOWZ(ptrdesc_arg->ramtestad_ptr);
    RAMFAIL_DISALLOWZ(test_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg >= 0);
    RAMFAIL_CONFIRM(RAMFAIL_RANGE,
          threadidx_arg < test_arg->ramtestt_params.ramtestp_threadcount);
 
