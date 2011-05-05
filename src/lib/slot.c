@@ -134,8 +134,11 @@ ramfail_status_t ramslot_acquire(void **ptr_arg, ramslot_pool_t *pool_arg)
    /* i finalize the acquisition by updating the pool state. */
    RAMFAIL_EPICFAIL(ramvec_acquire(&node->ramslotn_vnode, RAMSLOT_ISFULL(node)));
 
-   /* it's best practice to clear out memory that's being allocated. */
+   /* i zero-out the memory, if that behavior is desired. */
+#if RAMOPT_ZEROMEM
    memset(p, 0, pool_arg->ramslotp_granularity);
+#endif
+
    /* if the caller provided a function to initialize a slot, do so now. */
    if (pool_arg->ramslotp_initslot)
       pool_arg->ramslotp_initslot(p, node);
@@ -162,7 +165,7 @@ ramfail_status_t ramslot_release(void *ptr_arg, ramslot_node_t *node_arg)
     * there's no longer any hope for recovery. */
 #if RAMOPT_MARKFREED
    /* it's helpful to see signature bytes for destroyed memory when debugging. */
-   memset(ptr_arg, 0xbe, pool->ramslotp_granularity);
+   memset(ptr_arg, RAMOPT_MARKFREED, pool->ramslotp_granularity);
 #endif
 
    /* now that i know the index that's associated with 'ptr_arg', i push

@@ -209,8 +209,10 @@ ramfail_status_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
    /* i finalize the acquisition by updating the pool state. */
    RAMFAIL_EPICFAIL(ramvec_acquire(&vnode->rampgvn_vnode, RAMPG_ISFULL(vnode)));
 
-   /* it's best practice to clear out memory that's being allocated. */
+   /* i zero-out the memory, if that behavior is desired. */
+#if RAMOPT_ZEROMEM
    memset(page, 0, rampg_theglobals.rampgg_granularity);
+#endif
 
    *ptr_arg = page;
    return RAMFAIL_OK;
@@ -243,8 +245,10 @@ ramfail_status_t rampg_release(void *ptr_arg)
       RAMFAIL_RETURN(ramsys_reset(ptr_arg));
 
 #if RAMOPT_MARKFREED
-      /* it's helpful to see signature bytes for destroyed memory when debugging. */
-      memset(ptr_arg, 0xde, rampg_theglobals.rampgg_granularity);
+      /* it's helpful to see signature bytes for destroyed memory when
+       * debugging. */
+      memset(ptr_arg, RAMOPT_MARKFREED,
+            rampg_theglobals.rampgg_granularity);
 #endif
 
    }

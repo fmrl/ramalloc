@@ -54,10 +54,18 @@
  * is /true/. */
 #ifndef RAMOPT_MARKFREED
 #  if RAMOPT_DEBUG
-#     define RAMOPT_MARKFREED 1
+#     define RAMOPT_MARKFREED 0xbe
 #else
 #     define RAMOPT_MARKFREED 0
 #  endif
+#endif
+
+/* TODO: i'm still on the fence regarding whether i should take
+ * responsibility for zeroing out memory that's been allocated. i'll leave
+ * it off by default for the moment, partially because it's not implemented
+ * uniformly for all pools. */
+#ifndef RAMOPT_ZEROMEM
+#  define RAMOPT_ZEROMEM 0
 #endif
 
 /* #define RAMOPT_COMPACT=1 before the preprocessor gets here if you want 

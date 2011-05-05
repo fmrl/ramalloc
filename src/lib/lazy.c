@@ -115,9 +115,9 @@ ramfail_status_t ramlazy_release(void *ptr_arg)
    RAMFAIL_DISALLOWZ(ptr_arg);
 
    RAMFAIL_RETURN(ramlazy_query(&lpool, &sz, ptr_arg));
-   /* i zero out the memory so that any dangling pointers don't get access to stale
-    * data. */
-   memset(ptr_arg, 0, sz);
+#if RAMOPT_MARKFREED
+   memset(ptr_arg, RAMOPT_MARKFREED, sz);
+#endif
    /* i push the pointer onto the trash stack; it will be freed on it's home
     * thread with less synchronization and contention than i could manage from 
     * here. */

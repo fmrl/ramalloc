@@ -172,7 +172,9 @@ ramfail_status_t ramvec_release(ramvec_node_t *node_arg, int wasfull_arg, int is
 
 ramfail_status_t ramvec_initnode(ramvec_node_t *node_arg, ramvec_pool_t *pool_arg)
 {
+#ifndef NDEBUG
    int hastail = 0;
+#endif
 
    assert(node_arg);
    assert(pool_arg);
