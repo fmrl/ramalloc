@@ -42,4 +42,12 @@
 #  error i do not recognize this platform.
 #endif
 
+#ifdef _MSC_VER
+#  define RAMSYS_MSVC
+#elif defined(__GNUC__)
+#  define RAMSYS_GCC
+#else
+#  error i do not recognize this compiler.
+#endif
+
 #endif /* #ifndef RAMSYS_DETECT_H_IS_INCLUDED */
