@@ -79,7 +79,7 @@ ramfail_status_t ramfoot_getstorage(void **result_arg,
          Type storage; \
       } * const TmpVar = NULL; \
       RAMFAIL_RETURN(ramfoot_mkspec((Spec), (WriteZone), sizeof(struct FooterTag), \
-         __alignof(struct FooterTag), ((char *)(&TmpVar->storage)) - ((char *)TmpVar), Signature)); \
+         RAMSYS_ALIGNOF(struct FooterTag), ((char *)(&TmpVar->storage)) - ((char *)TmpVar), Signature)); \
    } while (0)
 
 #define RAMFOOT_MKSPEC(Spec, Type, WriteZone, Signature) \

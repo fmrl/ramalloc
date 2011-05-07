@@ -31,26 +31,11 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMSYS_H_IS_INCLUDED
-#define RAMSYS_H_IS_INCLUDED
+#ifndef RAMALLOC_GCC_H_IS_INCLUDED
+#define RAMALLOC_GCC_H_IS_INCLUDED
 
-#include <ramalloc/sys/detect.h>
+#define RAMGCC_ALIGNOF(Type) (__alignof__(Type))
 
-#ifdef RAMSYS_WINDOWS
-#  include <ramalloc/sys/win.h>
-#elif defined(RAMSYS_LINUX)
-#  include <ramalloc/sys/linux.h>
-#else
-#  error <ramalloc/sys/detect.h> has not detected a platform that i recognize.
-#endif /* platform check */
+#define RAMSYS_ALIGNOF(Type) RAMGCC_ALIGNOF(Type)
 
-#ifdef RAMSYS_MSVC
-#  include <ramalloc/sys/msvc.h>
-#elif defined(RAMSYS_GCC)
-#  include <ramalloc/sys/gcc.h>
-#else
-#  error <ramalloc/sys/detect.h> has not detected a compiler that i recognize.
-#endif
-
-#endif /* RAMSYS_H_IS_INCLUDED */
-
+#endif /* RAMALLOC_GCC_H_IS_INCLUDED */
