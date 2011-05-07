@@ -290,7 +290,7 @@ endif(UNIX)
 
 # documentation
 # -------------
-include(cmake/doxys.cmake)
-add_doxys(ramalloc ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
+include(cmake/doxygen.cmake)
+add_doxygen(ramalloc ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
 
 

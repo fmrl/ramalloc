@@ -29,22 +29,39 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 
-set(DOXYS_COMMAND doxys)
-set(DOXYS_CONFIG ${CMAKE_CURRENT_BINARY_DIR}/DoxySfile)
-set(DOXYS_FLAGS ${DOXYS_CONFIG})
-function(add_doxys DOXYS_TITLE)
+set(DOXYGEN_CONFIG ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+set(DOXYGEN_FLAGS ${DOXYGEN_CONFIG})
+set(DOXYGEN_CONFIG_TEMPLATE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Doxyfile.in)
+
+set(DOXYGEN_OUTPUT_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doxygen)
+set(DOXYGEN_FULL_PATH_NAMES NO)
+set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
+set(DOXYGEN_SOURCE_BROWSER NO)
+set(DOXYGEN_INLINE_SOURCES YES)
+set(DOXYGEN_WARN_NO_PARAMDOC YES)
+
+find_package(Doxygen)
+
+function(add_doxygen DOXYGEN_PROJECT_NAME)
+
+	if (NOT DOXYGEN_FOUND)
+		message(WARNING 
+			"i will be unable to generate documentation because doxygen could not be found.")
+		return()
+	endif()
+
 	foreach(i ${ARGN})
-		set(DOXYS_SOURCES 
-			"${DOXYS_SOURCES} ${CMAKE_CURRENT_SOURCE_DIR}/${i}"
+		set(DOXYGEN_INPUT 
+			"${DOXYGEN_INPUT} ${CMAKE_CURRENT_SOURCE_DIR}/${i}"
 			)
 	endforeach()
-	configure_file(DoxySfile.in ${DOXYS_CONFIG})
-	unset(DOXYS_SOURCES)
+	configure_file(${DOXYGEN_CONFIG_TEMPLATE} ${DOXYGEN_CONFIG})
 	add_custom_target(
-		doxys_docs
-		COMMAND ${DOXYS_COMMAND} ${DOXYS_FLAGS}
-		DEPENDS ${ARGN} ${DOXYS_CONFIG}
+		doxygen
+		COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_FLAGS}
+		DEPENDS ${ARGN} ${DOXYGEN_CONFIG}
 		)
+
 endfunction()
 
 
