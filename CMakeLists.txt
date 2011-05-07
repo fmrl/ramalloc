@@ -112,7 +112,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ramalloc 
 	DESTINATION include)
 
-add_library(ramalloc
+set(RAMALLOC_HEADERS
 	include/ramalloc/algn.h
 	include/ramalloc/barrier.h
 	include/ramalloc/compat.h
@@ -145,6 +145,8 @@ add_library(ramalloc
 	include/ramalloc/tls.h
 	include/ramalloc/tra.h
 	include/ramalloc/vec.h
+	)
+set(RAMALLOC_SOURCES
 	src/lib/algn.c
 	src/lib/barrier.c
 	src/lib/compat.c
@@ -172,6 +174,7 @@ add_library(ramalloc
 	src/lib/tra.c
 	src/lib/vec.c
 	)
+add_library(ramalloc ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
 install(TARGETS ramalloc DESTINATION lib)
 
 # tests
@@ -284,5 +287,10 @@ if(UNIX)
 else(UNIX)
 	install(FILES LICENSE README.md ROFLME.md DESTINATION .)
 endif(UNIX)
+
+# documentation
+# -------------
+include(cmake/doxys.cmake)
+add_doxys(ramalloc ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
 
 
