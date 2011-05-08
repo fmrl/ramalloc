@@ -34,6 +34,7 @@
 #ifndef RAMFAIL_H_IS_INCLUDED
 #define RAMFAIL_H_IS_INCLUDED
 
+#include <ramalloc/opt.h>
 #include <ramalloc/meta.h>
 #include <assert.h>
 #include <stdlib.h>
@@ -59,39 +60,63 @@ typedef enum ramfail_status
 typedef void (*ramfail_reporter_t)(ramfail_status_t code_arg, const char *expr_arg, 
    const char *funcn_arg, const char *filen_arg, int lineno_arg);
 
-#define RAMFAIL_ACTIF(Condition, Action) \
-   do \
-   { \
-      if (Condition) \
+#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_ACTIF(Condition, Action) do {} while (0)
+#else
+#  define RAMFAIL_ACTIF(Condition, Action) \
+         do \
+         { \
+            if (Condition) \
+            { \
+               Action; \
+            } \
+         } \
+         while (0)
+#endif
+
+#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_CONFIRM(FailCode, Condition) do {} while (0)
+#else
+#  define RAMFAIL_CONFIRM(FailCode, Condition) \
+      do \
       { \
-         Action; \
+         assert(RAMFAIL_OK != (FailCode)); \
+         RAMFAIL_ACTIF(!(Condition), ramfail_report((FailCode), #Condition, NULL, __FILE__, __LINE__); return (FailCode)); \
       } \
-   } \
-   while (0)
+      while (0)
+#endif
 
-#define RAMFAIL_CONFIRM(FailCode, Condition) \
-   do \
-   { \
-      assert(RAMFAIL_OK != (FailCode)); \
-      RAMFAIL_ACTIF(!(Condition), ramfail_report((FailCode), #Condition, NULL, __FILE__, __LINE__); return (FailCode)); \
-   } \
-   while (0)
+#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_DISALLOWZ(Value) do {} while (0)
+#else
+#  define RAMFAIL_DISALLOWZ(Value) RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, 0 != (Value))
+#endif
 
-#define RAMFAIL_DISALLOWZ(Value) RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, 0 != (Value))
+#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_RETURN2(Result, ResultCache) do {} while (0)
+#else
+#  define RAMFAIL_RETURN2(Result, ResultCache) \
+         do \
+         { \
+            const ramfail_status_t ResultCache = (Result); \
+            RAMFAIL_ACTIF(RAMFAIL_OK != ResultCache, ramfail_report(ResultCache, #Result, NULL, __FILE__, __LINE__); return ResultCache); \
+         } \
+         while (0)
+#endif
 
-#define RMFAIL_RETURN2(Result, ResultCache) \
-   do \
-   { \
-      const ramfail_status_t ResultCache = (Result); \
-      RAMFAIL_ACTIF(RAMFAIL_OK != ResultCache, ramfail_report(ResultCache, #Result, NULL, __FILE__, __LINE__); return ResultCache); \
-   } \
-   while (0)
-
+#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_RETURN(Result) do {} while (0)
+#else
 #define RAMFAIL_RETURN(Result) \
-   RMFAIL_RETURN2((Result), RAMMETA_GENERATENAME(RAMFAIL_RETURN_resultcache))
+         RAMFAIL_RETURN2((Result), RAMMETA_GENERATENAME(RAMFAIL_RETURN_resultcache))
+#endif
 
+#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_EPICFAIL(Result) do {} while (0)
+#else
 #define RAMFAIL_EPICFAIL(Result) \
-   RAMFAIL_ACTIF(RAMFAIL_OK != (Result), ramfail_epicfail("omgwtfbbq!"); return RAMFAIL_INSANE)
+         RAMFAIL_ACTIF(RAMFAIL_OK != (Result), ramfail_epicfail("omgwtfbbq!"); return RAMFAIL_INSANE)
+#endif
 
 void ramfail_epicfail(const char *why_arg);
 void ramfail_setreporter(ramfail_reporter_t reporter_arg);

@@ -115,5 +115,9 @@ typedef void (*ramopt_free_t)(void *);
 #  define RAMOPT_DEBUGUNUSEDARGS 0
 #endif
 
+#ifndef RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#  define RAMOPT_UNSUPPORTED_OVERCONDIFENT 0
+#endif
+
 #endif /* RAMOPT_H_IS_INCLUDED */
 
