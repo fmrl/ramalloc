@@ -39,6 +39,7 @@
 #include <ramalloc/meta.h>
 #include <ramalloc/sys.h>
 #include <ramalloc/stdint.h>
+#include <stddef.h>
 #include <stdlib.h>
 
 typedef struct ramfoot_spec
@@ -75,11 +76,12 @@ ramfail_status_t ramfoot_getstorage(void **result_arg,
    do { \
       struct FooterTag \
       { \
-         ramsig_signature_t signature; \
-         Type storage; \
-      } * const TmpVar = NULL; \
-      RAMFAIL_RETURN(ramfoot_mkspec((Spec), (WriteZone), sizeof(struct FooterTag), \
-         RAMSYS_ALIGNOF(struct FooterTag), ((char *)(&TmpVar->storage)) - ((char *)TmpVar), Signature)); \
+         ramsig_signature_t ft_signature; \
+         Type ft_storage; \
+      }; \
+      RAMFAIL_RETURN(ramfoot_mkspec((Spec), (WriteZone), \
+         sizeof(struct FooterTag), RAMSYS_ALIGNOF(struct FooterTag), \
+         offsetof(struct FooterTag, ft_storage), Signature)); \
    } while (0)
 
 #define RAMFOOT_MKSPEC(Spec, Type, WriteZone, Signature) \

@@ -1,2 +1,5 @@
 # let's start off with weak mode, until i've knocked off a few items.
 +weak
+# right now, i prefer to use the {0} syntax to initialize structs, so i'm 
+# going to disable warnings that complain about this.
+-fullinitblock
