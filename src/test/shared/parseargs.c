@@ -111,7 +111,7 @@ ramfail_status_t parseargs(ramtest_params_t *params_arg, int argc_arg,
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(params_arg);
+   RAMFAIL_DISALLOWNULL(params_arg);
    e = parseargs2(params_arg, argc_arg, argv_arg);
    if (RAMFAIL_OK != e)
       memset(params_arg, 0, sizeof(*params_arg));
@@ -296,9 +296,9 @@ ramfail_status_t parseulong(unsigned long *n_arg, const char *str_arg)
 {
    unsigned long n = 0;
 
-   RAMFAIL_DISALLOWZ(n_arg);
+   RAMFAIL_DISALLOWNULL(n_arg);
    *n_arg = 0;
-   RAMFAIL_DISALLOWZ(str_arg);
+   RAMFAIL_DISALLOWNULL(str_arg);
 
    errno = 0;
    n = strtoul(str_arg, NULL, 10);
@@ -315,9 +315,9 @@ ramfail_status_t parselong(long *n_arg, const char *str_arg)
 {
    long n = 0;
 
-   RAMFAIL_DISALLOWZ(n_arg);
+   RAMFAIL_DISALLOWNULL(n_arg);
    *n_arg = 0;
-   RAMFAIL_DISALLOWZ(str_arg);
+   RAMFAIL_DISALLOWNULL(str_arg);
 
    errno = 0;
    n = strtol(str_arg, NULL, 10);
@@ -335,7 +335,7 @@ ramfail_status_t parsealloccount(size_t *alloccount_arg)
    unsigned long n = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(alloccount_arg);
+   RAMFAIL_DISALLOWNULL(alloccount_arg);
    *alloccount_arg = 0;
 
    e = parseulong(&n, optarg);
@@ -359,7 +359,7 @@ ramfail_status_t parsethreadcount(size_t *threadcount_arg)
    ramfail_status_t e = RAMFAIL_INSANE;
    size_t cpucount = 0, toomany = 0;
 
-   RAMFAIL_DISALLOWZ(threadcount_arg);
+   RAMFAIL_DISALLOWNULL(threadcount_arg);
    *threadcount_arg = 0;
 
    /* i'll allow up to 3x the number of CPUs in the system. anything more
@@ -403,7 +403,7 @@ ramfail_status_t parsemallocchance(int *mallocchance_arg)
    long n = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(mallocchance_arg);
+   RAMFAIL_DISALLOWNULL(mallocchance_arg);
    *mallocchance_arg = 0;
 
    e = parselong(&n, optarg);
@@ -445,7 +445,7 @@ ramfail_status_t parseminsize(size_t *minsize_arg)
    unsigned long n = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(minsize_arg);
+   RAMFAIL_DISALLOWNULL(minsize_arg);
    *minsize_arg = 0;
 
    e = parseulong(&n, optarg);
@@ -474,7 +474,7 @@ ramfail_status_t parsemaxsize(size_t *maxsize_arg)
    unsigned long n = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(maxsize_arg);
+   RAMFAIL_DISALLOWNULL(maxsize_arg);
    *maxsize_arg = 0;
 
    e = parseulong(&n, optarg);
@@ -500,7 +500,7 @@ ramfail_status_t parserngseed(unsigned int *rngseed_arg)
    unsigned long n = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(rngseed_arg);
+   RAMFAIL_DISALLOWNULL(rngseed_arg);
    *rngseed_arg = 0;
 
    e = parseulong(&n, optarg);

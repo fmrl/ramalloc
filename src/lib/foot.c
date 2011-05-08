@@ -56,12 +56,12 @@ ramfail_status_t ramfoot_mkspec(ramfoot_spec_t *spec_arg, size_t writezn_arg,
    uintptr_t n = 0;
    size_t pgsz = 0;
 
-   RAMFAIL_DISALLOWZ(spec_arg);
+   RAMFAIL_DISALLOWNULL(spec_arg);
    memset(spec_arg, 0, sizeof(*spec_arg));
    RAMFAIL_DISALLOWZ(writezn_arg);
    RAMFAIL_DISALLOWZ(footsz_arg);
    RAMFAIL_DISALLOWZ(footalign_arg);
-   RAMFAIL_DISALLOWZ(sig_arg);
+   RAMFAIL_DISALLOWNULL(sig_arg);
 
    RAMFAIL_RETURN(rammem_pagesize(&pgsz));
    RAMFAIL_CONFIRM(RAMFAIL_RANGE, writezn_arg <= pgsz);
@@ -99,10 +99,10 @@ ramfail_status_t ramfoot_getfooter(char **result_arg,
 {
    char *p = NULL;
 
-   RAMFAIL_DISALLOWZ(result_arg);
+   RAMFAIL_DISALLOWNULL(result_arg);
    *result_arg = NULL;
-   RAMFAIL_DISALLOWZ(spec_arg);
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(spec_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
 
    RAMFAIL_RETURN(ramfoot_footeraddr(&p, spec_arg, ptr_arg));
 
@@ -123,11 +123,11 @@ ramfail_status_t ramfoot_mkfooter(void **storage_arg, const ramfoot_spec_t *spec
    char *p = NULL;
    int ispage = 0;
 
-   RAMFAIL_DISALLOWZ(storage_arg);
+   RAMFAIL_DISALLOWNULL(storage_arg);
    *storage_arg = NULL;
-   RAMFAIL_DISALLOWZ(spec_arg);
+   RAMFAIL_DISALLOWNULL(spec_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, RAMFOOT_ISSPECINIT(spec_arg));
-   RAMFAIL_DISALLOWZ(page_arg);
+   RAMFAIL_DISALLOWNULL(page_arg);
    RAMFAIL_RETURN(rammem_ispage(&ispage, page_arg));
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
 

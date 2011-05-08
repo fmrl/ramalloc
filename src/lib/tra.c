@@ -47,7 +47,7 @@ ramfail_status_t ramtra_mktrash(ramtra_trash_t *trash_arg)
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(trash_arg);
+   RAMFAIL_DISALLOWNULL(trash_arg);
 
    e = ramtra_mktrash2(trash_arg);
    if (RAMFAIL_OK == e)
@@ -61,7 +61,7 @@ ramfail_status_t ramtra_mktrash(ramtra_trash_t *trash_arg)
 
 ramfail_status_t ramtra_mktrash2(ramtra_trash_t *trash_arg)
 {
-   assert(trash_arg);
+   assert(trash_arg != NULL);
 
    RAMFAIL_RETURN(rammtx_mkmutex(&trash_arg->ramtrat_mutex));
    RAMFAIL_RETURN(ramslst_mklist(&trash_arg->ramtrat_items));
@@ -74,8 +74,8 @@ ramfail_status_t ramtra_push(ramtra_trash_t *trash_arg, void *ptr_arg)
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(trash_arg);
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(trash_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
 
    RAMFAIL_RETURN(rammtx_wait(&trash_arg->ramtrat_mutex));
    e = ramslst_insert((ramslst_slist_t *)ptr_arg, &trash_arg->ramtrat_items);
@@ -92,9 +92,9 @@ ramfail_status_t ramtra_pop(void **ptr_arg, ramtra_trash_t *trash_arg)
    void *p = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
    *ptr_arg = NULL;
-   RAMFAIL_DISALLOWZ(trash_arg);
+   RAMFAIL_DISALLOWNULL(trash_arg);
 
    RAMFAIL_RETURN(rammtx_wait(&trash_arg->ramtrat_mutex));
    p = RAMSLST_NEXT(&trash_arg->ramtrat_items);
@@ -117,7 +117,7 @@ ramfail_status_t ramtra_pop(void **ptr_arg, ramtra_trash_t *trash_arg)
 
 ramfail_status_t ramtra_rmtrash(ramtra_trash_t *trash_arg)
 {
-   RAMFAIL_DISALLOWZ(trash_arg);
+   RAMFAIL_DISALLOWNULL(trash_arg);
 
    /* TODO: what do i do if the trash isn't empty yet? */
    RAMFAIL_RETURN(rammtx_rmmutex(&trash_arg->ramtrat_mutex));
@@ -130,9 +130,9 @@ ramfail_status_t ramtra_size(size_t *size_arg, ramtra_trash_t *trash_arg)
 {
    size_t sz = 0;
 
-   RAMFAIL_DISALLOWZ(size_arg);
+   RAMFAIL_DISALLOWNULL(size_arg);
    *size_arg = 0;
-   RAMFAIL_DISALLOWZ(trash_arg);
+   RAMFAIL_DISALLOWNULL(trash_arg);
 
    RAMFAIL_RETURN(rammtx_wait(&trash_arg->ramtrat_mutex));
    sz = trash_arg->ramtrat_size;
@@ -148,8 +148,8 @@ ramfail_status_t ramtra_foreach(ramtra_trash_t *trash_arg, ramtra_foreach_t func
    ramfail_status_t e = RAMFAIL_INSANE;
    ramtra_foreachadaptor_t fea = {0};
 
-   RAMFAIL_DISALLOWZ(trash_arg);
-   RAMFAIL_DISALLOWZ(func_arg);
+   RAMFAIL_DISALLOWNULL(trash_arg);
+   RAMFAIL_DISALLOWNULL(func_arg);
 
    fea.ramtrafea_function = func_arg;
    fea.ramtrafea_context = context_arg;
@@ -169,10 +169,10 @@ ramfail_status_t ramtra_foreachadaptor(ramslst_slist_t *node_arg, void *context_
 {
    ramtra_foreachadaptor_t *fea = NULL;
 
-   assert(node_arg);
-   assert(context_arg);
+   assert(node_arg != NULL);
+   assert(context_arg != NULL);
 
    fea = (ramtra_foreachadaptor_t *)context_arg;
-   assert(fea->ramtrafea_function);
+   assert(fea->ramtrafea_function != NULL);
    return fea->ramtrafea_function(node_arg, fea->ramtrafea_context);
 }

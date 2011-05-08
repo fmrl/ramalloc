@@ -35,7 +35,7 @@
 
 ramfail_status_t ramslst_mklist(ramslst_slist_t *slist_arg)
 {
-   RAMFAIL_DISALLOWZ(slist_arg);
+   RAMFAIL_DISALLOWNULL(slist_arg);
 
    slist_arg->ramslstsl_next = NULL;
    return RAMFAIL_OK;
@@ -43,8 +43,8 @@ ramfail_status_t ramslst_mklist(ramslst_slist_t *slist_arg)
 
 ramfail_status_t ramslst_insert(ramslst_slist_t *what_arg, ramslst_slist_t *after_arg)
 {
-   RAMFAIL_DISALLOWZ(what_arg);
-   RAMFAIL_DISALLOWZ(after_arg);
+   RAMFAIL_DISALLOWNULL(what_arg);
+   RAMFAIL_DISALLOWNULL(after_arg);
 
    what_arg->ramslstsl_next = after_arg->ramslstsl_next;
    after_arg->ramslstsl_next = what_arg;
@@ -53,7 +53,7 @@ ramfail_status_t ramslst_insert(ramslst_slist_t *what_arg, ramslst_slist_t *afte
 
 ramfail_status_t ramslst_remove(ramslst_slist_t *pred_arg)
 {
-   RAMFAIL_DISALLOWZ(pred_arg);
+   RAMFAIL_DISALLOWNULL(pred_arg);
 
    if (RAMSLST_ISTAIL(pred_arg))
       return RAMFAIL_NOTFOUND;
@@ -69,7 +69,7 @@ ramfail_status_t ramslst_foreach(ramslst_slist_t *list_arg, ramslst_foreach_t fu
    ramslst_slist_t *node = list_arg;
    ramfail_status_t e = RAMFAIL_TRYAGAIN;
 
-   RAMFAIL_DISALLOWZ(func_arg);
+   RAMFAIL_DISALLOWNULL(func_arg);
 
    while (RAMFAIL_TRYAGAIN == e && node)
    {

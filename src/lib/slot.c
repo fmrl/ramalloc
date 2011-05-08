@@ -70,7 +70,7 @@ ramfail_status_t ramslot_mkpool(ramslot_pool_t *pool_arg, size_t granularity_arg
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
 
    e = ramslot_mkpool2(pool_arg, granularity_arg, nodecap_arg, mknode_arg, rmnode_arg, initslot_arg);
    /* i ensure that 'pool_arg' is zeroed out if something goes wrong. */
@@ -85,11 +85,11 @@ ramfail_status_t ramslot_mkpool2(ramslot_pool_t *pool_arg, size_t granularity_ar
    ramslot_rmnode_t rmnode_arg, ramslot_initslot_t initslot_arg)
 {
 
-   assert(pool_arg);
+   assert(pool_arg != NULL);
    RAMFAIL_DISALLOWZ(granularity_arg);
    RAMFAIL_DISALLOWZ(nodecap_arg);
-   RAMFAIL_DISALLOWZ(mknode_arg);
-   RAMFAIL_DISALLOWZ(rmnode_arg);
+   RAMFAIL_DISALLOWNULL(mknode_arg);
+   RAMFAIL_DISALLOWNULL(rmnode_arg);
    /* 'initslot_arg' is allowed to be NULL. */
 
    RAMFAIL_RETURN(ramvec_mkpool(&pool_arg->ramslotp_vpool, nodecap_arg, &ramslot_mknode));
@@ -108,9 +108,9 @@ ramfail_status_t ramslot_acquire(void **ptr_arg, ramslot_pool_t *pool_arg)
    ramslot_node_t *node = NULL;
    ramvec_node_t *vnode = NULL;
 
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
    *ptr_arg = NULL;
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
 
    /* first, i acquire a memory object from the next available node in the pool. */
    RAMFAIL_RETURN(ramvec_getnode(&vnode, &pool_arg->ramslotp_vpool));
@@ -154,7 +154,7 @@ ramfail_status_t ramslot_release(void *ptr_arg, ramslot_node_t *node_arg)
    int wasfull = 0;
    int isempty = 0;
 
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
 
    RAMMETA_BACKCAST(pool, ramslot_pool_t, ramslotp_vpool, 
       node_arg->ramslotn_vnode.ramvecn_vpool);
@@ -193,8 +193,8 @@ ramfail_status_t ramslot_mknode(ramvec_node_t **node_arg, ramvec_pool_t *pool_ar
    ramslot_pool_t *pool = NULL;
    void *slots = NULL;
 
-   assert(node_arg);
-   assert(pool_arg);
+   assert(node_arg != NULL);
+   assert(pool_arg != NULL);
 
    RAMMETA_BACKCAST(pool, ramslot_pool_t, ramslotp_vpool, pool_arg);
    RAMFAIL_RETURN(pool->ramslotp_mknode(&node, &slots, pool));
@@ -215,9 +215,9 @@ ramfail_status_t ramslot_initnode(ramslot_node_t *node_arg, ramslot_pool_t *pool
 {
    ramslot_index_t i = 0, j = RAMSLOT_NIL_INDEX;
 
-   assert(node_arg);
-   assert(pool_arg);
-   RAMFAIL_DISALLOWZ(slots_arg);
+   assert(node_arg != NULL);
+   assert(pool_arg != NULL);
+   RAMFAIL_DISALLOWNULL(slots_arg);
 
    /* i must initialize the pointer to the beginning of slot storage first. */
    node_arg->ramslotn_slots = slots_arg;
@@ -242,10 +242,10 @@ ramfail_status_t ramslot_calcindex(ramslot_index_t *idx_arg, const ramslot_node_
    div_t d = {0};
    ramslot_pool_t *pool = NULL;
 
-   RAMFAIL_DISALLOWZ(idx_arg);
+   RAMFAIL_DISALLOWNULL(idx_arg);
    *idx_arg = RAMSLOT_NIL_INDEX;
-   RAMFAIL_DISALLOWZ(node_arg);
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(node_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
 
    RAMMETA_BACKCAST(pool, ramslot_pool_t, ramslotp_vpool, 
       node_arg->ramslotn_vnode.ramvecn_vpool);
@@ -266,7 +266,7 @@ ramfail_status_t ramslot_calcindex(ramslot_index_t *idx_arg, const ramslot_node_
 
 ramfail_status_t ramslot_chkpool(const ramslot_pool_t *pool_arg)
 {
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
    
    RAMFAIL_RETURN(ramvec_chkpool(&pool_arg->ramslotp_vpool, &ramslot_chknode));
 
@@ -277,7 +277,7 @@ ramfail_status_t ramslot_chknode(const ramvec_node_t *node_arg)
 {
    ramslot_node_t *node = NULL;
 
-   assert(node_arg);
+   assert(node_arg != NULL);
 
    RAMMETA_BACKCAST(node, ramslot_node_t, ramslotn_vnode, node_arg);
 
@@ -304,7 +304,7 @@ ramfail_status_t ramslot_chkfree(const ramslot_node_t *node_arg)
    size_t i = 0, count = 0;
    ramslot_pool_t *pool = NULL;
 
-   assert(node_arg);
+   assert(node_arg != NULL);
 
    RAMMETA_BACKCAST(pool, ramslot_pool_t, ramslotp_vpool, 
       node_arg->ramslotn_vnode.ramvecn_vpool);
@@ -331,9 +331,9 @@ ramfail_status_t ramslot_chkfree(const ramslot_node_t *node_arg)
 
 ramfail_status_t ramslot_getgranularity(size_t *granularity_arg, const ramslot_pool_t *slotpool_arg)
 {
-   RAMFAIL_DISALLOWZ(granularity_arg);
+   RAMFAIL_DISALLOWNULL(granularity_arg);
    *granularity_arg = 0;
-   RAMFAIL_DISALLOWZ(slotpool_arg);
+   RAMFAIL_DISALLOWNULL(slotpool_arg);
 
    *granularity_arg = slotpool_arg->ramslotp_granularity;
    return RAMFAIL_OK;

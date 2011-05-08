@@ -48,7 +48,7 @@ static ramfail_status_t
 ramfail_status_t ramlin_mkbarrier(ramlin_barrier_t *barrier_arg,
       int capacity_arg)
 {
-   RAMFAIL_DISALLOWZ(barrier_arg);
+   RAMFAIL_DISALLOWNULL(barrier_arg);
    RAMFAIL_DISALLOWZ(capacity_arg);
 
    barrier_arg->ramlinb_capacity = capacity_arg;
@@ -63,7 +63,7 @@ ramfail_status_t ramlin_mkbarrier(ramlin_barrier_t *barrier_arg,
 
 ramfail_status_t ramlin_rmbarrier(ramlin_barrier_t *barrier_arg)
 {
-   RAMFAIL_DISALLOWZ(barrier_arg);
+   RAMFAIL_DISALLOWNULL(barrier_arg);
    /* i don't allow destruction of the barrier while it's in use. */
    RAMFAIL_CONFIRM(RAMFAIL_UNSUPPORTED,
          barrier_arg->ramlinb_vacancy == barrier_arg->ramlinb_capacity);
@@ -79,7 +79,7 @@ ramfail_status_t ramlin_waitonbarrier(ramlin_barrier_t *barrier_arg)
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(barrier_arg);
+   RAMFAIL_DISALLOWNULL(barrier_arg);
 
    RAMFAIL_RETURN(rammtx_wait(&barrier_arg->ramlinb_mutex));
    e = ramlin_waitonbarrier2(barrier_arg);

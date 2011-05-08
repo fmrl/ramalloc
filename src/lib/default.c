@@ -90,9 +90,9 @@ ramfail_status_t ramdefault_query(size_t *size_arg, void *ptr_arg)
    size_t sz = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(size_arg);
+   RAMFAIL_DISALLOWNULL(size_arg);
    *size_arg = 0;
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
 
    e = rampara_query(&parapool, &sz, ptr_arg);
    switch (e)

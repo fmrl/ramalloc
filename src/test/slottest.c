@@ -142,7 +142,7 @@ ramfail_status_t main2(int argc, char *argv[])
 
 ramfail_status_t initdefaults(ramtest_params_t *params_arg)
 {
-   RAMFAIL_DISALLOWZ(params_arg);
+   RAMFAIL_DISALLOWNULL(params_arg);
    memset(params_arg, 0, sizeof(*params_arg));
 
    params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
@@ -161,9 +161,9 @@ ramfail_status_t getpool(ramslot_pool_t **pool_arg, void *extra_arg,
 {
    extra_t *x = NULL;
 
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
    *pool_arg = NULL;
-   RAMFAIL_DISALLOWZ(extra_arg);
+   RAMFAIL_DISALLOWNULL(extra_arg);
    x = (extra_t *)extra_arg;
    RAMANNOTATE_UNUSEDARG(threadidx_arg);
 
@@ -177,7 +177,7 @@ ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
    ramslot_pool_t *pool = NULL;
    void *p = NULL;
 
-   RAMFAIL_DISALLOWZ(desc_arg);
+   RAMFAIL_DISALLOWNULL(desc_arg);
    memset(desc_arg, 0, sizeof(*desc_arg));
    RAMFAIL_DISALLOWZ(size_arg);
 
@@ -194,7 +194,7 @@ ramfail_status_t release(ramtest_allocdesc_t *desc_arg)
 {
    slot_t *s = NULL;
 
-   RAMFAIL_DISALLOWZ(desc_arg);
+   RAMFAIL_DISALLOWNULL(desc_arg);
 
    s = (slot_t *)desc_arg->ramtestad_ptr;
    RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, 0 == RAMSIG_CMP(s->s_sig, thesig));
@@ -209,10 +209,10 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
 {
    extra_t *x = NULL;
 
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
    *pool_arg = NULL;
-   RAMFAIL_DISALLOWZ(ptr_arg);
-   RAMFAIL_DISALLOWZ(extra_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
+   RAMFAIL_DISALLOWNULL(extra_arg);
 
    x = (extra_t *)extra_arg;
    /* slot pools don't support the query option, so i emulate it by
@@ -245,7 +245,7 @@ ramfail_status_t runtest(const ramtest_params_t *params_arg)
    ramfail_status_t e = RAMFAIL_INSANE;
    extra_t x = {0};
 
-   RAMFAIL_DISALLOWZ(params_arg);
+   RAMFAIL_DISALLOWNULL(params_arg);
 
    e = runtest2(params_arg, &x);
 
@@ -308,11 +308,11 @@ ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg,
 {
    node_t *node = NULL;
 
-   RAMFAIL_DISALLOWZ(node_arg);
+   RAMFAIL_DISALLOWNULL(node_arg);
    *node_arg = NULL;
-   RAMFAIL_DISALLOWZ(slots_arg);
+   RAMFAIL_DISALLOWNULL(slots_arg);
    *slots_arg = NULL;
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
 
    node = (node_t *)malloc(sizeof(node_t));
    if (node)
@@ -327,7 +327,7 @@ ramfail_status_t mknode(ramslot_node_t **node_arg, void **slots_arg,
 
 ramfail_status_t rmnode(ramslot_node_t *node_arg)
 {
-   RAMFAIL_DISALLOWZ(node_arg);
+   RAMFAIL_DISALLOWNULL(node_arg);
 
    free(node_arg);
 
@@ -339,8 +339,8 @@ ramfail_status_t initslot(void *slot_arg, ramslot_node_t *node_arg)
    node_t *node = NULL;
    slot_t *slot = NULL;
 
-   RAMFAIL_DISALLOWZ(slot_arg);
-   RAMFAIL_DISALLOWZ(node_arg);
+   RAMFAIL_DISALLOWNULL(slot_arg);
+   RAMFAIL_DISALLOWNULL(node_arg);
 
    RAMMETA_BACKCAST(node, node_t, n_slotnode, node_arg);
    slot = (slot_t *)slot_arg;

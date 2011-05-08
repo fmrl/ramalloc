@@ -124,7 +124,7 @@ ramfail_status_t main2(int argc, char *argv[])
 
 ramfail_status_t initdefaults(ramtest_params_t *params_arg)
 {
-   RAMFAIL_DISALLOWZ(params_arg);
+   RAMFAIL_DISALLOWNULL(params_arg);
    memset(params_arg, 0, sizeof(*params_arg));
 
    params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
@@ -143,7 +143,7 @@ ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
 {
    void *p = NULL;
 
-   RAMFAIL_DISALLOWZ(desc_arg);
+   RAMFAIL_DISALLOWNULL(desc_arg);
    memset(desc_arg, 0, sizeof(*desc_arg));
    RAMFAIL_DISALLOWZ(size_arg);
    RAMANNOTATE_UNUSEDARG(extra_arg);
@@ -162,7 +162,7 @@ ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
 
 ramfail_status_t release(ramtest_allocdesc_t *desc_arg)
 {
-   RAMFAIL_DISALLOWZ(desc_arg);
+   RAMFAIL_DISALLOWNULL(desc_arg);
 
    RAMFAIL_RETURN(ramdefault_discard(desc_arg->ramtestad_ptr));
 
@@ -174,9 +174,9 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
    *pool_arg = NULL;
-   RAMFAIL_DISALLOWZ(extra_arg);
+   RAMFAIL_DISALLOWNULL(extra_arg);
 
    e = ramdefault_query(size_arg, ptr_arg);
    switch (e)
@@ -217,7 +217,7 @@ ramfail_status_t runtest(const ramtest_params_t *params_arg)
    ramfail_status_t e = RAMFAIL_INSANE;
    extra_t x = {0};
 
-   RAMFAIL_DISALLOWZ(params_arg);
+   RAMFAIL_DISALLOWNULL(params_arg);
 
    e = runtest2(params_arg, &x);
 

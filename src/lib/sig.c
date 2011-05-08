@@ -38,8 +38,8 @@ ramfail_status_t ramsig_init(ramsig_signature_t *sig_arg, const char *str_arg)
 {
    size_t i = 0;
 
-   RAMFAIL_DISALLOWZ(sig_arg);
-   RAMFAIL_DISALLOWZ(str_arg);
+   RAMFAIL_DISALLOWNULL(sig_arg);
+   RAMFAIL_DISALLOWNULL(str_arg);
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, '\0' != *str_arg);
 
    for (i = 0; i < sizeof(uint32_t) && '\0' != str_arg[i]; ++i)

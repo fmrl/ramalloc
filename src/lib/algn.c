@@ -88,7 +88,7 @@ ramfail_status_t ramalgn_mkpool(ramalgn_pool_t *pool_arg, ramopt_appetite_t appe
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramalgn_theglobals.ramalgng_initflag);
 
    e = ramalgn_mkpool2(pool_arg, appetite_arg, granularity_arg, tag_arg);
@@ -104,7 +104,7 @@ ramfail_status_t ramalgn_mkpool2(ramalgn_pool_t *pool_arg, ramopt_appetite_t app
 {
    size_t capacity = 0;
 
-   assert(pool_arg);
+   assert(pool_arg != NULL);
    RAMFAIL_DISALLOWZ(granularity_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);
 
@@ -126,9 +126,9 @@ ramfail_status_t ramalgn_mkpool2(ramalgn_pool_t *pool_arg, ramopt_appetite_t app
 
 ramfail_status_t ramalgn_acquire(void **ptr_arg, ramalgn_pool_t *pool_arg)
 {
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
    *ptr_arg = NULL;
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);
 
    RAMFAIL_RETURN(ramslot_acquire(ptr_arg, &pool_arg->ramalgnp_slotpool));
@@ -153,8 +153,8 @@ ramfail_status_t ramalgn_findnode(ramalgn_node_t **node_arg, char *ptr_arg)
    ramalgn_footer_t *foot = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   assert(node_arg);
-   assert(ptr_arg);
+   assert(node_arg != NULL);
+   assert(ptr_arg != NULL);
    assert(ramalgn_theglobals.ramalgng_initflag);
 
    e = ramfoot_getstorage((void **)&foot, &ramalgn_theglobals.ramalgng_footerspec, ptr_arg);
@@ -176,7 +176,7 @@ ramfail_status_t ramalgn_findnode(ramalgn_node_t **node_arg, char *ptr_arg)
 
 ramfail_status_t ramalgn_chkpool(const ramalgn_pool_t *pool_arg)
 {
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);
 
    RAMFAIL_RETURN(rampg_chkpool(&pool_arg->ramalgnp_pgpool));
@@ -192,11 +192,11 @@ ramfail_status_t ramalgn_mknode(ramslot_node_t **node_arg, void **slots_arg, ram
    ramfail_status_t e = RAMFAIL_INSANE;
    ramalgn_node_t *node = NULL;
 
-   RAMFAIL_DISALLOWZ(node_arg);
+   RAMFAIL_DISALLOWNULL(node_arg);
    *node_arg = NULL;
-   RAMFAIL_DISALLOWZ(slots_arg);
+   RAMFAIL_DISALLOWNULL(slots_arg);
    *slots_arg = NULL;
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);
 
    RAMMETA_BACKCAST(pool, ramalgn_pool_t, ramalgnp_slotpool, pool_arg);
@@ -219,10 +219,10 @@ ramfail_status_t ramalgn_mknode2(ramalgn_node_t **node_arg, ramalgn_pool_t *pool
 {
    ramalgn_footer_t *foot = NULL;
 
-   RAMFAIL_DISALLOWZ(node_arg);
+   RAMFAIL_DISALLOWNULL(node_arg);
    *node_arg = NULL;
-   RAMFAIL_DISALLOWZ(pool_arg);
-   RAMFAIL_DISALLOWZ(page_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
+   RAMFAIL_DISALLOWNULL(page_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);
 
    /* i need to write a footer to the page to ensure that i can get to the pool
@@ -236,7 +236,7 @@ ramfail_status_t ramalgn_mknode2(ramalgn_node_t **node_arg, ramalgn_pool_t *pool
 
 ramfail_status_t ramalgn_rmnode(ramslot_node_t *node_arg)
 {
-   RAMFAIL_DISALLOWZ(node_arg);
+   RAMFAIL_DISALLOWNULL(node_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);
 
    RAMFAIL_RETURN(rampg_release(node_arg->ramslotn_slots));
@@ -250,9 +250,9 @@ ramfail_status_t ramalgn_query(ramalgn_pool_t **apool_arg, void *ptr_arg)
    ramslot_pool_t *spool = NULL;
    ramalgn_pool_t *apool = NULL;
 
-   RAMFAIL_DISALLOWZ(apool_arg);
+   RAMFAIL_DISALLOWNULL(apool_arg);
    *apool_arg = NULL;
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramalgn_theglobals.ramalgng_initflag);
 
    e = ramalgn_findnode(&anode, (char *)ptr_arg);
@@ -279,9 +279,9 @@ ramfail_status_t ramalgn_query(ramalgn_pool_t **apool_arg, void *ptr_arg)
 
 ramfail_status_t ramalgn_gettag(const ramalgn_tag_t **tag_arg, const ramalgn_pool_t *apool_arg)
 {
-   RAMFAIL_DISALLOWZ(tag_arg);
+   RAMFAIL_DISALLOWNULL(tag_arg);
    *tag_arg = NULL;
-   RAMFAIL_DISALLOWZ(apool_arg);
+   RAMFAIL_DISALLOWNULL(apool_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);
 
    *tag_arg = &apool_arg->ramalgnp_tag;
@@ -292,7 +292,7 @@ ramfail_status_t ramalgn_getgranularity(size_t *granularity_arg, const ramalgn_p
 {
    RAMFAIL_DISALLOWZ(granularity_arg);
    *granularity_arg = 0;
-   RAMFAIL_DISALLOWZ(apool_arg);
+   RAMFAIL_DISALLOWNULL(apool_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);
 
    RAMFAIL_RETURN(ramslot_getgranularity(granularity_arg, &apool_arg->ramalgnp_slotpool));

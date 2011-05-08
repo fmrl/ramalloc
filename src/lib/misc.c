@@ -38,8 +38,8 @@ ramfail_status_t rammisc_swap(void *ptr0_arg, void *ptr1_arg, size_t count_arg)
    char *p0 = (char *)ptr0_arg, *p1 = (char *)ptr1_arg;
    size_t i = 0;
 
-   RAMFAIL_DISALLOWZ(ptr0_arg);
-   RAMFAIL_DISALLOWZ(ptr1_arg);
+   RAMFAIL_DISALLOWNULL(ptr0_arg);
+   RAMFAIL_DISALLOWNULL(ptr1_arg);
 
    for (i = 0; i < count_arg; ++i)
    {

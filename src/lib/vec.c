@@ -52,9 +52,9 @@ static ramfail_status_t ramvec_chkavail(ramlist_list_t *list_arg, void *context_
 ramfail_status_t ramvec_mkpool2(ramvec_pool_t *pool_arg, size_t nodecap_arg, 
    ramvec_mknode_t mknode_arg)
 {
-   assert(pool_arg);
+   assert(pool_arg != NULL);
    RAMFAIL_DISALLOWZ(nodecap_arg);
-   RAMFAIL_DISALLOWZ(mknode_arg);
+   RAMFAIL_DISALLOWNULL(mknode_arg);
 
    RAMFAIL_RETURN(ramlist_mklist(&pool_arg->ramvecvp_inv));
    RAMFAIL_RETURN(ramlist_mklist(&pool_arg->ramvecvp_avail));
@@ -69,7 +69,7 @@ ramfail_status_t ramvec_mkpool(ramvec_pool_t *pool_arg, size_t nodecap_arg,
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
 
    e = ramvec_mkpool2(pool_arg, nodecap_arg, mknode_arg);
    /* i ensure that 'pool_arg' is zeroed out if something goes wrong. */
@@ -83,10 +83,10 @@ ramfail_status_t ramvec_acquire(ramvec_node_t *node_arg, int isfull_arg)
 {
    ramvec_pool_t *pool = NULL;
 
-   RAMFAIL_DISALLOWZ(node_arg);
+   RAMFAIL_DISALLOWNULL(node_arg);
 
    pool = node_arg->ramvecn_vpool;
-   assert(pool);
+   assert(pool != NULL);
 
    /* now, if the node is full, it becomes unavailable. i remove it from the
     * availability stack. i can ignore the return value of 'ramlist_pop()' because
@@ -106,9 +106,9 @@ ramfail_status_t ramvec_getnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_ar
 {
    int hastail = 0;
 
-   RAMFAIL_DISALLOWZ(node_arg);
+   RAMFAIL_DISALLOWNULL(node_arg);
    *node_arg = NULL;
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
 
    RAMFAIL_RETURN(ramlist_hastail(&hastail, &pool_arg->ramvecvp_avail));
    if (hastail)
@@ -141,10 +141,10 @@ ramfail_status_t ramvec_release(ramvec_node_t *node_arg, int wasfull_arg, int is
 {
    ramvec_pool_t *pool = NULL;
 
-   RAMFAIL_DISALLOWZ(node_arg);
+   RAMFAIL_DISALLOWNULL(node_arg);
 
    pool = node_arg->ramvecn_vpool;
-   assert(pool);
+   assert(pool != NULL);
 
    /* if the node is now empty, i can discard it by removing it from both
     * the inventory and availability lists. */
@@ -176,8 +176,8 @@ ramfail_status_t ramvec_initnode(ramvec_node_t *node_arg, ramvec_pool_t *pool_ar
    int hastail = 0;
 #endif
 
-   assert(node_arg);
-   assert(pool_arg);
+   assert(node_arg != NULL);
+   assert(pool_arg != NULL);
    /* the pool must be empty if a new node is to be be initialized. */
    assert(RAMFAIL_OK == ramlist_hastail(&hastail, &pool_arg->ramvecvp_avail) && !hastail);
 
@@ -193,7 +193,7 @@ ramfail_status_t ramvec_chkpool(const ramvec_pool_t *pool_arg, ramvec_chknode_t 
    ramlist_list_t *first = NULL;
    ramvec_chkcontext_t c = {0};
 
-   RAMFAIL_DISALLOWZ(pool_arg);
+   RAMFAIL_DISALLOWNULL(pool_arg);
 
    c.ramveccc_pool = pool_arg;
    c.ramveccc_chknode = chknode_arg;
@@ -219,8 +219,8 @@ ramfail_status_t ramvec_chkinv(ramlist_list_t *list_arg, void *context_arg)
    const ramvec_node_t *node = NULL;
    const ramvec_chkcontext_t *c = (ramvec_chkcontext_t *)context_arg;
 
-   RAMFAIL_DISALLOWZ(list_arg);
-   assert(context_arg);
+   RAMFAIL_DISALLOWNULL(list_arg);
+   assert(context_arg != NULL);
 
    RAMFAIL_RETURN(ramlist_chklist(list_arg));
    RAMMETA_BACKCAST(node, ramvec_node_t, ramvecn_inv, list_arg);
@@ -239,8 +239,8 @@ ramfail_status_t ramvec_chkavail(ramlist_list_t *list_arg, void *context_arg)
    const ramvec_node_t *node = NULL;
    const ramvec_chkcontext_t *c = (ramvec_chkcontext_t *)context_arg;
 
-   RAMFAIL_DISALLOWZ(list_arg);
-   assert(context_arg);
+   RAMFAIL_DISALLOWNULL(list_arg);
+   assert(context_arg != NULL);
 
    RAMFAIL_RETURN(ramlist_chklist(list_arg));
    RAMMETA_BACKCAST(node, ramvec_node_t, ramvecn_avail, list_arg);

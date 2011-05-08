@@ -93,6 +93,13 @@ typedef void (*ramfail_reporter_t)(ramfail_status_t code_arg, const char *expr_a
 #endif
 
 #if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_DISALLOWNULL(Value) do {} while (0)
+#else
+#  define RAMFAIL_DISALLOWNULL(Value) \
+   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, NULL != (Value))
+#endif
+
+#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
 #  define RAMFAIL_RETURN2(Result, ResultCache) do {} while (0)
 #else
 #  define RAMFAIL_RETURN2(Result, ResultCache) \

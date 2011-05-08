@@ -66,7 +66,7 @@ ramfail_status_t ramuix_pagesize(size_t *pagesz_arg)
 {
    long pgsz = 0;
 
-   RAMFAIL_DISALLOWZ(pagesz_arg);
+   RAMFAIL_DISALLOWNULL(pagesz_arg);
    *pagesz_arg = 0;
 
    /* on Linux, the memory mapping granularity is the page size. */
@@ -91,7 +91,7 @@ ramfail_status_t ramuix_cpucount(size_t *cpucount_arg)
 {
    long cpucount = 0;
 
-   RAMFAIL_DISALLOWZ(cpucount_arg);
+   RAMFAIL_DISALLOWNULL(cpucount_arg);
    *cpucount_arg = 0;
 
    errno = 0;
@@ -132,7 +132,7 @@ ramfail_status_t ramuix_reserve(char **pages_arg)
    size_t pgsz = 0;
    char *p = NULL;
 
-   RAMFAIL_DISALLOWZ(pages_arg);
+   RAMFAIL_DISALLOWNULL(pages_arg);
    *pages_arg = NULL;
 
    RAMFAIL_RETURN(rammem_pagesize(&pgsz));
@@ -149,7 +149,7 @@ ramfail_status_t ramuix_bulkalloc(char **pages_arg)
    size_t pgsz = 0;
    char *p = NULL;
 
-   RAMFAIL_DISALLOWZ(pages_arg);
+   RAMFAIL_DISALLOWNULL(pages_arg);
    *pages_arg = NULL;
 
    RAMFAIL_RETURN(rammem_pagesize(&pgsz));
@@ -166,7 +166,7 @@ ramfail_status_t ramuix_release(char *pages_arg)
    size_t pgsz = 0;
    int ispage = 0;
 
-   RAMFAIL_DISALLOWZ(pages_arg);
+   RAMFAIL_DISALLOWNULL(pages_arg);
    RAMFAIL_RETURN(rammem_ispage(&ispage, pages_arg));
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
 
@@ -198,9 +198,9 @@ ramfail_status_t ramuix_basename2(char *dest_arg, size_t len_arg,
    char pathn[RAMSYS_PATH_MAX];
    const char *bn = NULL;
 
-   RAMFAIL_DISALLOWZ(dest_arg);
+   RAMFAIL_DISALLOWNULL(dest_arg);
    RAMFAIL_DISALLOWZ(len_arg);
-   RAMFAIL_DISALLOWZ(pathn_arg);
+   RAMFAIL_DISALLOWNULL(pathn_arg);
 
    strncpy(pathn, pathn_arg, RAMSYS_PATH_MAX);
    pathn[RAMSYS_PATH_MAX - 1] = '\0';

@@ -50,7 +50,7 @@ ramfail_status_t rampara_mkpool(rampara_pool_t *parapool_arg, ramopt_appetite_t 
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(parapool_arg);
+   RAMFAIL_DISALLOWNULL(parapool_arg);
 
    e = rampara_mkpool2(parapool_arg, appetite_arg, disposalratio_arg);
    if (RAMFAIL_OK == e)
@@ -64,7 +64,7 @@ ramfail_status_t rampara_mkpool(rampara_pool_t *parapool_arg, ramopt_appetite_t 
 
 ramfail_status_t rampara_mkpool2(rampara_pool_t *parapool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg)
 {
-   assert(parapool_arg);
+   assert(parapool_arg != NULL);
    RAMFAIL_DISALLOWZ(disposalratio_arg);
 
    RAMFAIL_RETURN(ramtls_mkkey(&parapool_arg->ramparap_tlskey));
@@ -76,7 +76,7 @@ ramfail_status_t rampara_mkpool2(rampara_pool_t *parapool_arg, ramopt_appetite_t
 
 ramfail_status_t rampara_rmpool(rampara_pool_t *parapool_arg)
 {
-   RAMFAIL_DISALLOWZ(parapool_arg);
+   RAMFAIL_DISALLOWNULL(parapool_arg);
 
    RAMFAIL_RETURN(ramtls_rmkey(parapool_arg->ramparap_tlskey));
    memset(parapool_arg, 0, sizeof(*parapool_arg));
@@ -89,9 +89,9 @@ ramfail_status_t rampara_acquire(void **newptr_arg, rampara_pool_t *parapool_arg
    rampara_tls_t *tls = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(newptr_arg);
+   RAMFAIL_DISALLOWNULL(newptr_arg);
    *newptr_arg = NULL;
-   RAMFAIL_DISALLOWZ(parapool_arg);
+   RAMFAIL_DISALLOWNULL(parapool_arg);
    RAMFAIL_DISALLOWZ(size_arg);
 
    RAMFAIL_RETURN(rampara_rcltls(&tls, parapool_arg));
@@ -115,9 +115,9 @@ ramfail_status_t rampara_reclaim(size_t *count_arg, rampara_pool_t *parapool_arg
 {
    rampara_tls_t *tls = NULL;
 
-   RAMFAIL_DISALLOWZ(count_arg);
+   RAMFAIL_DISALLOWNULL(count_arg);
    *count_arg = 0;
-   RAMFAIL_DISALLOWZ(parapool_arg);
+   RAMFAIL_DISALLOWNULL(parapool_arg);
    RAMFAIL_DISALLOWZ(goal_arg);
 
    RAMFAIL_RETURN(rampara_rcltls(&tls, parapool_arg));
@@ -130,7 +130,7 @@ ramfail_status_t rampara_flush(rampara_pool_t *parapool_arg)
 {
    rampara_tls_t *tls = NULL;
 
-   RAMFAIL_DISALLOWZ(parapool_arg);
+   RAMFAIL_DISALLOWNULL(parapool_arg);
 
    RAMFAIL_RETURN(rampara_rcltls(&tls, parapool_arg));
    RAMFAIL_RETURN(ramlazy_flush(&tls->ramparat_lazypool));
@@ -142,7 +142,7 @@ ramfail_status_t rampara_chkpool(const rampara_pool_t *parapool_arg)
 {
    rampara_tls_t *tls = NULL;
 
-   RAMFAIL_DISALLOWZ(parapool_arg);
+   RAMFAIL_DISALLOWNULL(parapool_arg);
 
    /* TODO: i'm not happy with the following cast; i really need to reevaluate the 
     * usefullness of *const* in standard C. */
@@ -157,11 +157,11 @@ ramfail_status_t rampara_query(rampara_pool_t **parapool_arg, size_t *size_arg, 
    rampara_tls_t *tls = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(parapool_arg);
+   RAMFAIL_DISALLOWNULL(parapool_arg);
    *parapool_arg = NULL;
-   RAMFAIL_DISALLOWZ(size_arg);
+   RAMFAIL_DISALLOWNULL(size_arg);
    *size_arg = 0;
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
 
    e = rampara_querytls(&tls, size_arg, ptr_arg);
    switch (e)
@@ -185,9 +185,9 @@ ramfail_status_t rampara_mktls(rampara_tls_t **newtls_arg, rampara_pool_t *parap
    rampara_tls_t *p = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(newtls_arg);
+   RAMFAIL_DISALLOWNULL(newtls_arg);
    *newtls_arg = NULL;
-   RAMFAIL_DISALLOWZ(parapool_arg);
+   RAMFAIL_DISALLOWNULL(parapool_arg);
 
    /* i'm not terribly concerned about the use of a heap allocator here. it's an allocation
     * that will occur once per thread, which isn't going to impact performance. if the caller
@@ -214,9 +214,9 @@ ramfail_status_t rampara_rcltls(rampara_tls_t **tls_arg, rampara_pool_t *parapoo
    rampara_tls_t *tls = NULL;
    void *p = NULL;
 
-   RAMFAIL_DISALLOWZ(tls_arg);
+   RAMFAIL_DISALLOWNULL(tls_arg);
    *tls_arg = NULL;
-   RAMFAIL_DISALLOWZ(parapool_arg);
+   RAMFAIL_DISALLOWNULL(parapool_arg);
 
    RAMFAIL_RETURN(ramtls_rcl(&p, parapool_arg->ramparap_tlskey));
    tls = (rampara_tls_t *)p;
@@ -236,9 +236,9 @@ ramfail_status_t rampara_querytls(rampara_tls_t **tls_arg, size_t *size_arg, voi
    ramlazy_pool_t *lazypool = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   assert(tls_arg);
-   assert(size_arg);
-   assert(ptr_arg);
+   assert(tls_arg != NULL);
+   assert(size_arg != NULL);
+   assert(ptr_arg != NULL);
 
    e = ramlazy_query(&lazypool, size_arg, ptr_arg);
    switch (e)

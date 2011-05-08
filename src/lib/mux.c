@@ -43,7 +43,7 @@ ramfail_status_t rammux_mkpool(rammux_pool_t *mpool_arg, ramopt_appetite_t appet
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(mpool_arg);
+   RAMFAIL_DISALLOWNULL(mpool_arg);
 
    e = rammux_mkpool2(mpool_arg, appetite_arg);
    if (RAMFAIL_OK == e)
@@ -57,7 +57,7 @@ ramfail_status_t rammux_mkpool(rammux_pool_t *mpool_arg, ramopt_appetite_t appet
 
 ramfail_status_t rammux_mkpool2(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg)
 {
-   assert(mpool_arg);
+   assert(mpool_arg != NULL);
 
    memset(mpool_arg, 0, sizeof(*mpool_arg));
    /* it doesn't seem like increments smaller than the address word make sense, given the
@@ -78,9 +78,9 @@ ramfail_status_t rammux_acquire(void **newptr_arg, rammux_pool_t *mpool_arg, siz
    ramalgn_pool_t *apool = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(newptr_arg);
+   RAMFAIL_DISALLOWNULL(newptr_arg);
    *newptr_arg = NULL;
-   RAMFAIL_DISALLOWZ(mpool_arg);
+   RAMFAIL_DISALLOWNULL(mpool_arg);
    RAMFAIL_DISALLOWZ(size_arg);
 
    e = rammux_getalgnpool(&apool, size_arg, mpool_arg);
@@ -105,10 +105,10 @@ ramfail_status_t rammux_getalgnpool(ramalgn_pool_t **apool_arg, size_t size_arg,
 {
    size_t idx = 0;
 
-   RAMFAIL_DISALLOWZ(apool_arg);
+   RAMFAIL_DISALLOWNULL(apool_arg);
    *apool_arg = NULL;
    RAMFAIL_DISALLOWZ(size_arg);
-   RAMFAIL_DISALLOWZ(mpool_arg);
+   RAMFAIL_DISALLOWNULL(mpool_arg);
 
    idx = (size_arg + mpool_arg->rammuxp_step - 1) / mpool_arg->rammuxp_step - 1;
    /* if i can't accomidate the size of the pool, i need to inform the caller. */
@@ -160,11 +160,11 @@ ramfail_status_t rammux_query(rammux_pool_t **mpool_arg, size_t *size_arg, void 
    const ramalgn_tag_t *tag = NULL;
    ramsig_signature_t sig = {0};
 
-   RAMFAIL_DISALLOWZ(mpool_arg);
+   RAMFAIL_DISALLOWNULL(mpool_arg);
    *mpool_arg = NULL;
    RAMFAIL_DISALLOWZ(size_arg);
    *size_arg = 0;
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
 
    e = ramalgn_query(&apool, ptr_arg);
    switch (e)

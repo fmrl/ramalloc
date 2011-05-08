@@ -55,7 +55,7 @@ ramfail_status_t ramwin_initialize()
 
 ramfail_status_t ramwin_pagesize(size_t *pagesz_arg)
 {
-   RAMFAIL_DISALLOWZ(pagesz_arg);
+   RAMFAIL_DISALLOWNULL(pagesz_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwPageSize != 0);
 
    *pagesz_arg = ramwin_sysinfo.dwPageSize;
@@ -65,7 +65,7 @@ ramfail_status_t ramwin_pagesize(size_t *pagesz_arg)
 
 ramfail_status_t ramwin_mmapgran(size_t *mmapgran_arg)
 {
-   RAMFAIL_DISALLOWZ(mmapgran_arg);
+   RAMFAIL_DISALLOWNULL(mmapgran_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwAllocationGranularity != 0);
 
    *mmapgran_arg = ramwin_sysinfo.dwAllocationGranularity;
@@ -75,7 +75,7 @@ ramfail_status_t ramwin_mmapgran(size_t *mmapgran_arg)
 
 ramfail_status_t ramwin_cpucount(size_t *cpucount_arg)
 {
-   RAMFAIL_DISALLOWZ(cpucount_arg);
+   RAMFAIL_DISALLOWNULL(cpucount_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwNumberOfProcessors != 0);
 
    *cpucount_arg = ramwin_sysinfo.dwNumberOfProcessors;
@@ -87,7 +87,7 @@ ramfail_status_t ramwin_commit(char *page_arg)
 {
    int ispage = 0;
 
-   RAMFAIL_DISALLOWZ(page_arg);
+   RAMFAIL_DISALLOWNULL(page_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwPageSize != 0);
    RAMFAIL_RETURN(rammem_ispage(&ispage, page_arg));
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
@@ -103,7 +103,7 @@ ramfail_status_t ramwin_decommit(char *page_arg)
 {
    int ispage = 0;
 
-   RAMFAIL_DISALLOWZ(page_arg);
+   RAMFAIL_DISALLOWNULL(page_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwPageSize != 0);
    RAMFAIL_RETURN(rammem_ispage(&ispage, page_arg));
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
@@ -118,7 +118,7 @@ ramfail_status_t ramwin_reset(char *page_arg)
 {
    int ispage = 0;
 
-   RAMFAIL_DISALLOWZ(page_arg);
+   RAMFAIL_DISALLOWNULL(page_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwPageSize != 0);
    RAMFAIL_RETURN(rammem_ispage(&ispage, page_arg));
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
@@ -132,7 +132,7 @@ ramfail_status_t ramwin_reset(char *page_arg)
 
 ramfail_status_t ramwin_reserve(char **pages_arg)
 {
-   RAMFAIL_DISALLOWZ(pages_arg);
+   RAMFAIL_DISALLOWNULL(pages_arg);
    *pages_arg = NULL;
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwAllocationGranularity != 0);
 
@@ -145,7 +145,7 @@ ramfail_status_t ramwin_reserve(char **pages_arg)
 
 ramfail_status_t ramwin_bulkalloc(char **pages_arg)
 {
-   RAMFAIL_DISALLOWZ(pages_arg);
+   RAMFAIL_DISALLOWNULL(pages_arg);
    *pages_arg = NULL;
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwAllocationGranularity != 0);
 
@@ -160,7 +160,7 @@ ramfail_status_t ramwin_release(char *pages_arg)
 {
    int ispage = 0;
 
-   RAMFAIL_DISALLOWZ(pages_arg);
+   RAMFAIL_DISALLOWNULL(pages_arg);
    RAMFAIL_RETURN(rammem_ispage(&ispage, pages_arg));
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
    
@@ -174,7 +174,7 @@ ramfail_status_t ramwin_mktlskey(ramwin_tlskey_t *key_arg)
 {
    ramwin_tlskey_t k = RAMWIN_NILTLSKEY;
 
-   RAMFAIL_DISALLOWZ(key_arg);
+   RAMFAIL_DISALLOWNULL(key_arg);
    *key_arg = RAMWIN_NILTLSKEY;
 
    k = TlsAlloc();
@@ -201,7 +201,7 @@ ramfail_status_t ramwin_rcltls(void **value_arg, ramwin_tlskey_t key_arg)
 {
    void *p = NULL;
 
-   RAMFAIL_DISALLOWZ(value_arg);
+   RAMFAIL_DISALLOWNULL(value_arg);
    *value_arg = NULL;
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, key_arg != RAMWIN_NILTLSKEY);
 
@@ -222,7 +222,7 @@ ramfail_status_t ramwin_rcltls(void **value_arg, ramwin_tlskey_t key_arg)
 ramfail_status_t ramwin_stotls(ramwin_tlskey_t key_arg, void *value_arg)
 {
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, key_arg != RAMWIN_NILTLSKEY);
-   RAMFAIL_DISALLOWZ(value_arg);
+   RAMFAIL_DISALLOWNULL(value_arg);
 
    if (TlsSetValue(key_arg, value_arg))
       return RAMFAIL_OK;
@@ -232,7 +232,7 @@ ramfail_status_t ramwin_stotls(ramwin_tlskey_t key_arg, void *value_arg)
 
 ramfail_status_t ramwin_mkmutex(ramwin_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWZ(mutex_arg);
+   RAMFAIL_DISALLOWNULL(mutex_arg);
 
    InitializeCriticalSection(mutex_arg);
 
@@ -241,7 +241,7 @@ ramfail_status_t ramwin_mkmutex(ramwin_mutex_t *mutex_arg)
 
 ramfail_status_t ramwin_rmmutex(ramwin_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWZ(mutex_arg);
+   RAMFAIL_DISALLOWNULL(mutex_arg);
 
    DeleteCriticalSection(mutex_arg);
 
@@ -251,7 +251,7 @@ ramfail_status_t ramwin_rmmutex(ramwin_mutex_t *mutex_arg)
 
 ramfail_status_t ramwin_waitformutex(ramwin_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWZ(mutex_arg);
+   RAMFAIL_DISALLOWNULL(mutex_arg);
 
    EnterCriticalSection(mutex_arg);
 
@@ -260,7 +260,7 @@ ramfail_status_t ramwin_waitformutex(ramwin_mutex_t *mutex_arg)
 
 ramfail_status_t ramwin_quitmutex(ramwin_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWZ(mutex_arg);
+   RAMFAIL_DISALLOWNULL(mutex_arg);
 
    LeaveCriticalSection(mutex_arg);
 
@@ -272,9 +272,9 @@ ramfail_status_t ramwin_mkthread(ramwin_thread_t *thread_arg,
 {
    HANDLE thread = NULL;
 
-   RAMFAIL_DISALLOWZ(thread_arg);
+   RAMFAIL_DISALLOWNULL(thread_arg);
    *thread_arg = NULL;
-   RAMFAIL_DISALLOWZ(main_arg);
+   RAMFAIL_DISALLOWNULL(main_arg);
 
    /* TODO: casting 'main_arg' to LPTHREAD_START_ROUTINE simplifies the code but it
     * sacrifies type safety. if i end up needing a more sophisticated threading
@@ -291,9 +291,9 @@ ramfail_status_t ramwin_jointhread(ramfail_status_t *reply_arg,
 {
    DWORD exitcode = STILL_ACTIVE, result = WAIT_FAILED;
 
-   RAMFAIL_DISALLOWZ(reply_arg);
+   RAMFAIL_DISALLOWNULL(reply_arg);
    *reply_arg = RAMFAIL_INSANE;
-   RAMFAIL_DISALLOWZ(thread_arg);
+   RAMFAIL_DISALLOWNULL(thread_arg);
 
    result = WaitForSingleObject(thread_arg, INFINITE);
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, WAIT_OBJECT_0 == result);
@@ -307,7 +307,7 @@ ramfail_status_t ramwin_jointhread(ramfail_status_t *reply_arg,
 
 ramfail_status_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, int capacity_arg)
 {
-   RAMFAIL_DISALLOWZ(barrier_arg);
+   RAMFAIL_DISALLOWNULL(barrier_arg);
 
    memset(barrier_arg, 0, sizeof(*barrier_arg));
 
@@ -321,7 +321,7 @@ ramfail_status_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, int capacity_ar
 
 ramfail_status_t ramwin_rmbarrier(ramwin_barrier_t *barrier_arg)
 {
-   RAMFAIL_DISALLOWZ(barrier_arg);
+   RAMFAIL_DISALLOWNULL(barrier_arg);
    /* i don't allow destruction of the barrier while it's in use. */
    RAMFAIL_CONFIRM(RAMFAIL_UNSUPPORTED,
          barrier_arg->ramwinb_vacancy == barrier_arg->ramwinb_capacity);
@@ -336,7 +336,7 @@ ramfail_status_t ramwin_waitonbarrier(ramwin_barrier_t *barrier_arg)
 {
    LONG n = 0;
 
-   RAMFAIL_DISALLOWZ(barrier_arg);
+   RAMFAIL_DISALLOWNULL(barrier_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, barrier_arg->ramwinb_capacity > 0);
 
    n = InterlockedDecrement(&barrier_arg->ramwinb_vacancy);
@@ -390,9 +390,9 @@ ramfail_status_t ramwin_basename2(char *dest_arg, size_t len_arg,
    errno_t e = -1;
    int n = -1;
 
-   RAMFAIL_DISALLOWZ(dest_arg);
-   RAMFAIL_DISALLOWZ(len_arg);
-   RAMFAIL_DISALLOWZ(pathn_arg);
+   RAMFAIL_DISALLOWNULL(dest_arg);
+   RAMFAIL_DISALLOWNULL(len_arg);
+   RAMFAIL_DISALLOWNULL(pathn_arg);
 
    /* first, i use _splitpath_s() to get the components. */
    e = _splitpath_s(pathn_arg, drive, _MAX_DRIVE, dir, _MAX_DIR, filen,

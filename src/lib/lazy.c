@@ -46,7 +46,7 @@ ramfail_status_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, ramopt_appetite_t app
 {
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(lpool_arg);
+   RAMFAIL_DISALLOWNULL(lpool_arg);
 
    e = ramlazy_mkpool2(lpool_arg, appetite_arg, disposalratio_arg);
    if (RAMFAIL_OK == e)
@@ -60,7 +60,7 @@ ramfail_status_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, ramopt_appetite_t app
 
 ramfail_status_t ramlazy_mkpool2(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg)
 {
-   assert(lpool_arg);
+   assert(lpool_arg != NULL);
    RAMFAIL_DISALLOWZ(disposalratio_arg);
 
    RAMFAIL_RETURN(ramtra_mktrash(&lpool_arg->ramlazyp_trash));
@@ -72,7 +72,7 @@ ramfail_status_t ramlazy_mkpool2(ramlazy_pool_t *lpool_arg, ramopt_appetite_t ap
 
 ramfail_status_t ramlazy_rmpool(ramlazy_pool_t *lpool_arg)
 {
-   RAMFAIL_DISALLOWZ(lpool_arg);
+   RAMFAIL_DISALLOWNULL(lpool_arg);
 
    RAMFAIL_RETURN(ramtra_rmtrash(&lpool_arg->ramlazyp_trash));
 
@@ -84,9 +84,9 @@ ramfail_status_t ramlazy_acquire(void **newptr_arg, ramlazy_pool_t *lpool_arg, s
    size_t unused = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(newptr_arg);
+   RAMFAIL_DISALLOWNULL(newptr_arg);
    *newptr_arg = NULL;
-   RAMFAIL_DISALLOWZ(lpool_arg);
+   RAMFAIL_DISALLOWNULL(lpool_arg);
    RAMFAIL_DISALLOWZ(size_arg);
 
    /* first, i need to release anything that's sitting around in the trash. */
@@ -112,7 +112,7 @@ ramfail_status_t ramlazy_release(void *ptr_arg)
    ramlazy_pool_t *lpool = NULL;
    size_t sz = 0;
 
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
 
    RAMFAIL_RETURN(ramlazy_query(&lpool, &sz, ptr_arg));
 #if RAMOPT_MARKFREED
@@ -132,9 +132,9 @@ ramfail_status_t ramlazy_reclaim(size_t *count_arg, ramlazy_pool_t *lpool_arg, s
    void *p = NULL;
    size_t i = 0;
 
-   RAMFAIL_DISALLOWZ(count_arg);
+   RAMFAIL_DISALLOWNULL(count_arg);
    *count_arg = 0;
-   RAMFAIL_DISALLOWZ(lpool_arg);
+   RAMFAIL_DISALLOWNULL(lpool_arg);
    RAMFAIL_DISALLOWZ(goal_arg);
 
    while (i < goal_arg && RAMFAIL_OK == (e = ramtra_pop(&p, &lpool_arg->ramlazyp_trash)))
@@ -157,7 +157,7 @@ ramfail_status_t ramlazy_flush(ramlazy_pool_t *lpool_arg)
 {
    size_t count = 0, unused = 0;
 
-   RAMFAIL_DISALLOWZ(lpool_arg);
+   RAMFAIL_DISALLOWNULL(lpool_arg);
 
    /* the intent is to flush the allocator but in reality, the best i can hope for
     * is to grab an instantaneous count of the number of items in the trash and 
@@ -173,7 +173,7 @@ ramfail_status_t ramlazy_chkpool(const ramlazy_pool_t *lpool_arg)
 {
    ramlazy_chktrashnode_t ctn = {0};
 
-   RAMFAIL_DISALLOWZ(lpool_arg);
+   RAMFAIL_DISALLOWNULL(lpool_arg);
 
    RAMFAIL_RETURN(rammux_chkpool(&lpool_arg->ramlazyp_muxpool));
    /* now, i check the trash. i'll be able to verify each pointer in the trash is mine. */
@@ -191,9 +191,9 @@ ramfail_status_t ramlazy_chktrashnode(void *ptr_arg, void *context_arg)
    ramlazy_chktrashnode_t *ctn = NULL;
    size_t unused = 0;
 
-   assert(context_arg);
+   assert(context_arg != NULL);
    ctn = (ramlazy_chktrashnode_t *)context_arg;
-   assert(ctn->ramlazyctn_lazypool);
+   assert(ctn->ramlazyctn_lazypool != NULL);
 
    RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, ptr_arg);
    /* if an address is in the trash, i can still query it, which gives me a good way to
@@ -209,11 +209,11 @@ ramfail_status_t ramlazy_query(ramlazy_pool_t **lpool_arg, size_t *size_arg, voi
    rammux_pool_t *muxpool = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(lpool_arg);
+   RAMFAIL_DISALLOWNULL(lpool_arg);
    *lpool_arg = NULL;
-   RAMFAIL_DISALLOWZ(size_arg);
+   RAMFAIL_DISALLOWNULL(size_arg);
    *size_arg = 0;
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
 
    e = rammux_query(&muxpool, size_arg, ptr_arg);
    switch (e)

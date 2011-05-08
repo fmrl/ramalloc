@@ -82,7 +82,7 @@ void ramfail_defaultreporter(ramfail_status_t code_arg, const char *expr_arg,
 ramfail_status_t ramfail_accumulate(ramfail_status_t *reply_arg,
       ramfail_status_t newreply_arg)
 {
-   RAMFAIL_DISALLOWZ(reply_arg);
+   RAMFAIL_DISALLOWNULL(reply_arg);
 
    if (RAMFAIL_OK == *reply_arg)
       *reply_arg = newreply_arg;

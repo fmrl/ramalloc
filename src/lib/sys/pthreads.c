@@ -54,7 +54,7 @@ static void * ramuix_startroutine(void *sr_arg);
 
 ramfail_status_t ramuix_mktlskey(ramuix_tlskey_t *key_arg)
 {
-   RAMFAIL_DISALLOWZ(key_arg);
+   RAMFAIL_DISALLOWNULL(key_arg);
    /* while stepping through this function, i noticed that 0 was the first
     * key given out by pthread_key_create(). consequently, i use -1 as the
     * uninitialized key value. */
@@ -76,7 +76,7 @@ ramfail_status_t ramuix_rmtlskey(ramuix_tlskey_t key_arg)
 
 ramfail_status_t ramuix_rcltls(void **tls_arg, ramuix_tlskey_t key_arg)
 {
-   RAMFAIL_DISALLOWZ(tls_arg);
+   RAMFAIL_DISALLOWNULL(tls_arg);
 
    *tls_arg = pthread_getspecific(key_arg);
    return RAMFAIL_OK;
@@ -93,7 +93,7 @@ ramfail_status_t ramuix_stotls(ramuix_tlskey_t key_arg, void *value_arg)
 
 ramfail_status_t ramuix_mkmutex(ramuix_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWZ(mutex_arg);
+   RAMFAIL_DISALLOWNULL(mutex_arg);
 
    /* TODO: protection in debug mode? */
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
@@ -104,7 +104,7 @@ ramfail_status_t ramuix_mkmutex(ramuix_mutex_t *mutex_arg)
 
 ramfail_status_t ramuix_rmmutex(ramuix_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWZ(mutex_arg);
+   RAMFAIL_DISALLOWNULL(mutex_arg);
 
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == pthread_mutex_destroy(mutex_arg));
 
@@ -113,7 +113,7 @@ ramfail_status_t ramuix_rmmutex(ramuix_mutex_t *mutex_arg)
 
 ramfail_status_t ramuix_waitformutex(ramuix_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWZ(mutex_arg);
+   RAMFAIL_DISALLOWNULL(mutex_arg);
 
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == pthread_mutex_lock(mutex_arg));
 
@@ -122,7 +122,7 @@ ramfail_status_t ramuix_waitformutex(ramuix_mutex_t *mutex_arg)
 
 ramfail_status_t ramuix_quitmutex(ramuix_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWZ(mutex_arg);
+   RAMFAIL_DISALLOWNULL(mutex_arg);
 
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == pthread_mutex_unlock(mutex_arg));
 
@@ -158,9 +158,9 @@ ramfail_status_t ramuix_mkthread(ramuix_thread_t *thread_arg,
    pthread_t thread = -1;
    ramuix_startroutine_t sr = {0};
 
-   RAMFAIL_DISALLOWZ(thread_arg);
+   RAMFAIL_DISALLOWNULL(thread_arg);
    *thread_arg = -1;
-   RAMFAIL_DISALLOWZ(main_arg);
+   RAMFAIL_DISALLOWNULL(main_arg);
 
    sr.ramuixsr_main = main_arg;
    sr.ramuixsr_userarg = arg_arg;
@@ -188,7 +188,7 @@ ramfail_status_t ramuix_jointhread(ramfail_status_t *reply_arg,
 {
    void *reply = (void *)RAMFAIL_INSANE;
 
-   RAMFAIL_DISALLOWZ(reply_arg);
+   RAMFAIL_DISALLOWNULL(reply_arg);
    *reply_arg = RAMFAIL_INSANE;
    /* i don't know what values might be considered invalid for *thread_arg*,
     * so i cannot reliably check it. */
@@ -203,7 +203,7 @@ ramfail_status_t ramuix_jointhread(ramfail_status_t *reply_arg,
 ramfail_status_t ramuix_mkbarrier(ramuix_barrier_t *barrier_arg,
       int capacity_arg)
 {
-   RAMFAIL_DISALLOWZ(barrier_arg);
+   RAMFAIL_DISALLOWNULL(barrier_arg);
 
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
          0 == pthread_barrier_init(barrier_arg, NULL, capacity_arg));
@@ -213,7 +213,7 @@ ramfail_status_t ramuix_mkbarrier(ramuix_barrier_t *barrier_arg,
 
 ramfail_status_t ramuix_rmbarrier(ramuix_barrier_t *barrier_arg)
 {
-   RAMFAIL_DISALLOWZ(barrier_arg);
+   RAMFAIL_DISALLOWNULL(barrier_arg);
 
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
          0 == pthread_barrier_destroy(barrier_arg));
@@ -226,7 +226,7 @@ ramfail_status_t ramuix_waitonbarrier(ramuix_barrier_t *barrier_arg)
    /* pthread_barrier_wait() will not return EINTR. */
    int e = EINTR;
 
-   RAMFAIL_DISALLOWZ(barrier_arg);
+   RAMFAIL_DISALLOWNULL(barrier_arg);
 
    e = pthread_barrier_wait(barrier_arg);
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,

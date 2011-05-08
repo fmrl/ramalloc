@@ -121,7 +121,7 @@ ramfail_status_t rammem_pagesize(size_t *pgsz_arg)
 
 ramfail_status_t rammem_mmapgran(size_t *mg_arg)
 {
-   RAMFAIL_DISALLOWZ(mg_arg);
+   RAMFAIL_DISALLOWNULL(mg_arg);
    *mg_arg = 0;
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
          rammem_theglobals.rammemg_initflag);
@@ -133,7 +133,7 @@ ramfail_status_t rammem_mmapgran(size_t *mg_arg)
 
 ramfail_status_t rammem_ispage(int *ispage_arg, const void *ptr_arg)
 {
-   RAMFAIL_DISALLOWZ(ispage_arg);
+   RAMFAIL_DISALLOWNULL(ispage_arg);
    *ispage_arg = 0;
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
          rammem_theglobals.rammemg_initflag);
@@ -145,9 +145,9 @@ ramfail_status_t rammem_ispage(int *ispage_arg, const void *ptr_arg)
 
 ramfail_status_t rammem_getpage(char **page_arg, void *ptr_arg)
 {
-   RAMFAIL_DISALLOWZ(page_arg);
+   RAMFAIL_DISALLOWNULL(page_arg);
    *page_arg = 0;
-   RAMFAIL_DISALLOWZ(ptr_arg);
+   RAMFAIL_DISALLOWNULL(ptr_arg);
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
          rammem_theglobals.rammemg_initflag);
 
