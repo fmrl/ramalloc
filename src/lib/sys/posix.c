@@ -54,6 +54,9 @@
 #ifndef RAMSYS_SPLINT
 #  include <unistd.h>
 #endif
+/* until this bug in splint is addressed, there's going to be false
+ * *unrecog* errors. */
+/*@-unrecog@*/
 
 static ramfail_status_t ramuix_basename2(char *dest_arg, size_t len_arg,
       const char *pathn_arg);
