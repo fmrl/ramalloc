@@ -54,6 +54,7 @@ typedef enum ramfail_status
    RAMFAIL_TRYAGAIN,
    RAMFAIL_CORRUPT,        /* a data structure failed a runtime check. */
    RAMFAIL_UNDERFLOW,
+   RAMFAIL_OVERFLOW,
    RAMFAIL_INPUT,
 } ramfail_status_t;
 

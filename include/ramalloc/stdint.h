@@ -34,7 +34,9 @@
 
 #include <ramalloc/sys/detect.h>
 
-#ifdef RAMSYS_WINDOWS
+/* splint doesn't appear to support <stdint.h> properly, so i use the
+ * portable version regardless of the platform in this case. */
+#if defined(RAMSYS_WINDOWS) || defined(RAMSYS_SPLINT)
 #  include <pstdint.h>
 #elif defined(RAMSYS_LINUX)
 #  include <stdint.h>

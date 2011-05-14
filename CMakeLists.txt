@@ -92,14 +92,16 @@ endif(NOT RAMALLOC_IS_CONFIGURED)
 #	from the build.
 find_package(Threads REQUIRED)
 
-# on Windows platforms, i have some extra dependencies.
+# i use pstdint to emulate <stdint.h> when necessary (splint and Windows).
+# the latest version can be fetched from 
+# <http://www.azillionmonkeys.com/qed/pstdint.h>.
+# TODO: this may not be necessary for VS2010 and later.
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/pstdint)
+install(FILES dep/pstdint/pstdint.h DESTINATION include)
+
+# on Windows platforms, i use the BSD implementation of getopt.
+# TODO: i should probably make this a separate library.
 if(WIN32)
-	# i use pstdint to emulate <stdint.h>. new versions can be fetched from 
-	# <http://www.azillionmonkeys.com/qed/pstdint.h>.
-	# TODO: this may not be necessary for VS2010 and later.
-	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/pstdint)
-	install(FILES dep/pstdint/pstdint.h DESTINATION include)
-	# i use the BSD implementation of getopt.
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/freebsd/include)
 	install(FILES dep/freebsd/include/getopt.h DESTINATION include)
 	set(RAMALLOC_WINDOWS_GETOPT_SOURCES 
@@ -117,6 +119,7 @@ install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ramalloc
 set(RAMALLOC_HEADERS
 	include/ramalloc/algn.h
 	include/ramalloc/barrier.h
+	include/ramalloc/cast.h
 	include/ramalloc/compat.h
 	include/ramalloc/default.h
 	include/ramalloc/fail.h
@@ -151,6 +154,7 @@ set(RAMALLOC_HEADERS
 set(RAMALLOC_SOURCES
 	src/lib/algn.c
 	src/lib/barrier.c
+	src/lib/cast.c
 	src/lib/compat.c
 	src/lib/default.c
 	src/lib/fail.c

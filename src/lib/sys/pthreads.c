@@ -41,6 +41,7 @@
 #ifdef RAMSYS_PTHREADS
 
 #include <ramalloc/barrier.h>
+#include <ramalloc/cast.h>
 #include <errno.h>
 
 typedef struct ramuix_startroutine
@@ -201,12 +202,15 @@ ramfail_status_t ramuix_jointhread(ramfail_status_t *reply_arg,
 }
 
 ramfail_status_t ramuix_mkbarrier(ramuix_barrier_t *barrier_arg,
-      int capacity_arg)
+      size_t capacity_arg)
 {
+   unsigned int capacity;
+
    RAMFAIL_DISALLOWNULL(barrier_arg);
 
+   RAMFAIL_RETURN(ramcast_sizetouint(&capacity, capacity_arg));
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
-         0 == pthread_barrier_init(barrier_arg, NULL, capacity_arg));
+         0 == pthread_barrier_init(barrier_arg, NULL, capacity));
 
    return RAMFAIL_OK;
 }

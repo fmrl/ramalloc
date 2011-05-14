@@ -41,11 +41,11 @@
 
 #if RAMOPT_COMPACT
    typedef int16_t ramslot_index_t;
-#  define RAMSLOT_MAXCAPACITY INT16_MAX
+#  define RAMSLOT_MAXCAPACITY ((size_t)INT16_MAX)
    typedef uint16_t ramslot_size_t;
 #else
    typedef int32_t ramslot_index_t;
-#  define RAMSLOT_MAXCAPACITY INT32_MAX
+#  define RAMSLOT_MAXCAPACITY ((size_t)INT32_MAX)
    typedef uint32_t ramslot_size_t;
 #endif
 

@@ -50,4 +50,8 @@
 #  error i do not recognize this compiler.
 #endif
 
+#ifdef S_SPLINT_S
+#  define RAMSYS_SPLINT
+#endif
+
 #endif /* #ifndef RAMSYS_DETECT_H_IS_INCLUDED */

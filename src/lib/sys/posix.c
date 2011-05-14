@@ -34,7 +34,6 @@
 /* <ramalloc/sys/posix.h> is included by <ramalloc/sys.h> if it's
  * appropriate for the platform. */
 #include <ramalloc/sys.h>
-#include <ramalloc/annotate.h>
 
 /* this file should not compile anything if the appropriate platform
  * preprocessor definition isn't available (*RAMSYS_POSIX* in this
@@ -42,6 +41,8 @@
 #ifdef RAMSYS_POSIX
 
 #include <ramalloc/mem.h>
+#include <ramalloc/cast.h>
+#include <ramalloc/annotate.h>
 #include <errno.h>
 #include <sys/mman.h>
 #include <string.h>
@@ -50,7 +51,7 @@
  * is included. the known workaround is to wrap it in the following #ifdef.
  * see <http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=473595> for more
  * information. */
-#ifndef S_SPLINT_S
+#ifndef RAMSYS_SPLINT
 #  include <unistd.h>
 #endif
 
@@ -75,7 +76,7 @@ ramfail_status_t ramuix_pagesize(size_t *pagesz_arg)
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == errno);
    RAMFAIL_CONFIRM(RAMFAIL_INSANE, pgsz > 0);
 
-   *pagesz_arg = pgsz;
+   RAMFAIL_RETURN(ramcast_longtosize(pagesz_arg, pgsz));
    return RAMFAIL_OK;
 }
 
@@ -99,7 +100,7 @@ ramfail_status_t ramuix_cpucount(size_t *cpucount_arg)
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == errno);
    RAMFAIL_CONFIRM(RAMFAIL_INSANE, cpucount > 0);
 
-   *cpucount_arg = cpucount;
+   RAMFAIL_RETURN(ramcast_longtosize(cpucount_arg, cpucount));
    return RAMFAIL_OK;
 }
 

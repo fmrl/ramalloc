@@ -46,7 +46,7 @@ static ramfail_status_t
    ramlin_waitonbarrier2(ramlin_barrier_t *barrier_arg);
 
 ramfail_status_t ramlin_mkbarrier(ramlin_barrier_t *barrier_arg,
-      int capacity_arg)
+      size_t capacity_arg)
 {
    RAMFAIL_DISALLOWNULL(barrier_arg);
    RAMFAIL_DISALLOWZ(capacity_arg);

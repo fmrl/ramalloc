@@ -32,6 +32,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include <ramalloc/slot.h>
+#include <ramalloc/cast.h>
 #include <assert.h>
 #include <memory.h>
 
@@ -241,6 +242,7 @@ ramfail_status_t ramslot_calcindex(ramslot_index_t *idx_arg, const ramslot_node_
 {
    div_t d = {0};
    ramslot_pool_t *pool = NULL;
+   int n = 0;
 
    RAMFAIL_DISALLOWNULL(idx_arg);
    *idx_arg = RAMSLOT_NIL_INDEX;
@@ -250,12 +252,16 @@ ramfail_status_t ramslot_calcindex(ramslot_index_t *idx_arg, const ramslot_node_
    RAMMETA_BACKCAST(pool, ramslot_pool_t, ramslotp_vpool, 
       node_arg->ramslotn_vnode.ramvecn_vpool);
 
-   d = div(ptr_arg - node_arg->ramslotn_slots, pool->ramslotp_granularity);
-   /* it's safe to cast size_t to ramslot_index_t because when the pool was initialized,
-    * i ensured that the node capacity could not exceed RAMSLOT_MAXCAPACITY. */
+   RAMFAIL_RETURN(ramcast_sizetoint(&n, pool->ramslotp_granularity));
+   d = div(ptr_arg - node_arg->ramslotn_slots, n);
+   /* it's safe to cast the node capacity to ramslot_index_t because
+    * when the pool was initialized, i ensured that the node capacity
+    * could not exceed RAMSLOT_MAXCAPACITY. */
    assert(pool->ramslotp_vpool.ramvecvp_nodecapacity < RAMSLOT_MAXCAPACITY);
-   if (0 == d.rem && d.quot >= 0 && d.quot < RAMSLOT_MAXCAPACITY &&
-      (ramslot_index_t)d.quot < (ramslot_index_t)pool->ramslotp_vpool.ramvecvp_nodecapacity)
+   if (0 == d.rem && d.quot >= 0
+         && (size_t)d.quot < RAMSLOT_MAXCAPACITY &&
+         (ramslot_index_t)d.quot <
+            (ramslot_index_t)pool->ramslotp_vpool.ramvecvp_nodecapacity)
    {
       *idx_arg = (ramslot_index_t)d.quot;
       return RAMFAIL_OK;
