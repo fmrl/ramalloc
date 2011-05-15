@@ -38,6 +38,7 @@
 
 ramfail_status_t ramcast_sizetoint(int *to_arg, size_t from_arg);
 ramfail_status_t ramcast_longtosize(size_t *to_arg, long from_arg);
+ramfail_status_t ramcast_sizetolong(long *to_arg, size_t from_arg);
 ramfail_status_t ramcast_sizetouint(unsigned int *to_arg, size_t from_arg);
 
 #endif /* RAMCAST_H_IS_INCLUDED */

@@ -87,7 +87,7 @@ ramfail_status_t ramwin_jointhread(ramfail_status_t *reply_arg,
       ramwin_thread_t thread_arg);
 
 ramfail_status_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, 
-      int capacity_arg);
+      size_t capacity_arg);
 ramfail_status_t ramwin_rmbarrier(ramwin_barrier_t *barrier_arg);
 ramfail_status_t ramwin_waitonbarrier(ramwin_barrier_t *barrier_arg);
 
