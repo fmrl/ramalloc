@@ -391,7 +391,7 @@ ramfail_status_t ramwin_basename2(char *dest_arg, size_t len_arg,
    int n = -1;
 
    RAMFAIL_DISALLOWNULL(dest_arg);
-   RAMFAIL_DISALLOWNULL(len_arg);
+   RAMFAIL_DISALLOWZ(len_arg);
    RAMFAIL_DISALLOWNULL(pathn_arg);
 
    /* first, i use _splitpath_s() to get the components. */
