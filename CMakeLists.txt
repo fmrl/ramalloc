@@ -188,13 +188,19 @@ install(TARGETS ramalloc DESTINATION lib)
 # -----
 
 set(RAMALLOC_LIBRARIES ramalloc ${CMAKE_THREAD_LIBS_INIT})
+set(RAMALLOC_SHARED_TEST_SOURCES
+	src/test/shared/parseargs.c
+	src/test/shared/test.c
+	)
+set(RAMALLOC_SHARED_TEST_HEADERS
+	src/test/shared/parseargs.h
+	src/test/shared/test.h
+	)
 
 add_executable(slottest
 	src/test/slottest.c
-	src/test/shared/parseargs.c
-	src/test/shared/parseargs.h
-	src/test/shared/test.c
-	src/test/shared/test.h
+	${RAMALLOC_SHARED_TEST_SOURCES}
+	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(slottest ${RAMALLOC_LIBRARIES})
@@ -203,10 +209,8 @@ add_test(slottest ${EXECUTABLE_OUTPUT_PATH}/slottest
 
 add_executable(pgtest
 	src/test/pgtest.c
-	src/test/shared/parseargs.c
-	src/test/shared/parseargs.h
-	src/test/shared/test.c
-	src/test/shared/test.h
+	${RAMALLOC_SHARED_TEST_SOURCES}
+	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(pgtest ${RAMALLOC_LIBRARIES})
@@ -215,10 +219,8 @@ add_test(pgtest ${EXECUTABLE_OUTPUT_PATH}/pgtest
 
 add_executable(algntest
 	src/test/algntest.c
-	src/test/shared/parseargs.c
-	src/test/shared/parseargs.h
-	src/test/shared/test.c
-	src/test/shared/test.h
+	${RAMALLOC_SHARED_TEST_SOURCES}
+	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(algntest ${RAMALLOC_LIBRARIES})
@@ -231,10 +233,8 @@ add_test(algntest-128 ${EXECUTABLE_OUTPUT_PATH}/algntest
 
 add_executable(muxtest
 	src/test/muxtest.c
-	src/test/shared/parseargs.c
-	src/test/shared/parseargs.h
-	src/test/shared/test.c
-	src/test/shared/test.h
+	${RAMALLOC_SHARED_TEST_SOURCES}
+	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(muxtest ${RAMALLOC_LIBRARIES})
@@ -243,10 +243,8 @@ add_test(muxtest ${EXECUTABLE_OUTPUT_PATH}/muxtest
 
 add_executable(lazytest
 	src/test/lazytest.c
-	src/test/shared/parseargs.c
-	src/test/shared/parseargs.h
-	src/test/shared/test.c
-	src/test/shared/test.h
+	${RAMALLOC_SHARED_TEST_SOURCES}
+	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(lazytest ${RAMALLOC_LIBRARIES})
@@ -256,10 +254,8 @@ add_test(lazytest-parallel ${EXECUTABLE_OUTPUT_PATH}/lazytest)
 
 add_executable(paratest
 	src/test/paratest.c
-	src/test/shared/parseargs.c
-	src/test/shared/parseargs.h
-	src/test/shared/test.c
-	src/test/shared/test.h
+	${RAMALLOC_SHARED_TEST_SOURCES}
+	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(paratest ${RAMALLOC_LIBRARIES})
@@ -269,10 +265,8 @@ add_test(paratest-parallel ${EXECUTABLE_OUTPUT_PATH}/paratest)
 
 add_executable(defaulttest
 	src/test/defaulttest.c
-	src/test/shared/parseargs.c
-	src/test/shared/parseargs.h
-	src/test/shared/test.c
-	src/test/shared/test.h
+	${RAMALLOC_SHARED_TEST_SOURCES}
+	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 target_link_libraries(defaulttest ${RAMALLOC_LIBRARIES})
@@ -297,5 +291,29 @@ endif(UNIX)
 
 # splint
 # ------
-add_splint(${RAMALLOC_SOURCES} src/test/*.c src/test/shared/*.c)
+if(WIN32)
+	option(WANT_SPLINT 
+		"integrate splint into the build (not yet functioning on Windows)."
+		NO
+		)
+else()
+	option(WANT_SPLINT "integrate splint into the build." YES)
+endif()
+if(WANT_SPLINT)
+	if(WIN32)
+		message(WARNING "splint is not yet functioning on Windows.")
+	endif()
+	add_splint(
+		${RAMALLOC_SOURCES}
+		${RAMALLOC_SHARED_TEST_SOURCES}
+		src/test/slottest.c
+		src/test/pgtest.c
+		src/test/algntest.c
+		src/test/muxtest.c
+		src/test/lazytest.c
+		src/test/paratest.c
+		src/test/defaulttest.c
+		src/test/compattest.c
+		)
+endif()
 

@@ -1,0 +1,19 @@
+# this file is based on instructions found at 
+# <http://www.splint.org/win32.html>. some settings are set (or should be
+# set) by splint.cmake because their values are determined by CMake.
+
+# the splint website recommends using -linelen to prevent the IDE from
+# splitting lines.
+-linelen 999
+-I.
+-D_WIN32
+-D_NTSYSTEM
+-DNOGDI
+-DNOKERNEL
+-DNOUSER
+#-likelybool
+# this following should be moved into splint.cmake, if they can be
+# determined by CMake.
+-D_M_IX86=400
+-D_WIN32_WINNT=0x0400
+-DWINVER=600

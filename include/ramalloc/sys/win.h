@@ -38,6 +38,12 @@
  * <ramalloc/sys.h> instead. */
 #ifdef RAMSYS_WINDOWS
 
+/* splint has some issues with Windows that i cannot seem to address 
+ * through a splintrc file. */
+#ifdef RAMSYS_SPLINT
+#  define __int64 long long
+#endif
+
 #include <ramalloc/sys/types.h>
 #include <ramalloc/fail.h>
 #include <Windows.h>

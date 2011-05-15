@@ -29,14 +29,30 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 
-set(SPLINT_COMMAND splint)
+set(SPLINT_COMMAND splint${CMAKE_EXECUTABLE_SUFFIX} 
+	CACHE FILEPATH "the location of the splint executable.")
+	
 set(SPLINT_FLAGS -f ${CMAKE_CURRENT_SOURCE_DIR}/splintrc)
-if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")#
+
+if(WIN32)
+	set(SPLINT_FLAGS -f ${CMAKE_CURRENT_SOURCE_DIR}/cmake/windows.splintrc)
+elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")#
 	set(SPLINT_FLAGS ${SPLINT_FLAGS} +unixlib -D__linux__)
-endif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
+else()
+	message(WARNING 
+		"i don't know how to configure splint for this platform.")
+endif()
+
 if(CMAKE_COMPILER_IS_GNUCC)
 	set(SPLINT_FLAGS ${SPLINT_FLAGS} -D__GNUC__)
-endif(CMAKE_COMPILER_IS_GNUCC)
+elseif(MSVC)
+	# TODO: i may have to detect the compiler version and properly set
+	# this variable someday.
+	set(SPLINT_FLAGS ${SPLINT_FLAGS} -D_MSC_VER)
+else()
+	message(WARNING 
+		"i don't know how to configure splint for this compiler.")
+endif()
 
 function(add_splint)
 	get_directory_property(include_dirs INCLUDE_DIRECTORIES)
