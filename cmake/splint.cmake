@@ -31,6 +31,7 @@
 
 set(SPLINT_COMMAND splint${CMAKE_EXECUTABLE_SUFFIX} 
 	CACHE FILEPATH "the location of the splint executable.")
+mark_as_advanced(SPLINT_COMMAND)
 	
 set(SPLINT_FLAGS -f ${CMAKE_CURRENT_SOURCE_DIR}/splintrc)
 
