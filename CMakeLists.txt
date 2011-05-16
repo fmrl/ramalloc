@@ -317,3 +317,8 @@ if(WANT_SPLINT)
 		)
 endif()
 
+# documentation
+# -------------
+include(cmake/doxygen.cmake)
+add_doxygen(ramalloc ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
+
