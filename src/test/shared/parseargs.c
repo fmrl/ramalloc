@@ -138,7 +138,7 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
 
    assert(params_arg != NULL);
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, argc_arg >= 0);
-   RAMFAIL_DISALLOWZ(argv_arg != NULL);
+   RAMFAIL_DISALLOWNULL(argv_arg);
 
    while (-1 != (c = getopt_long(argc_arg, argv_arg,
          "a:p:m:s:l:n", longopts, &i)))

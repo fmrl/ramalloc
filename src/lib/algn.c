@@ -290,7 +290,7 @@ ramfail_status_t ramalgn_gettag(const ramalgn_tag_t **tag_arg, const ramalgn_poo
 
 ramfail_status_t ramalgn_getgranularity(size_t *granularity_arg, const ramalgn_pool_t *apool_arg)
 {
-   RAMFAIL_DISALLOWZ(granularity_arg);
+   RAMFAIL_DISALLOWNULL(granularity_arg);
    *granularity_arg = 0;
    RAMFAIL_DISALLOWNULL(apool_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);

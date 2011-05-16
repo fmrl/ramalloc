@@ -162,7 +162,7 @@ ramfail_status_t rammux_query(rammux_pool_t **mpool_arg, size_t *size_arg, void 
 
    RAMFAIL_DISALLOWNULL(mpool_arg);
    *mpool_arg = NULL;
-   RAMFAIL_DISALLOWZ(size_arg);
+   RAMFAIL_DISALLOWNULL(size_arg);
    *size_arg = 0;
    RAMFAIL_DISALLOWNULL(ptr_arg);
 

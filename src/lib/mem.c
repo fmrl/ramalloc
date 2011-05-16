@@ -109,7 +109,7 @@ void rammem_supfree(void *ptr_arg)
 
 ramfail_status_t rammem_pagesize(size_t *pgsz_arg)
 {
-   RAMFAIL_DISALLOWZ(pgsz_arg);
+   RAMFAIL_DISALLOWNULL(pgsz_arg);
    *pgsz_arg = 0;
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
          rammem_theglobals.rammemg_initflag);
