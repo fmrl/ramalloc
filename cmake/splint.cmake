@@ -55,6 +55,7 @@ mark_as_advanced(SPLINT_HAS_A_FATAL)
 
 set(SPLINT_COMMAND splint${CMAKE_EXECUTABLE_SUFFIX} 
 	CACHE FILEPATH "the location of the splint executable.")
+mark_as_advanced(SPLINT_COMMAND)
 
 # SPLINT_FLAGS should be a cache variable but i haven't gotten around to
 # making it so yet.	

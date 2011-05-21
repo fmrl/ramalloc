@@ -38,6 +38,7 @@
 #ifdef RAMSYS_WINDOWS
 
 #include <ramalloc/mem.h>
+#include <ramalloc/cast.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -305,16 +306,16 @@ ramfail_status_t ramwin_jointhread(ramfail_status_t *reply_arg,
    return RAMFAIL_OK;
 }
 
-ramfail_status_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, int capacity_arg)
+ramfail_status_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, size_t capacity_arg)
 {
    RAMFAIL_DISALLOWNULL(barrier_arg);
 
    memset(barrier_arg, 0, sizeof(*barrier_arg));
 
+   RAMFAIL_RETURN(ramcast_sizetolong(&barrier_arg->ramwinb_capacity, capacity_arg));
+   barrier_arg->ramwinb_vacancy = barrier_arg->ramwinb_capacity;
    barrier_arg->ramwinb_event = CreateEvent(NULL, FALSE, FALSE, NULL);
    RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, NULL != barrier_arg->ramwinb_event);
-   barrier_arg->ramwinb_capacity = capacity_arg;
-   barrier_arg->ramwinb_vacancy = capacity_arg;
 
    return RAMFAIL_OK;
 }

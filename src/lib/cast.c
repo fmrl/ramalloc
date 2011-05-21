@@ -38,23 +38,6 @@
 
 /* TODO: i need to write a test for this module */
 
-#define RAMCAST_NUMERICCAST2(ToVar, ToType, FromValue, FromType, FromVar) \
-   do \
-   { \
-      FromType FromVar = (FromValue); \
-      (ToVar) = (ToType)from_arg; \
-      if (((FromType)(ToVar)) != FromVar) \
-      { \
-         (ToVar) = 0; \
-         return RAMFAIL_RANGE; \
-      } \
-   } \
-   while (0)
-
- #define RAMCAST_NUMERICCAST(ToVar, ToType, FromValue, FromType) \
-      RAMMETACAST_NUMERICCAST2(ToType, ToVar, FromType, FromValue, \
-      RAMMETA_GENERATENAME(RAMCASE_NUMERICCAST_fromcache_)
-
 ramfail_status_t ramcast_sizetoint(int *to_arg, size_t from_arg)
 {
    uintmax_t n = (uintmax_t)from_arg;
@@ -90,6 +73,24 @@ ramfail_status_t ramcast_longtosize(size_t *to_arg, long from_arg)
 
    *to_arg = 0;
    return RAMFAIL_RANGE;
+}
+
+ramfail_status_t ramcast_sizetolong(long *to_arg, size_t from_arg)
+{
+   uintmax_t n = (uintmax_t)from_arg;
+
+   RAMFAIL_DISALLOWNULL(to_arg);
+
+   if (n <= (uintmax_t)LONG_MAX)
+   {
+      *to_arg = (long)from_arg;
+      return RAMFAIL_OK;
+   }
+   else
+   {
+      *to_arg = 0;
+      return RAMFAIL_RANGE;
+   }
 }
 
 ramfail_status_t ramcast_sizetouint(unsigned int *to_arg, size_t from_arg)

@@ -71,7 +71,8 @@ if(NOT RAMALLOC_IS_CONFIGURED)
 		# to interfere with C89-defined behavior.
 		set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-missing-braces -Wno-missing-field-initializers")
 	elseif(MSVC)
-		set(CMAKE_C_FLAGS "/W3")
+		# C4127 pops up every time a "do {} while (0)" is used.
+		set(CMAKE_C_FLAGS "/W4 /wd4127")
 	endif()
 	# save defaults to cache.
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING
@@ -306,3 +307,7 @@ else(UNIX)
 	install(FILES LICENSE README.md ROFLME.md DESTINATION .)
 endif(UNIX)
 
+# documentation
+# -------------
+include(cmake/doxygen.cmake)
+add_doxygen(ramalloc ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
