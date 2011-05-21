@@ -182,6 +182,7 @@ set(RAMALLOC_SOURCES
 	)
 
 add_library(ramalloc ${RAMALLOC_SOURCES} ${RAMALLOC_HEADERS})
+add_splint(ramalloc ${RAMALLOC_SOURCES} ${RAMALLOC_HEADERS})
 install(TARGETS ramalloc DESTINATION lib)
 
 # tests
@@ -197,32 +198,38 @@ set(RAMALLOC_SHARED_TEST_HEADERS
 	src/test/shared/test.h
 	)
 
-add_executable(slottest
+set(SLOTTEST_SOURCES 
 	src/test/slottest.c
 	${RAMALLOC_SHARED_TEST_SOURCES}
 	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
+add_executable(slottest ${SLOTTEST_SOURCES})
+add_splint(slottest ${SLOTTEST_SOURCES})
 target_link_libraries(slottest ${RAMALLOC_LIBRARIES})
 add_test(slottest ${EXECUTABLE_OUTPUT_PATH}/slottest
 	--rng-seed=1564740528)
 
-add_executable(pgtest
+set(PGTEST_SOURCES 
 	src/test/pgtest.c
 	${RAMALLOC_SHARED_TEST_SOURCES}
 	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
+add_executable(pgtest ${PGTEST_SOURCES})
+add_splint(pgtest ${PGTEST_SOURCES})
 target_link_libraries(pgtest ${RAMALLOC_LIBRARIES})
 add_test(pgtest ${EXECUTABLE_OUTPUT_PATH}/pgtest
 	--allocations=10240 --rng-seed=1342375263)
 
-add_executable(algntest
+set(ALGNTEST_SOURCES 
 	src/test/algntest.c
 	${RAMALLOC_SHARED_TEST_SOURCES}
 	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
+add_executable(algntest ${ALGNTEST_SOURCES})
+add_splint(algntest ${ALGNTEST_SOURCES})
 target_link_libraries(algntest ${RAMALLOC_LIBRARIES})
 add_test(algntest-8 ${EXECUTABLE_OUTPUT_PATH}/algntest
 	--smallest=8 --largest=8
@@ -231,52 +238,62 @@ add_test(algntest-128 ${EXECUTABLE_OUTPUT_PATH}/algntest
 	--smallest=128 --largest=128
 	--rng-seed=2694545209)
 
-add_executable(muxtest
+set(MUXTEST_SOURCES 
 	src/test/muxtest.c
 	${RAMALLOC_SHARED_TEST_SOURCES}
 	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
+add_executable(muxtest ${MUXTEST_SOURCES})
+add_splint(muxtest ${MUXTEST_SOURCES})
 target_link_libraries(muxtest ${RAMALLOC_LIBRARIES})
 add_test(muxtest ${EXECUTABLE_OUTPUT_PATH}/muxtest
 	--rng-seed=2596644741)
 
-add_executable(lazytest
+set(LAZYTEST_SOURCES 
 	src/test/lazytest.c
 	${RAMALLOC_SHARED_TEST_SOURCES}
 	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
+add_executable(lazytest ${LAZYTEST_SOURCES})
+add_splint(lazytest ${LAZYTEST_SOURCES})
 target_link_libraries(lazytest ${RAMALLOC_LIBRARIES})
 add_test(lazytest-serial ${EXECUTABLE_OUTPUT_PATH}/lazytest --parallelize=1 
 	--rng-seed=342795249)
 add_test(lazytest-parallel ${EXECUTABLE_OUTPUT_PATH}/lazytest)
 
-add_executable(paratest
+set(PARATEST_SOURCES
 	src/test/paratest.c
 	${RAMALLOC_SHARED_TEST_SOURCES}
 	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
+add_executable(paratest ${PARATEST_SOURCES})
+add_splint(paratest ${PARATEST_SOURCES})
 target_link_libraries(paratest ${RAMALLOC_LIBRARIES})
 add_test(paratest-serial ${EXECUTABLE_OUTPUT_PATH}/paratest --parallelize=1 
 	--rng-seed=2374434648)
 add_test(paratest-parallel ${EXECUTABLE_OUTPUT_PATH}/paratest)
 
-add_executable(defaulttest
+set(DEFAULTTEST_SOURCES
 	src/test/defaulttest.c
 	${RAMALLOC_SHARED_TEST_SOURCES}
 	${RAMALLOC_SHARED_TEST_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
+add_executable(defaulttest ${DEFAULTTEST_SOURCES})
+add_splint(defaulttest ${DEFAULTTEST_SOURCES})
 target_link_libraries(defaulttest ${RAMALLOC_LIBRARIES})
 add_test(defaulttest-serial ${EXECUTABLE_OUTPUT_PATH}/defaulttest 
 	--parallelize=1	--rng-seed=2828559559)
 add_test(defaulttest-parallel ${EXECUTABLE_OUTPUT_PATH}/defaulttest)
 
-add_executable(compattest
+set(COMPATTEST_SOURCES
 	src/test/compattest.c
 	)
+add_executable(compattest ${COMPATTEST_SOURCES})
+add_splint(compattest ${COMPATTEST_SOURCES})
 target_link_libraries(compattest ${RAMALLOC_LIBRARIES})
 add_test(compattest ${EXECUTABLE_OUTPUT_PATH}/compattest)
 
@@ -288,32 +305,4 @@ if(UNIX)
 else(UNIX)
 	install(FILES LICENSE README.md ROFLME.md DESTINATION .)
 endif(UNIX)
-
-# splint
-# ------
-if(WIN32)
-	option(WANT_SPLINT 
-		"integrate splint into the build (not yet functioning on Windows)."
-		NO
-		)
-else()
-	option(WANT_SPLINT "integrate splint into the build." YES)
-endif()
-if(WANT_SPLINT)
-	if(WIN32)
-		message(WARNING "splint is not yet functioning on Windows.")
-	endif()
-	add_splint(
-		${RAMALLOC_SOURCES}
-		${RAMALLOC_SHARED_TEST_SOURCES}
-		src/test/slottest.c
-		src/test/pgtest.c
-		src/test/algntest.c
-		src/test/muxtest.c
-		src/test/lazytest.c
-		src/test/paratest.c
-		src/test/defaulttest.c
-		src/test/compattest.c
-		)
-endif()
 

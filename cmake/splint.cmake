@@ -29,11 +29,36 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 
+# options
+# -------
+
+if(WIN32)
+	option(WANT_SPLINT 
+		"if YES, splint will ne integrated into the build (not yet functioning on Windows)."
+		NO)
+	if(WANT_SPLINT)
+		message(WARNING "splint is not yet functioning on Windows.")
+	endif()
+else()
+	option(WANT_SPLINT 
+		"if YES, splint will ne integrated into the build." YES)
+endif()
+
+# it would be problematic to have splint stop the build until i've fixed all
+# of the warnings it spits out, so i'm going to make the default NO for now.
+option(SPLINT_HAS_A_FATAL 
+	"if YES, splint warnings will halt the build." NO)
+mark_as_advanced(SPLINT_HAS_A_FATAL)
+
+# cache variables
+# ---------------
+
 set(SPLINT_COMMAND splint${CMAKE_EXECUTABLE_SUFFIX} 
 	CACHE FILEPATH "the location of the splint executable.")
-	
-set(SPLINT_FLAGS -f ${CMAKE_CURRENT_SOURCE_DIR}/splintrc)
 
+# SPLINT_FLAGS should be a cache variable but i haven't gotten around to
+# making it so yet.	
+set(SPLINT_FLAGS -f ${CMAKE_CURRENT_SOURCE_DIR}/splintrc)
 if(WIN32)
 	set(SPLINT_FLAGS -f ${CMAKE_CURRENT_SOURCE_DIR}/cmake/windows.splintrc)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")#
@@ -42,7 +67,6 @@ else()
 	message(WARNING 
 		"i don't know how to configure splint for this platform.")
 endif()
-
 if(CMAKE_COMPILER_IS_GNUCC)
 	set(SPLINT_FLAGS ${SPLINT_FLAGS} -D__GNUC__)
 elseif(MSVC)
@@ -54,17 +78,27 @@ else()
 		"i don't know how to configure splint for this compiler.")
 endif()
 
-function(add_splint)
-	get_directory_property(include_dirs INCLUDE_DIRECTORIES)
-	foreach(i ${include_dirs})
-		list(APPEND include_flags -I${i})
-	endforeach()
-	add_custom_target(
-		splint
-		COMMAND ${SPLINT_COMMAND} ${SPLINT_FLAGS} ${include_flags} ${ARGN}
-		DEPENDS ${ARGN}
-		WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-		)
-endfunction()
+# functions
+# ---------
 
+function(add_splint TARGET)
+	if(WANT_SPLINT)
+		if(SPLINT_HAS_A_FATAL)
+			unset(maybe_short_circuit_errors)
+		else()
+			set(maybe_short_circuit_errors || true)
+		endif()
+		get_directory_property(include_dirs INCLUDE_DIRECTORIES)
+		foreach(i ${include_dirs})
+			list(APPEND include_flags -I${i})
+		endforeach()
+		add_custom_target(
+			splint-${TARGET}
+			COMMAND ${SPLINT_COMMAND} ${SPLINT_FLAGS} ${include_flags} ${ARGN} ${maybe_short_circuit_errors}
+			DEPENDS ${ARGN}
+			WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+			)
+		add_dependencies(${TARGET} splint-${TARGET})
+	endif()
+endfunction()
 
