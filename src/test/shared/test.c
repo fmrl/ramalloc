@@ -351,8 +351,9 @@ ramfail_status_t ramtest_start(ramtest_test_t *test_arg)
    for (i = 0; i < test_arg->ramtestt_params.ramtestp_threadcount; ++i)
    {
       ramtest_start_t *start = NULL;
+      const size_t threadid = i + 1;
 
-      fprintf(stderr, "[0] starting thread %d...\n", i + 1);
+      fprintf(stderr, "[0] starting thread %u...\n", threadid);
       /* i'm the sole producer of this memory; *ramtest_start()* is the sole
        * consumer. */
       start = (ramtest_start_t *)calloc(sizeof(*start), 1);
@@ -361,7 +362,7 @@ ramfail_status_t ramtest_start(ramtest_test_t *test_arg)
       start->ramtests_threadidx = i;
       RAMFAIL_RETURN(ramthread_mkthread(&test_arg->ramtestt_threads[i],
             &ramtest_thread, start));
-      fprintf(stderr, "[0] started thread %u.\n", i + 1);
+      fprintf(stderr, "[0] started thread %u.\n", threadid);
    }
 
    return RAMFAIL_OK;
@@ -420,7 +421,7 @@ ramfail_status_t ramtest_thread(void *arg)
 {
    ramtest_start_t *start = (ramtest_start_t *)arg;
    ramtest_test_t *test = NULL;
-   size_t threadidx = 0;
+   size_t threadidx = 0, threadid = 0;
    ramfail_status_t e = RAMFAIL_INSANE;
 
    RAMFAIL_DISALLOWNULL(arg);
@@ -430,9 +431,10 @@ ramfail_status_t ramtest_thread(void *arg)
    /* i'm the sole consumer of this memory; *ramtest_start()* is the sole
     * producer. */
    free(start);
-   fprintf(stderr, "[%u] testing...\n", threadidx + 1);
+   threadid = threadidx + 1;
+   fprintf(stderr, "[%u] testing...\n", threadid);
    e = ramtest_thread2(test, threadidx);
-   fprintf(stderr, "[%u] finished.\n", threadidx + 1);
+   fprintf(stderr, "[%u] finished.\n", threadid);
 
    return e;
 }

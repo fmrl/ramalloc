@@ -114,3 +114,26 @@ ramfail_status_t ramcast_sizetouint(unsigned int *to_arg, size_t from_arg)
       return RAMFAIL_RANGE;
    }
 }
+
+ramfail_status_t ramcast_ulongtouint(unsigned int *to_arg,
+      unsigned long from_arg)
+{
+   unsigned int n;
+
+   RAMFAIL_DISALLOWNULL(to_arg);
+
+   /* TODO: both types are unsigned, so if the size of each type is
+    * identical, no conversion logic should be necessary. therefore, i
+    * could use CMake to check integer sizes and optimize this. */
+   n = (unsigned int)from_arg;
+   if ((unsigned long)n == from_arg)
+   {
+      *to_arg = n;
+      return RAMFAIL_OK;
+   }
+   else
+   {
+      *to_arg = 0;
+      return RAMFAIL_RANGE;
+   }
+}

@@ -33,6 +33,7 @@
 
 #include "parseargs.h"
 #include <ramalloc/stdint.h>
+#include <ramalloc/cast.h>
 #include <ramalloc/sys.h>
 #include <getopt.h>
 #include <stdlib.h>
@@ -511,8 +512,7 @@ ramfail_status_t parserngseed(unsigned int *rngseed_arg)
    case RAMFAIL_OK:
       /* the upper and lower bounds for this argument must be policed by
        * the individual tests. */
-      *rngseed_arg = n;
-      return RAMFAIL_OK;
+      return ramcast_ulongtouint(rngseed_arg, n);
    case RAMFAIL_CRT:
       fprintf(stderr,
             "you must specify a numeric argument for the --rng-seed (or "

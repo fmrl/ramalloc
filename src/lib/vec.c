@@ -229,7 +229,7 @@ ramfail_status_t ramvec_chkinv(ramlist_list_t *list_arg, void *context_arg)
    /* if additional checking was specified, pass control to that function with
     * its associated context. */
    if (c->ramveccc_chknode)
-      c->ramveccc_chknode(node);
+      RAMFAIL_RETURN(c->ramveccc_chknode(node));
 
    return RAMFAIL_TRYAGAIN;
 }

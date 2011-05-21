@@ -229,7 +229,7 @@ ramfail_status_t check(void *extra_arg, size_t threadidx_arg)
 ramfail_status_t runtest(const ramtest_params_t *params_arg)
 {
    ramfail_status_t e = RAMFAIL_INSANE;
-   extra_t x = {0};
+   extra_t x;
 
    RAMFAIL_DISALLOWNULL(params_arg);
 

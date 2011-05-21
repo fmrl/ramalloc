@@ -142,7 +142,7 @@ ramfail_status_t ramslot_acquire(void **ptr_arg, ramslot_pool_t *pool_arg)
 
    /* if the caller provided a function to initialize a slot, do so now. */
    if (pool_arg->ramslotp_initslot)
-      pool_arg->ramslotp_initslot(p, node);
+      RAMFAIL_RETURN(pool_arg->ramslotp_initslot(p, node));
 
    *ptr_arg = p;
    return RAMFAIL_OK;

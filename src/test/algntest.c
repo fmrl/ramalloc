@@ -185,7 +185,7 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
    ramalgn_pool_t *pool = NULL;
    ramfail_status_t e = RAMFAIL_INSANE;
    extra_t *x = NULL;
-   const ramalgn_tag_t *tag = {0};
+   const ramalgn_tag_t *tag = NULL;
    ramsig_signature_t sig = {0};
 
    RAMFAIL_DISALLOWNULL(pool_arg);
