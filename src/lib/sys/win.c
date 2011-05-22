@@ -133,27 +133,33 @@ ramfail_status_t ramwin_reset(char *page_arg)
 
 ramfail_status_t ramwin_reserve(char **pages_arg)
 {
+   char *p = NULL;
+   
    RAMFAIL_DISALLOWNULL(pages_arg);
    *pages_arg = NULL;
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwAllocationGranularity != 0);
 
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 
-      *pages_arg = (char *)VirtualAlloc(NULL, ramwin_sysinfo.dwAllocationGranularity, 
-      MEM_RESERVE, PAGE_NOACCESS));
+   p = (char *)VirtualAlloc(NULL, ramwin_sysinfo.dwAllocationGranularity, 
+      MEM_RESERVE, PAGE_NOACCESS);
+   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, p != NULL);
 
+   *pages_arg = p;
    return RAMFAIL_OK;
 }
 
 ramfail_status_t ramwin_bulkalloc(char **pages_arg)
 {
+   char *p = NULL;
+
    RAMFAIL_DISALLOWNULL(pages_arg);
    *pages_arg = NULL;
    RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwAllocationGranularity != 0);
 
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 
-      *pages_arg = (char *)VirtualAlloc(NULL, ramwin_sysinfo.dwAllocationGranularity, 
-      MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE));
+   p = (char *)VirtualAlloc(NULL, ramwin_sysinfo.dwAllocationGranularity, 
+      MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
+   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, p != NULL);
 
+   *pages_arg = p;
    return RAMFAIL_OK;
 }
 

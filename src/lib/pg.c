@@ -39,7 +39,14 @@
 #include <assert.h>
 #include <memory.h>
 
+#if RAMOPT_COMPACT
 typedef uint8_t rampg_index_t;
+#else
+typedef size_t rampg_index_t;
+#endif
+/* RAMPG_MAXCAPACITY is used to specify the bounds of an array, so it must
+ * be a reasonable size for this task regardless of what the integer space
+ * can support. */
 #define RAMPG_MAXCAPACITY UINT8_MAX
 
 struct rampg_snode;

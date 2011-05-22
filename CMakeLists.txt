@@ -72,7 +72,10 @@ if(NOT RAMALLOC_IS_CONFIGURED)
 		set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-missing-braces -Wno-missing-field-initializers")
 	elseif(MSVC)
 		# C4127 pops up every time a "do {} while (0)" is used.
-		set(CMAKE_C_FLAGS "/W4 /wd4127")
+		# C4200 is a good warning but i feel zero-indexed arrays are necessary
+		# in this particular library.
+		# C4131 warns about old-style declarators, used by getopt().
+		set(CMAKE_C_FLAGS "/W4 /wd4127 /wd4200 /wd4131")
 	endif()
 	# save defaults to cache.
 	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING

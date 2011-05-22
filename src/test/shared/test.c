@@ -508,6 +508,7 @@ ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
 {
    int32_t roll = 0;
    ramtest_allocdesc_t desc = {0};
+   uint32_t n = 0;
 
    RAMFAIL_DISALLOWNULL(newptr_arg);
    memset(newptr_arg, 0, sizeof(*newptr_arg));
@@ -515,9 +516,10 @@ ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
    RAMFAIL_CONFIRM(RAMFAIL_RANGE,
          threadidx_arg < test_arg->ramtestt_params.ramtestp_threadcount);
 
-   RAMFAIL_RETURN(ramtest_randuint32(&desc.ramtestad_sz,
+   RAMFAIL_RETURN(ramtest_randuint32(&n,
          test_arg->ramtestt_params.ramtestp_minsize,
          test_arg->ramtestt_params.ramtestp_maxsize + 1));
+   desc.ramtestad_sz = n;
    /* i want a certain percentage of allocations to be performed by
     * an alternate allocator. */
    RAMFAIL_RETURN(ramtest_randint32(&roll, 0, 100));

@@ -201,8 +201,6 @@ ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
    case RAMFAIL_NOTFOUND:
       return e;
    }
-
-   return RAMFAIL_OK;
 }
 
 ramfail_status_t flush(void *extra_arg, size_t threadidx_arg)

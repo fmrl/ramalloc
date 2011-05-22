@@ -193,7 +193,8 @@ ramfail_status_t rampara_mktls(rampara_tls_t **newtls_arg, rampara_pool_t *parap
     * that will occur once per thread, which isn't going to impact performance. if the caller
     * is creating and destroying threads with frequency, i'm certainly not going to be the 
     * biggest performance headache. */
-   RAMFAIL_CONFIRM(RAMFAIL_RESOURCE, p = rammem_supmalloc(sizeof(*p)));
+   p = rammem_supmalloc(sizeof(*p));
+   RAMFAIL_CONFIRM(RAMFAIL_RESOURCE, p != NULL);
    memset(p, 0, sizeof(*p));
    p->ramparat_backref = parapool_arg;
    e = ramlazy_mkpool(&p->ramparat_lazypool, parapool_arg->ramparap_appetite, parapool_arg->ramparap_reclaimratio);
