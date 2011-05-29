@@ -31,6 +31,13 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
+/**
+ * @file fail.h
+ * @brief failure management.
+ * @internal
+ * this is internal documentation.
+ */
+
 #ifndef RAMFAIL_H_IS_INCLUDED
 #define RAMFAIL_H_IS_INCLUDED
 
