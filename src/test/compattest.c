@@ -45,15 +45,24 @@ static ramfail_status_t calloctest(size_t count_arg, size_t size_arg);
 int main()
 {
    size_t pgsz = 0;
+   ramfail_status_t reply = RAMFAIL_INSANE;
 
-   RAMFAIL_CONFIRM(-1, RAMFAIL_OK == ramalloc_initialize(NULL, NULL));
-   RAMFAIL_CONFIRM(-2, RAMFAIL_OK == rammem_pagesize(&pgsz));
-   RAMFAIL_CONFIRM(1, RAMFAIL_OK == malloctest(0));
-   RAMFAIL_CONFIRM(2, RAMFAIL_OK == malloctest(SMALL_SIZE));
-   RAMFAIL_CONFIRM(3, RAMFAIL_OK == malloctest(LARGE_SIZE));
-   RAMFAIL_CONFIRM(3, RAMFAIL_OK == malloctest((pgsz / (RAMOPT_MINDENSITY - 1))));
-   RAMFAIL_CONFIRM(4, RAMFAIL_OK == calloctest(2, SMALL_SIZE));
-   RAMFAIL_CONFIRM(5, RAMFAIL_OK == calloctest(2, LARGE_SIZE));
+   reply = ramalloc_initialize(NULL, NULL);
+   RAMFAIL_CONFIRM(-1, RAMFAIL_OK == reply);
+   reply = rammem_pagesize(&pgsz);
+   RAMFAIL_CONFIRM(-2, RAMFAIL_OK == reply);
+   reply = malloctest(0);
+   RAMFAIL_CONFIRM(1, RAMFAIL_OK == reply);
+   reply = malloctest(SMALL_SIZE);
+   RAMFAIL_CONFIRM(2, RAMFAIL_OK == reply);
+   reply = malloctest(LARGE_SIZE);
+   RAMFAIL_CONFIRM(3, RAMFAIL_OK == reply);
+   reply = malloctest((pgsz / (RAMOPT_MINDENSITY - 1)));
+   RAMFAIL_CONFIRM(3, RAMFAIL_OK == reply);
+   reply = calloctest(2, SMALL_SIZE);
+   RAMFAIL_CONFIRM(4, RAMFAIL_OK == reply);
+   reply = calloctest(2, LARGE_SIZE);
+   RAMFAIL_CONFIRM(5, RAMFAIL_OK == reply);
 
    return 0;
 }

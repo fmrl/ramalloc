@@ -43,6 +43,7 @@
 
 #include <ramalloc/opt.h>
 #include <ramalloc/meta.h>
+#include <ramalloc/annotate.h>
 #include <assert.h>
 #include <stdlib.h>
 
@@ -68,47 +69,39 @@ typedef enum ramfail_status
 typedef void (*ramfail_reporter_t)(ramfail_status_t code_arg, const char *expr_arg, 
    const char *funcn_arg, const char *filen_arg, int lineno_arg);
 
-#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_ACTIF(Condition, Action) do {} while (0)
-#else
-#  define RAMFAIL_ACTIF(Condition, Action) \
-         do \
-         { \
-            if (Condition) \
-            { \
-               Action; \
-            } \
-         } \
-         while (0)
-#endif
-
-#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_CONFIRM(FailCode, Condition) do {} while (0)
-#else
-#  define RAMFAIL_CONFIRM(FailCode, Condition) \
+#define RAMFAIL_ACTIF(Condition, Action) \
       do \
       { \
-         assert(RAMFAIL_OK != (FailCode)); \
-         RAMFAIL_ACTIF(!(Condition), ramfail_report((FailCode), #Condition, NULL, __FILE__, __LINE__); return (FailCode)); \
+         if (Condition) \
+         { \
+            Action; \
+         } \
       } \
       while (0)
-#endif
 
-#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_DISALLOWZ(Value) do {} while (0)
+#define RAMFAIL_CONFIRM(FailCode, Condition) \
+   do \
+   { \
+      assert(RAMFAIL_OK != (FailCode)); \
+      RAMFAIL_ACTIF(!(Condition), ramfail_report((FailCode), #Condition, NULL, __FILE__, __LINE__); return (FailCode)); \
+   } \
+   while (0)
+
+#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_DISALLOWZ(Value) RAMANNOTATE_UNUSEDARG(Value)
 #else
 #  define RAMFAIL_DISALLOWZ(Value) RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, 0 != (Value))
 #endif
 
-#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_DISALLOWNULL(Value) do {} while (0)
+#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_DISALLOWNULL(Value) RAMANNOTATE_UNUSEDARG(Value)
 #else
 #  define RAMFAIL_DISALLOWNULL(Value) \
    RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, NULL != (Value))
 #endif
 
-#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_RETURN2(Result, ResultCache) do {} while (0)
+#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_RETURN2(Result, ResultCache) ((void)(Result))
 #else
 #  define RAMFAIL_RETURN2(Result, ResultCache) \
          do \
@@ -119,15 +112,11 @@ typedef void (*ramfail_reporter_t)(ramfail_status_t code_arg, const char *expr_a
          while (0)
 #endif
 
-#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_RETURN(Result) do {} while (0)
-#else
 #define RAMFAIL_RETURN(Result) \
          RAMFAIL_RETURN2((Result), RAMMETA_GENERATENAME(RAMFAIL_RETURN_resultcache))
-#endif
 
-#if RAMFAIL_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_EPICFAIL(Result) do {} while (0)
+#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#  define RAMFAIL_EPICFAIL(Result) ((void)(Result))
 #else
 #define RAMFAIL_EPICFAIL(Result) \
          RAMFAIL_ACTIF(RAMFAIL_OK != (Result), ramfail_epicfail("omgwtfbbq!"); return RAMFAIL_INSANE)

@@ -116,7 +116,7 @@ typedef void (*ramopt_free_t)(void *);
 #endif
 
 #ifndef RAMOPT_UNSUPPORTED_OVERCONFIDENT
-#  define RAMOPT_UNSUPPORTED_OVERCONDIFENT 0
+#  define RAMOPT_UNSUPPORTED_OVERCONFIDENT 0
 #endif
 
 #endif /* RAMOPT_H_IS_INCLUDED */

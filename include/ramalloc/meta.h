@@ -42,4 +42,17 @@
 #define RAMMETA_BACKCAST(DestPtr, Type, SrcFieldName, SrcPtr) \
    ((DestPtr) = (Type *)((char *)(SrcPtr) - ((char *)(&(DestPtr)->SrcFieldName) - (char *)(DestPtr))))
 
+#define RAMMETA_IFTHEN(Condition, Then) \
+         do \
+         { \
+            if (Condition) \
+            { \
+               Then; \
+            } \
+         } \
+         while (0)
+
+#define RAMMETA_NOP() do { } while (0)
+
+
 #endif /* RAMMETA_H_IS_INCLUDED */

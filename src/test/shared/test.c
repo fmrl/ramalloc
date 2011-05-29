@@ -293,6 +293,12 @@ ramfail_status_t ramtest_describe(FILE *out_arg,
       fprintf(out_arg, "the random number generator will use a randomly "
             "selected seed.\n");
    }
+#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+   fprintf(out_arg,
+         "warning: this is an overconfident build, so the results cannot "
+         "be trusted. rebuild with RAMOPT_UNSUPPORTED_OVERCONFIDENT "
+         "#define'd as 0 if you wish to have reliable results.\n");
+#endif
    if (params_arg->ramtestp_dryrun)
       fprintf(out_arg, "\nto run this test, omit the --dry-run option.");
    else

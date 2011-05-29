@@ -69,8 +69,10 @@ ramfail_status_t ramuix_mktlskey(ramuix_tlskey_t *key_arg)
 
 ramfail_status_t ramuix_rmtlskey(ramuix_tlskey_t key_arg)
 {
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
-         0 == pthread_key_delete(key_arg));
+   int n = -1;
+
+   n = pthread_key_delete(key_arg);
+   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == n);
 
    return RAMFAIL_OK;
 }
@@ -86,8 +88,10 @@ ramfail_status_t ramuix_rcltls(void **tls_arg, ramuix_tlskey_t key_arg)
 
 ramfail_status_t ramuix_stotls(ramuix_tlskey_t key_arg, void *value_arg)
 {
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
-         0 == pthread_setspecific(key_arg, value_arg));
+   int n = -1;
+
+   n = pthread_setspecific(key_arg, value_arg);
+   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == n);
 
    return RAMFAIL_OK;
 }
@@ -188,14 +192,15 @@ ramfail_status_t ramuix_jointhread(ramfail_status_t *reply_arg,
       ramuix_thread_t thread_arg)
 {
    void *reply = (void *)RAMFAIL_INSANE;
+   int n = -1;
 
    RAMFAIL_DISALLOWNULL(reply_arg);
    *reply_arg = RAMFAIL_INSANE;
    /* i don't know what values might be considered invalid for *thread_arg*,
     * so i cannot reliably check it. */
 
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
-         0 == pthread_join(thread_arg, &reply));
+   n = pthread_join(thread_arg, &reply);
+   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == n);
 
    *reply_arg = (ramfail_status_t)reply;
    return RAMFAIL_OK;
