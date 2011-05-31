@@ -36,104 +36,346 @@
 #include <ramalloc/meta.h>
 #include <limits.h>
 
-/* TODO: i need to write a test for this module */
+static ramfail_status_t ramcast_testuinttouint();
+static ramfail_status_t ramcast_testuinttoint();
+static ramfail_status_t ramcast_testinttouint();
+static ramfail_status_t ramcast_testinttoint();
+
+/* TODO: when both types are unsigned (or signed), if the size of each type
+ * is identical, no conversion logic should be necessary. therefore, i
+ * could use CMake to check integer sizes and optimize this. */
+#define RAM_CAST_MATCHING2(To, ToType, From, FromType, Tmp) \
+   do \
+   { \
+      const ToType Tmp = ((ToType)(From)); \
+      if ((FromType)Tmp == (From)) \
+      { \
+         *(To) = Tmp; \
+         return RAMFAIL_OK; \
+      } \
+      else \
+      { \
+         *(To) = 0; \
+         return RAMFAIL_RANGE; \
+      } \
+   } \
+   while (0)
+
+#define RAM_CAST_MATCHING(To, ToType, From, FromType) \
+      RAM_CAST_MATCHING2(To, ToType, From, FromType, \
+            RAMMETA_GENERATENAME(RAM_CAST_UINTTOUINT_tmp))
+
+#define RAM_CAST_UINTTOINT2(To, ToType, ToMax, From, Tmp) \
+   do \
+   { \
+      const uintmax_t Tmp = ((uintmax_t)(From)); \
+      if (Tmp <= ((uintmax_t)(ToMax))) \
+      { \
+         *(To) = ((ToType)(From)); \
+         return RAMFAIL_OK; \
+      } \
+      else \
+      { \
+         *(To) = 0; \
+         return RAMFAIL_RANGE; \
+      } \
+   } \
+   while (0)
+
+#define RAM_CAST_UINTTOINT(To, ToType, ToMax, From) \
+      RAM_CAST_UINTTOINT2(To, ToType, ToMax, From, \
+            RAMMETA_GENERATENAME(RAM_CAST_UINTTOINT_tmp))
+
+#define RAM_CAST_INTTOUINT2(To, ToType, ToMax, From, Tmp) \
+      do \
+      { \
+         if ((From) >= 0) \
+         { \
+            const intmax_t Tmp = ((intmax_t)(From)); \
+            \
+            if (Tmp <= ((intmax_t)(ToMax))) \
+            { \
+               *(To) = ((size_t)(From)); \
+               return RAMFAIL_OK; \
+            } \
+         } \
+         \
+         *(To) = 0; \
+         return RAMFAIL_RANGE; \
+      } \
+      while (0)
+
+#define RAM_CAST_INTTOUINT(To, ToType, ToMax, From) \
+      RAM_CAST_INTTOUINT2(To, ToType, ToMax, From, \
+            RAMMETA_GENERATENAME(RAM_CAST_INTTOUINT_tmp))
+
+#define RAM_CAST_INTTOINT(To, ToType, From, FromType) \
+      RAM_CAST_MATCHING(To, ToType, From, FromType)
+
+#define RAM_CAST_UINTTOUINT(To, ToType, From, FromType) \
+      RAM_CAST_MATCHING(To, ToType, From, FromType)
+
+ramfail_status_t ramcast_ulongtochar(char *to_arg, unsigned long from_arg)
+{
+   RAMFAIL_DISALLOWNULL(to_arg);
+
+   RAM_CAST_UINTTOINT(to_arg, char, CHAR_MAX, from_arg);
+
+   return RAMFAIL_OK;
+}
 
 ramfail_status_t ramcast_sizetoint(int *to_arg, size_t from_arg)
 {
-   uintmax_t n = (uintmax_t)from_arg;
-
    RAMFAIL_DISALLOWNULL(to_arg);
 
-   if (n <= (uintmax_t)INT_MAX)
-   {
-      *to_arg = (int)from_arg;
-      return RAMFAIL_OK;
-   }
-   else
-   {
-      *to_arg = 0;
-      return RAMFAIL_RANGE;
-   }
+   RAM_CAST_UINTTOINT(to_arg, int, INT_MAX, from_arg);
+
+   return RAMFAIL_OK;
 }
 
 ramfail_status_t ramcast_longtosize(size_t *to_arg, long from_arg)
 {
    RAMFAIL_DISALLOWNULL(to_arg);
 
-   if (from_arg >= 0)
-   {
-      intmax_t n = (intmax_t)from_arg;
+   RAM_CAST_INTTOUINT(to_arg, size_t, SIZE_MAX, from_arg);
 
-      if (n <= (intmax_t)SIZE_MAX)
-      {
-         *to_arg = (size_t)from_arg;
-         return RAMFAIL_OK;
-      }
-   }
+   return RAMFAIL_OK;
+}
 
-   *to_arg = 0;
-   return RAMFAIL_RANGE;
+ramfail_status_t ramcast_longtouchar(unsigned char *to_arg, long from_arg)
+{
+   RAMFAIL_DISALLOWNULL(to_arg);
+
+   RAM_CAST_INTTOUINT(to_arg, unsigned char, UCHAR_MAX, from_arg);
+
+   return RAMFAIL_OK;
 }
 
 ramfail_status_t ramcast_sizetolong(long *to_arg, size_t from_arg)
 {
-   uintmax_t n = (uintmax_t)from_arg;
-
    RAMFAIL_DISALLOWNULL(to_arg);
 
-   if (n <= (uintmax_t)LONG_MAX)
-   {
-      *to_arg = (long)from_arg;
-      return RAMFAIL_OK;
-   }
-   else
-   {
-      *to_arg = 0;
-      return RAMFAIL_RANGE;
-   }
+   RAM_CAST_UINTTOINT(to_arg, long, LONG_MAX, from_arg);
+
+   return RAMFAIL_OK;
 }
 
 ramfail_status_t ramcast_sizetouint(unsigned int *to_arg, size_t from_arg)
 {
-   unsigned int n;
-
    RAMFAIL_DISALLOWNULL(to_arg);
 
-   /* TODO: both types are unsigned, so if the size of each type is
-    * identical, no conversion logic should be necessary. therefore, i
-    * could use CMake to check integer sizes and optimize this. */
-   n = (unsigned int)from_arg;
-   if ((size_t)n == from_arg)
-   {
-      *to_arg = n;
-      return RAMFAIL_OK;
-   }
-   else
-   {
-      *to_arg = 0;
-      return RAMFAIL_RANGE;
-   }
+   RAM_CAST_UINTTOUINT(to_arg, unsigned int, from_arg, size_t);
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramcast_ulongtouchar(unsigned char *to_arg,
+      unsigned long from_arg)
+{
+   RAMFAIL_DISALLOWNULL(to_arg);
+
+   RAM_CAST_UINTTOUINT(to_arg, unsigned char, from_arg, unsigned long);
+
+   return RAMFAIL_OK;
 }
 
 ramfail_status_t ramcast_ulongtouint(unsigned int *to_arg,
       unsigned long from_arg)
 {
-   unsigned int n;
-
    RAMFAIL_DISALLOWNULL(to_arg);
 
-   /* TODO: both types are unsigned, so if the size of each type is
-    * identical, no conversion logic should be necessary. therefore, i
-    * could use CMake to check integer sizes and optimize this. */
-   n = (unsigned int)from_arg;
-   if ((unsigned long)n == from_arg)
+   RAM_CAST_UINTTOUINT(to_arg, unsigned int, from_arg, unsigned long);
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramcast_longtochar(char *to_arg, long from_arg)
+{
+   RAMFAIL_DISALLOWNULL(to_arg);
+
+   RAM_CAST_INTTOINT(to_arg, char, from_arg, long);
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramcast_test()
+{
+   RAMFAIL_RETURN(ramcast_testuinttouint());
+   RAMFAIL_RETURN(ramcast_testuinttoint());
+   RAMFAIL_RETURN(ramcast_testinttouint());
+   RAMFAIL_RETURN(ramcast_testinttoint());
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramcast_testuinttouint()
+{
+   unsigned char small = 0;
+   unsigned long big = 0;
+   ramfail_status_t e = RAMFAIL_INSANE;
+
+   /* unsigned to unsigned conversion has two different test cases.
+    * first, a success case: the value of the source variable is small
+    * enough to fit into the target variable. */
+   big = UCHAR_MAX;
+   RAMFAIL_RETURN(ramcast_ulongtouchar(&small, big));
+   /* second, a failure case: the value of the source variable is not small
+    * enough to fit in the target variable and cannot be preserved. */
+   big = ULONG_MAX;
+   e = ramcast_ulongtouchar(&small, big);
+   switch (e)
    {
-      *to_arg = n;
-      return RAMFAIL_OK;
+   default:
+      RAMFAIL_RETURN(e);
+      /* @todo unreachable code here. */
+      return RAMFAIL_INSANE;
+   case RAMFAIL_OK:
+      return RAMFAIL_INSANE;
+   case RAMFAIL_RANGE:
+      break;
    }
-   else
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramcast_testuinttoint()
+{
+   char small = 0;
+   unsigned long big = 0;
+   ramfail_status_t e = RAMFAIL_INSANE;
+
+   /* unsigned to signed conversion has three different test cases.
+    * first, a success case: the value of the source variable is within
+    * the range of the target variable. */
+   big = (unsigned long)CHAR_MAX;
+   RAMFAIL_RETURN(ramcast_ulongtochar(&small, big));
+   /* second, a failure case: the value of the source variable is not small
+    * enough to fit in the target variable's positive number space and
+    * cannot be preserved. the third case is where the value of the source
+    * variable. */
+   big = (unsigned long)CHAR_MAX + 1;
+   e = ramcast_ulongtochar(&small, big);
+   switch (e)
    {
-      *to_arg = 0;
-      return RAMFAIL_RANGE;
+   default:
+      RAMFAIL_RETURN(e);
+      /* @todo unreachable code here. */
+      return RAMFAIL_INSANE;
+   case RAMFAIL_OK:
+      return RAMFAIL_INSANE;
+   case RAMFAIL_RANGE:
+      break;
    }
+   /* the third case is where the value of the source variable is the binary
+    * representation of a negative value within the range of the target
+    * type. this conversion cannot be allowed to succeed because the values
+    * do not represent the same thing. */
+   big = (unsigned long)-1;
+   e = ramcast_ulongtochar(&small, big);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+      /* @todo unreachable code here. */
+      return RAMFAIL_INSANE;
+   case RAMFAIL_OK:
+      return RAMFAIL_INSANE;
+   case RAMFAIL_RANGE:
+      break;
+   }
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramcast_testinttouint()
+{
+   unsigned char small = 0;
+   long big = 0;
+   ramfail_status_t e = RAMFAIL_INSANE;
+
+   /* signed to unsigned conversion has three different test cases.
+    * first, a success case: the value of the source variable is within
+    * the range of the target variable. */
+   big = (long)UCHAR_MAX;
+   RAMFAIL_RETURN(ramcast_longtouchar(&small, big));
+   /* second, a failure case: the value of the source variable is positive
+    * but is not small enough to fit within the target variable's number
+    * space. */
+   big = (long)UCHAR_MAX + 1;
+   e = ramcast_longtouchar(&small, big);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+      /* @todo unreachable code here. */
+      return RAMFAIL_INSANE;
+   case RAMFAIL_OK:
+      return RAMFAIL_INSANE;
+   case RAMFAIL_RANGE:
+      break;
+   }
+   /* the third case is where the value of the source variable is a
+    * negative value. */
+   big = (long)-1;
+   e = ramcast_longtouchar(&small, big);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+      /* @todo unreachable code here. */
+      return RAMFAIL_INSANE;
+   case RAMFAIL_OK:
+      return RAMFAIL_INSANE;
+   case RAMFAIL_RANGE:
+      break;
+   }
+
+   return RAMFAIL_OK;
+}
+
+ramfail_status_t ramcast_testinttoint()
+{
+   char small = 0;
+   long big = 0;
+   ramfail_status_t e = RAMFAIL_INSANE;
+
+   /* signed to signed conversion has three different test cases.
+    * first, a success case: the value of the source variable is within
+    * the range of the target variable. */
+   big = (long)CHAR_MAX;
+   RAMFAIL_RETURN(ramcast_longtochar(&small, big));
+   /* second, a failure case: the value of the source variable is positive
+    * but is not small enough to fit within the target variable's number
+    * space. */
+   big = (long)UCHAR_MAX + 1;
+   e = ramcast_longtochar(&small, big);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+      /* @todo unreachable code here. */
+      return RAMFAIL_INSANE;
+   case RAMFAIL_OK:
+      return RAMFAIL_INSANE;
+   case RAMFAIL_RANGE:
+      break;
+   }
+   /* second, a failure case: the value of the source variable is negative
+    * and is not large enough to fit within the target variable's number
+    * space. */
+   big = (long)CHAR_MIN - 1;
+   e = ramcast_longtochar(&small, big);
+   switch (e)
+   {
+   default:
+      RAMFAIL_RETURN(e);
+      /* @todo unreachable code here. */
+      return RAMFAIL_INSANE;
+   case RAMFAIL_OK:
+      return RAMFAIL_INSANE;
+   case RAMFAIL_RANGE:
+      break;
+   }
+
+   return RAMFAIL_OK;
 }

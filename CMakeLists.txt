@@ -202,6 +202,14 @@ set(RAMALLOC_SHARED_TEST_HEADERS
 	src/test/shared/test.h
 	)
 
+set(CASTTEST_SOURCES
+	src/test/casttest.c
+	)
+add_executable(casttest ${CASTTEST_SOURCES})
+add_splint(casttest ${CASTTEST_SOURCES})
+target_link_libraries(casttest ${RAMALLOC_LIBRARIES})
+add_test(casttest ${EXECUTABLE_OUTPUT_PATH}/casttest)
+
 set(SLOTTEST_SOURCES 
 	src/test/slottest.c
 	${RAMALLOC_SHARED_TEST_SOURCES}

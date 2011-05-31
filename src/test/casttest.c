@@ -31,27 +31,17 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMCAST_H_IS_INCLUDED
-#define RAMCAST_H_IS_INCLUDED
+#include <ramalloc/ramalloc.h>
+#include <ramalloc/cast.h>
 
-#include <ramalloc/fail.h>
+int main()
+{
+   ramfail_status_t reply = RAMFAIL_INSANE;
 
-ramfail_status_t ramcast_ulongtochar(char *to_arg, unsigned long from_arg);
-ramfail_status_t ramcast_sizetoint(int *to_arg, size_t from_arg);
-ramfail_status_t ramcast_sizetolong(long *to_arg, size_t from_arg);
+   reply = ramalloc_initialize(NULL, NULL);
+   RAMFAIL_CONFIRM(-1, RAMFAIL_OK == reply);
+   reply = ramcast_test();
+   RAMFAIL_CONFIRM(-2, RAMFAIL_OK == reply);
 
-ramfail_status_t ramcast_ulongtolong(long *to_arg, unsigned long from_arg);
-
-ramfail_status_t ramcast_longtosize(size_t *to_arg, long from_arg);
-
-ramfail_status_t ramcast_sizetouint(unsigned int *to_arg, size_t from_arg);
-ramfail_status_t ramcast_ulongtouint(unsigned int *to_arg,
-      unsigned long from_arg);
-ramfail_status_t ramcast_ulongtouchar(unsigned char *to_arg,
-      unsigned long from_arg);
-
-ramfail_status_t ramcast_longtochar(char *to_arg, long from_arg);
-
-ramfail_status_t ramcast_test();
-
-#endif /* RAMCAST_H_IS_INCLUDED */
+   return 0;
+}
