@@ -39,7 +39,7 @@
 #include <ramalloc/default.h>
 #include <ramalloc/compat.h>
 
-ramfail_status_t ramalloc_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg);
+ram_reply_t ramalloc_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg);
 
 #define ramalloc_acquire ramdefault_acquire
 #define ramalloc_discard ramdefault_discard

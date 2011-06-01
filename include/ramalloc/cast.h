@@ -36,22 +36,22 @@
 
 #include <ramalloc/fail.h>
 
-ramfail_status_t ramcast_ulongtochar(char *to_arg, unsigned long from_arg);
-ramfail_status_t ramcast_sizetoint(int *to_arg, size_t from_arg);
-ramfail_status_t ramcast_sizetolong(long *to_arg, size_t from_arg);
+ram_reply_t ramcast_ulongtochar(char *to_arg, unsigned long from_arg);
+ram_reply_t ramcast_sizetoint(int *to_arg, size_t from_arg);
+ram_reply_t ramcast_sizetolong(long *to_arg, size_t from_arg);
 
-ramfail_status_t ramcast_ulongtolong(long *to_arg, unsigned long from_arg);
+ram_reply_t ramcast_ulongtolong(long *to_arg, unsigned long from_arg);
 
-ramfail_status_t ramcast_longtosize(size_t *to_arg, long from_arg);
+ram_reply_t ramcast_longtosize(size_t *to_arg, long from_arg);
 
-ramfail_status_t ramcast_sizetouint(unsigned int *to_arg, size_t from_arg);
-ramfail_status_t ramcast_ulongtouint(unsigned int *to_arg,
+ram_reply_t ramcast_sizetouint(unsigned int *to_arg, size_t from_arg);
+ram_reply_t ramcast_ulongtouint(unsigned int *to_arg,
       unsigned long from_arg);
-ramfail_status_t ramcast_ulongtouchar(unsigned char *to_arg,
+ram_reply_t ramcast_ulongtouchar(unsigned char *to_arg,
       unsigned long from_arg);
 
-ramfail_status_t ramcast_longtochar(char *to_arg, long from_arg);
+ram_reply_t ramcast_longtochar(char *to_arg, long from_arg);
 
-ramfail_status_t ramcast_test();
+ram_reply_t ramcast_test();
 
 #endif /* RAMCAST_H_IS_INCLUDED */

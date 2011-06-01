@@ -47,25 +47,25 @@ typedef pthread_mutex_t ramuix_mutex_t;
 typedef pthread_t ramuix_thread_t;
 typedef pthread_barrier_t ramuix_barrier_t;
 
-ramfail_status_t ramuix_mktlskey(ramuix_tlskey_t *key_arg);
-ramfail_status_t ramuix_rmtlskey(ramuix_tlskey_t key_arg);
-ramfail_status_t ramuix_rcltls(void **tls_arg, ramuix_tlskey_t key_arg);
-ramfail_status_t ramuix_stotls(ramuix_tlskey_t key_arg, void *value_arg);
+ram_reply_t ramuix_mktlskey(ramuix_tlskey_t *key_arg);
+ram_reply_t ramuix_rmtlskey(ramuix_tlskey_t key_arg);
+ram_reply_t ramuix_rcltls(void **tls_arg, ramuix_tlskey_t key_arg);
+ram_reply_t ramuix_stotls(ramuix_tlskey_t key_arg, void *value_arg);
 
-ramfail_status_t ramuix_mkmutex(ramuix_mutex_t *mutex_arg);
-ramfail_status_t ramuix_rmmutex(ramuix_mutex_t *mutex_arg);
-ramfail_status_t ramuix_waitformutex(ramuix_mutex_t *mutex_arg);
-ramfail_status_t ramuix_quitmutex(ramuix_mutex_t *mutex_arg);
+ram_reply_t ramuix_mkmutex(ramuix_mutex_t *mutex_arg);
+ram_reply_t ramuix_rmmutex(ramuix_mutex_t *mutex_arg);
+ram_reply_t ramuix_waitformutex(ramuix_mutex_t *mutex_arg);
+ram_reply_t ramuix_quitmutex(ramuix_mutex_t *mutex_arg);
 
-ramfail_status_t ramuix_mkthread(ramuix_thread_t *thread_arg,
+ram_reply_t ramuix_mkthread(ramuix_thread_t *thread_arg,
       ramsys_threadmain_t main_arg, void *arg_arg);
-ramfail_status_t ramuix_jointhread(ramfail_status_t *reply_arg,
+ram_reply_t ramuix_jointhread(ram_reply_t *reply_arg,
       ramuix_thread_t thread_arg);
 
-ramfail_status_t ramuix_mkbarrier(ramuix_barrier_t *barrier_arg,
+ram_reply_t ramuix_mkbarrier(ramuix_barrier_t *barrier_arg,
       size_t capacity_arg);
-ramfail_status_t ramuix_rmbarrier(ramuix_barrier_t *barrier_arg);
-ramfail_status_t ramuix_waitonbarrier(ramuix_barrier_t *barrier_arg);
+ram_reply_t ramuix_rmbarrier(ramuix_barrier_t *barrier_arg);
+ram_reply_t ramuix_waitonbarrier(ramuix_barrier_t *barrier_arg);
 
 #endif /* RAMSYS_PTHREADS */
 

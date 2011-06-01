@@ -43,7 +43,7 @@ typedef union ramsig_signature
    char ramsigs_s[4];
 } ramsig_signature_t;
 
-ramfail_status_t ramsig_init(ramsig_signature_t *sig_arg, const char *str_arg);
+ram_reply_t ramsig_init(ramsig_signature_t *sig_arg, const char *str_arg);
 #define RAMSIG_CMP(Lhs, Rhs) ((int)((Lhs).ramsigs_n - (Rhs).ramsigs_n))
 #define RAMSIG_MKUINT32(A, B, C, D) ((uint32_t)(((D) << 24) | ((C) << 16) | ((B) << 8) | (A)))
 

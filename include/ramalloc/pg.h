@@ -49,11 +49,11 @@ typedef struct rampg_pool
    ramsig_signature_t rampgp_slotsig;
 } rampg_pool_t;
 
-ramfail_status_t rampg_initialize();
-ramfail_status_t rampg_mkpool(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg);
-ramfail_status_t rampg_acquire(void **newptr_arg, rampg_pool_t *pool_arg);
-ramfail_status_t rampg_release(void *ptr_arg);
-ramfail_status_t rampg_chkpool(const rampg_pool_t *pool_arg);
-ramfail_status_t rampg_getgranularity(size_t *granularity_arg);
+ram_reply_t rampg_initialize();
+ram_reply_t rampg_mkpool(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg);
+ram_reply_t rampg_acquire(void **newptr_arg, rampg_pool_t *pool_arg);
+ram_reply_t rampg_release(void *ptr_arg);
+ram_reply_t rampg_chkpool(const rampg_pool_t *pool_arg);
+ram_reply_t rampg_getgranularity(size_t *granularity_arg);
 
 #endif /* RAMPG_H_IS_INCLUDED */

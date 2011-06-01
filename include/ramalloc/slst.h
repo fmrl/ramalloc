@@ -41,12 +41,12 @@ typedef struct ramslst_slist
    struct ramslst_slist *ramslstsl_next;
 } ramslst_slist_t;
 
-typedef ramfail_status_t (*ramslst_foreach_t)(ramslst_slist_t *node_arg, void *context_arg);
+typedef ram_reply_t (*ramslst_foreach_t)(ramslst_slist_t *node_arg, void *context_arg);
 
-ramfail_status_t ramslst_mklist(ramslst_slist_t *slist_arg);
-ramfail_status_t ramslst_insert(ramslst_slist_t *what_arg, ramslst_slist_t *after_arg);
-ramfail_status_t ramslst_remove(ramslst_slist_t *pred_arg);
-ramfail_status_t ramslst_foreach(ramslst_slist_t *list_arg, ramslst_foreach_t func_arg, void *context_arg); 
+ram_reply_t ramslst_mklist(ramslst_slist_t *slist_arg);
+ram_reply_t ramslst_insert(ramslst_slist_t *what_arg, ramslst_slist_t *after_arg);
+ram_reply_t ramslst_remove(ramslst_slist_t *pred_arg);
+ram_reply_t ramslst_foreach(ramslst_slist_t *list_arg, ramslst_foreach_t func_arg, void *context_arg); 
 
 #define RAMSLST_NEXT(List) ((List)->ramslstsl_next)
 #define RAMSLST_ISTAIL(List) (NULL == RAMSLST_NEXT(List))

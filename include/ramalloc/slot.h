@@ -52,10 +52,10 @@
 typedef struct ramslot_node ramslot_node_t;
 typedef struct ramslot_pool ramslot_pool_t;
 
-typedef ramfail_status_t (*ramslot_mknode_t)(ramslot_node_t **node_arg, void **slots_arg, 
+typedef ram_reply_t (*ramslot_mknode_t)(ramslot_node_t **node_arg, void **slots_arg, 
    ramslot_pool_t *pool_arg);
-typedef ramfail_status_t (*ramslot_rmnode_t)(ramslot_node_t *ptr_arg);
-typedef ramfail_status_t (*ramslot_initslot_t)(void *slot_arg, ramslot_node_t *node_arg);
+typedef ram_reply_t (*ramslot_rmnode_t)(ramslot_node_t *ptr_arg);
+typedef ram_reply_t (*ramslot_initslot_t)(void *slot_arg, ramslot_node_t *node_arg);
 
 struct ramslot_node
 {
@@ -74,12 +74,12 @@ struct ramslot_pool
    size_t ramslotp_granularity;
 };
 
-ramfail_status_t ramslot_mkpool(ramslot_pool_t *pool_arg, size_t granularity_arg, 
+ram_reply_t ramslot_mkpool(ramslot_pool_t *pool_arg, size_t granularity_arg, 
    size_t nodesz_arg, ramslot_mknode_t mknode_arg, ramslot_rmnode_t rnnode_arg, 
    ramslot_initslot_t initslot_arg);
-ramfail_status_t ramslot_acquire(void **newptr_arg, ramslot_pool_t *pool_arg);
-ramfail_status_t ramslot_release(void *ptr_arg, ramslot_node_t *node_arg);
-ramfail_status_t ramslot_chkpool(const ramslot_pool_t *pool_arg);
-ramfail_status_t ramslot_getgranularity(size_t *granularity_arg, const ramslot_pool_t *slotpool_arg);
+ram_reply_t ramslot_acquire(void **newptr_arg, ramslot_pool_t *pool_arg);
+ram_reply_t ramslot_release(void *ptr_arg, ramslot_node_t *node_arg);
+ram_reply_t ramslot_chkpool(const ramslot_pool_t *pool_arg);
+ram_reply_t ramslot_getgranularity(size_t *granularity_arg, const ramslot_pool_t *slotpool_arg);
 
 #endif /* RAMSLOT_H_IS_INCLUDED */

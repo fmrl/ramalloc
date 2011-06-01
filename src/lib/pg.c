@@ -88,40 +88,40 @@ typedef struct rampg_globals
    int rampgg_initflag;
 } rampg_globals_t;
 
-static ramfail_status_t rampg_mkpool2(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg);
-static ramfail_status_t rampg_findvnode(rampg_vnode_t **node_arg, char *ptr_arg);
-static ramfail_status_t rampg_mkvnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg);
-static ramfail_status_t rampg_initvnode(rampg_vnode_t *node_arg);
-static ramfail_status_t rampg_rmvnode(rampg_vnode_t *node_arg);
-static ramfail_status_t rampg_getpage(char **page_arg,
+static ram_reply_t rampg_mkpool2(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg);
+static ram_reply_t rampg_findvnode(rampg_vnode_t **node_arg, char *ptr_arg);
+static ram_reply_t rampg_mkvnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg);
+static ram_reply_t rampg_initvnode(rampg_vnode_t *node_arg);
+static ram_reply_t rampg_rmvnode(rampg_vnode_t *node_arg);
+static ram_reply_t rampg_getpage(char **page_arg,
       rampg_vnode_t *vpoolnode_arg, rampg_index_t index_arg);
-static ramfail_status_t rampg_calcindex(rampg_index_t *index_arg,
+static ram_reply_t rampg_calcindex(rampg_index_t *index_arg,
       const rampg_vnode_t *vpoolnode_arg, const char *page_arg);
-static ramfail_status_t rampg_chkvnode(const ramvec_node_t *node_arg);
-static ramfail_status_t rampg_mksnode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg);
-static ramfail_status_t rampg_rmsnode(ramslot_node_t *node_arg);
-static ramfail_status_t rampg_initslot(void *slot_arg, ramslot_node_t *node_arg);
+static ram_reply_t rampg_chkvnode(const ramvec_node_t *node_arg);
+static ram_reply_t rampg_mksnode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg);
+static ram_reply_t rampg_rmsnode(ramslot_node_t *node_arg);
+static ram_reply_t rampg_initslot(void *slot_arg, ramslot_node_t *node_arg);
 #define RAMPG_ISFULL(Node) (0 == (Node)->rampgvn_freestksz)
 #define RAMPG_ISEMPTY(Node) (rampg_theglobals.rampgg_nodecapacity == (Node)->rampgvn_freestksz)
 
 static rampg_globals_t rampg_theglobals;
 
-ramfail_status_t rampg_initialize()
+ram_reply_t rampg_initialize()
 {
    if (!rampg_theglobals.rampgg_initflag)
    {
       rampg_globals_t stage = {0};
       size_t mmapgran = 0;
 
-      RAMFAIL_RETURN(rammem_pagesize(&stage.rampgg_pagesize));
-      RAMFAIL_RETURN(rammem_mmapgran(&mmapgran));
+      RAM_FAIL_TRAP(rammem_pagesize(&stage.rampgg_pagesize));
+      RAM_FAIL_TRAP(rammem_mmapgran(&mmapgran));
       /* i am the page allocator, so i have access to the entire page 
        * (i.e. 'page_size' == 'writable_zone') */
       RAMFOOT_MKSPEC(&stage.rampgg_footerspec, rampg_footer_t, 
             stage.rampgg_pagesize, "PAGE");
       /* the node capacity is the number of pages a node keeps track of. */
       stage.rampgg_nodecapacity = mmapgran / stage.rampgg_pagesize;
-      RAMFAIL_CONFIRM(RAMFAIL_UNSUPPORTED, 
+      RAM_FAIL_EXPECT(RAM_REPLY_UNSUPPORTED, 
             stage.rampgg_nodecapacity <= RAMPG_MAXCAPACITY);
       stage.rampgg_granularity = stage.rampgg_footerspec.footer_offset;
       stage.rampgg_initflag = 1;
@@ -129,25 +129,25 @@ ramfail_status_t rampg_initialize()
       rampg_theglobals = stage;
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_mkpool(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg)
+ram_reply_t rampg_mkpool(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(pool_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, rampg_theglobals.rampgg_initflag);
+   RAM_FAIL_NOTNULL(pool_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, rampg_theglobals.rampgg_initflag);
 
    e = rampg_mkpool2(pool_arg, appetite_arg);
    /* i ensure that 'pool_arg' is zeroed out if something goes wrong. */
-   if (RAMFAIL_OK != e)
+   if (RAM_REPLY_OK != e)
       memset(pool_arg, 0, sizeof(*pool_arg));
 
    return e;
 }
 
-ramfail_status_t rampg_mkpool2(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg)
+ram_reply_t rampg_mkpool2(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg)
 {
    size_t snodecapacity = 0;
    size_t mmapgran = 0;
@@ -155,24 +155,24 @@ ramfail_status_t rampg_mkpool2(rampg_pool_t *pool_arg, ramopt_appetite_t appetit
    assert(pool_arg != NULL);
    assert(rampg_theglobals.rampgg_initflag);
 
-   RAMFAIL_RETURN(ramvec_mkpool(&pool_arg->rampgp_vpool, rampg_theglobals.rampgg_nodecapacity, 
+   RAM_FAIL_TRAP(ramvec_mkpool(&pool_arg->rampgp_vpool, rampg_theglobals.rampgg_nodecapacity, 
       &rampg_mkvnode));
    pool_arg->rampgp_appetite = appetite_arg;
 
    /* slot pool initialization: i must determine how many slots i can store
     * with a slot allocator in the amount of space specified by the virtual
     * memory mapping granularity. */
-   RAMFAIL_RETURN(rammem_mmapgran(&mmapgran));
+   RAM_FAIL_TRAP(rammem_mmapgran(&mmapgran));
    snodecapacity = (mmapgran - sizeof(rampg_snode_t))
          / sizeof(rampg_slot_t);
-   RAMFAIL_RETURN(ramslot_mkpool(&pool_arg->rampgp_slotpool, sizeof(rampg_slot_t),
+   RAM_FAIL_TRAP(ramslot_mkpool(&pool_arg->rampgp_slotpool, sizeof(rampg_slot_t),
       snodecapacity, rampg_mksnode, rampg_rmsnode, rampg_initslot));
-   RAMFAIL_RETURN(ramsig_init(&pool_arg->rampgp_slotsig, "SLOT"));
+   RAM_FAIL_TRAP(ramsig_init(&pool_arg->rampgp_slotsig, "SLOT"));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
+ram_reply_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
 {
    rampg_index_t idx = 0;
    char *page = NULL;
@@ -180,13 +180,13 @@ ramfail_status_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
    rampg_footer_t *foot = NULL;
    ramvec_node_t *p = NULL;
 
-   RAMFAIL_DISALLOWNULL(ptr_arg);
+   RAM_FAIL_NOTNULL(ptr_arg);
    *ptr_arg = NULL;
-   RAMFAIL_DISALLOWNULL(pool_arg);
+   RAM_FAIL_NOTNULL(pool_arg);
    assert(rampg_theglobals.rampgg_initflag);
 
    /* first, i acquire a memory object from the next available node in the pool. */
-   RAMFAIL_RETURN(ramvec_getnode(&p, &pool_arg->rampgp_vpool));
+   RAM_FAIL_TRAP(ramvec_getnode(&p, &pool_arg->rampgp_vpool));
    RAMMETA_BACKCAST(vnode, rampg_vnode_t, rampgvn_vnode, p);
    /* ramvec_getnode() should never return a full node. */
    assert(!RAMPG_ISFULL(vnode));
@@ -194,8 +194,8 @@ ramfail_status_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
    assert(&pool_arg->rampgp_vpool == vnode->rampgvn_vnode.ramvecn_vpool);
 
    idx = vnode->rampgvn_freestk[vnode->rampgvn_freestksz - 1];
-   RAMFAIL_RETURN(rampg_getpage(&page, vnode, idx));
-   RAMFAIL_RETURN(ramsys_commit(page));
+   RAM_FAIL_TRAP(rampg_getpage(&page, vnode, idx));
+   RAM_FAIL_TRAP(ramsys_commit(page));
 
    /* i mark the page as committed. */
    vnode->rampgvn_commitflags[idx] = 1;
@@ -210,11 +210,11 @@ ramfail_status_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
    /* i need to write a footer to the page to ensure that i can get to the pool
     * given any address of of the page. */
    /* TODO: should the footer spec be moved out of pool and into this? */
-   RAMFAIL_EPICFAIL(ramfoot_mkfooter((void **)&foot, &rampg_theglobals.rampgg_footerspec, page));
+   RAM_FAIL_PANIC(ramfoot_mkfooter((void **)&foot, &rampg_theglobals.rampgg_footerspec, page));
    foot->rampgf_vnode = vnode;
 
    /* i finalize the acquisition by updating the pool state. */
-   RAMFAIL_EPICFAIL(ramvec_acquire(&vnode->rampgvn_vnode, RAMPG_ISFULL(vnode)));
+   RAM_FAIL_PANIC(ramvec_acquire(&vnode->rampgvn_vnode, RAMPG_ISFULL(vnode)));
 
    /* i zero-out the memory, if that behavior is desired. */
 #if RAMOPT_ZEROMEM
@@ -222,34 +222,34 @@ ramfail_status_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
 #endif
 
    *ptr_arg = page;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_release(void *ptr_arg)
+ram_reply_t rampg_release(void *ptr_arg)
 {
    rampg_vnode_t *vnode = NULL;
    rampg_pool_t *pool = NULL;
    rampg_index_t idx = 0;
    int emptyflag = 0;
 
-   RAMFAIL_DISALLOWNULL(ptr_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, rampg_theglobals.rampgg_initflag);
+   RAM_FAIL_NOTNULL(ptr_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, rampg_theglobals.rampgg_initflag);
 
-   RAMFAIL_RETURN(rampg_findvnode(&vnode, (char *)ptr_arg));
+   RAM_FAIL_TRAP(rampg_findvnode(&vnode, (char *)ptr_arg));
    RAMMETA_BACKCAST(pool, rampg_pool_t, rampgp_vpool, vnode->rampgvn_vnode.ramvecn_vpool);
-   RAMFAIL_RETURN(rampg_calcindex(&idx, vnode, ptr_arg));
+   RAM_FAIL_TRAP(rampg_calcindex(&idx, vnode, ptr_arg));
    /* depending upon the release strategy, i either return the page to the system
     * or i wipe it and deny access to it. */
    if (RAMOPT_FRUGAL == pool->rampgp_appetite)
    {
       assert(vnode->rampgvn_commitflags[idx]);
-      RAMFAIL_RETURN(ramsys_decommit(ptr_arg));
+      RAM_FAIL_TRAP(ramsys_decommit(ptr_arg));
       vnode->rampgvn_commitflags[idx] = 0;
    }
    else
    {
       assert(RAMOPT_GREEDY == pool->rampgp_appetite);
-      RAMFAIL_RETURN(ramsys_reset(ptr_arg));
+      RAM_FAIL_TRAP(ramsys_reset(ptr_arg));
 
 #if RAMOPT_MARKFREED
       /* it's helpful to see signature bytes for destroyed memory when
@@ -269,14 +269,14 @@ ramfail_status_t rampg_release(void *ptr_arg)
    /* now, i pass control to ramvec_release() to finalize the pool state. if the vnode is
     * empty, i'll discard the vnode. */
    emptyflag = RAMPG_ISEMPTY(vnode);
-   RAMFAIL_EPICFAIL(ramvec_release(&vnode->rampgvn_vnode, 1 == vnode->rampgvn_freestksz, emptyflag));
+   RAM_FAIL_PANIC(ramvec_release(&vnode->rampgvn_vnode, 1 == vnode->rampgvn_freestksz, emptyflag));
    if (emptyflag)
-      RAMFAIL_EPICFAIL(rampg_rmvnode(vnode));
+      RAM_FAIL_PANIC(rampg_rmvnode(vnode));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_findvnode(rampg_vnode_t **node_arg, char *ptr_arg)
+ram_reply_t rampg_findvnode(rampg_vnode_t **node_arg, char *ptr_arg)
 {
    rampg_footer_t *foot = NULL;
 
@@ -284,38 +284,38 @@ ramfail_status_t rampg_findvnode(rampg_vnode_t **node_arg, char *ptr_arg)
    assert(node_arg != NULL);
    assert(ptr_arg != NULL);
 
-   RAMFAIL_RETURN(ramfoot_getstorage((void **)&foot, &rampg_theglobals.rampgg_footerspec, ptr_arg));
+   RAM_FAIL_TRAP(ramfoot_getstorage((void **)&foot, &rampg_theglobals.rampgg_footerspec, ptr_arg));
 
    *node_arg = foot->rampgf_vnode;
    assert(*node_arg != NULL);
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_mkvnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg)
+ram_reply_t rampg_mkvnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg)
 {
    rampg_slot_t *slot = NULL;
    rampg_pool_t *pool = NULL;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
    assert(rampg_theglobals.rampgg_initflag);
    assert(node_arg != NULL);
 
    RAMMETA_BACKCAST(pool, rampg_pool_t, rampgp_vpool, pool_arg);
-   RAMFAIL_RETURN(ramslot_acquire((void **)&slot, &pool->rampgp_slotpool));
+   RAM_FAIL_TRAP(ramslot_acquire((void **)&slot, &pool->rampgp_slotpool));
    e = rampg_initvnode(&slot->rampgg_vnode);
-   if (RAMFAIL_OK == e)
+   if (RAM_REPLY_OK == e)
    {
       *node_arg = &slot->rampgg_vnode.rampgvn_vnode;
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
    else
    {
-      RAMFAIL_EPICFAIL(rampg_rmvnode(&slot->rampgg_vnode));
+      RAM_FAIL_PANIC(rampg_rmvnode(&slot->rampgg_vnode));
       return e;
    }
 }
 
-ramfail_status_t rampg_initvnode(rampg_vnode_t *node_arg)
+ram_reply_t rampg_initvnode(rampg_vnode_t *node_arg)
 {
    size_t i = 0;
 
@@ -326,7 +326,7 @@ ramfail_status_t rampg_initvnode(rampg_vnode_t *node_arg)
    /* i reserve the page because there doesn't seem to be a need until memory is actually
     * acquired. this still uses address space but preserves hardware for those pages that 
     * are actually in use. */
-   RAMFAIL_RETURN(ramsys_reserve(&node_arg->rampgvn_pages));
+   RAM_FAIL_TRAP(ramsys_reserve(&node_arg->rampgvn_pages));
    /* therefore, all commit flags start out reset. */
    memset(node_arg->rampgvn_commitflags, 0, sizeof(node_arg->rampgvn_commitflags));
    /* this isn't absolutely necessary but it's helpful to not see garbage data in the debugger. */
@@ -338,10 +338,10 @@ ramfail_status_t rampg_initvnode(rampg_vnode_t *node_arg)
       node_arg->rampgvn_freestk[i] = i;
    node_arg->rampgvn_freestksz = rampg_theglobals.rampgg_nodecapacity;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_rmvnode(rampg_vnode_t *node_arg)
+ram_reply_t rampg_rmvnode(rampg_vnode_t *node_arg)
 {
    rampg_pool_t *pool = NULL;
    rampg_slot_t *slot = NULL;
@@ -351,65 +351,65 @@ ramfail_status_t rampg_rmvnode(rampg_vnode_t *node_arg)
 
    RAMMETA_BACKCAST(pool, rampg_pool_t, rampgp_vpool, node_arg->rampgvn_vnode.ramvecn_vpool);
    RAMMETA_BACKCAST(slot, rampg_slot_t, rampgg_vnode, node_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT,
+   RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT,
       0 == RAMSIG_CMP(slot->rampgg_signature, pool->rampgp_slotsig));
-   RAMFAIL_RETURN(ramsys_release(node_arg->rampgvn_pages));
-   RAMFAIL_RETURN(ramslot_release(slot, &slot->rampgg_snode->rampgsn_slotnode));
-   return RAMFAIL_OK;
+   RAM_FAIL_TRAP(ramsys_release(node_arg->rampgvn_pages));
+   RAM_FAIL_TRAP(ramslot_release(slot, &slot->rampgg_snode->rampgsn_slotnode));
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_getpage(char **page_arg,
+ram_reply_t rampg_getpage(char **page_arg,
       rampg_vnode_t *vpoolnode_arg, rampg_index_t index_arg)
 {
-   RAMFAIL_DISALLOWNULL(page_arg);
+   RAM_FAIL_NOTNULL(page_arg);
    *page_arg = NULL;
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT,
          rampg_theglobals.rampgg_initflag);
-   RAMFAIL_DISALLOWNULL(vpoolnode_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, index_arg != RAMPG_MAXCAPACITY);
+   RAM_FAIL_NOTNULL(vpoolnode_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL, index_arg != RAMPG_MAXCAPACITY);
 
    *page_arg =
          &vpoolnode_arg->rampgvn_pages[index_arg *
                                        rampg_theglobals.rampgg_pagesize];
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_calcindex(rampg_index_t *index_arg,
+ram_reply_t rampg_calcindex(rampg_index_t *index_arg,
        const rampg_vnode_t *vpoolnode_arg, const char *page_arg)
 {
    int ispage = 0;
 
-   RAMFAIL_DISALLOWNULL(index_arg);
+   RAM_FAIL_NOTNULL(index_arg);
    *index_arg = RAMPG_MAXCAPACITY;
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT,
          rampg_theglobals.rampgg_initflag);
-   RAMFAIL_DISALLOWNULL(vpoolnode_arg);
-   RAMFAIL_RETURN(rammem_ispage(&ispage, page_arg));
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, vpoolnode_arg->rampgvn_pages <= page_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, vpoolnode_arg->rampgvn_pages +
+   RAM_FAIL_NOTNULL(vpoolnode_arg);
+   RAM_FAIL_TRAP(rammem_ispage(&ispage, page_arg));
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, ispage);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL, vpoolnode_arg->rampgvn_pages <= page_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL, vpoolnode_arg->rampgvn_pages +
          rampg_theglobals.rampgg_pagesize *
          rampg_theglobals.rampgg_nodecapacity > page_arg);
 
    *index_arg = (page_arg - vpoolnode_arg->rampgvn_pages) /
          rampg_theglobals.rampgg_pagesize;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_chkpool(const rampg_pool_t *pool_arg)
+ram_reply_t rampg_chkpool(const rampg_pool_t *pool_arg)
 {
-   RAMFAIL_DISALLOWNULL(pool_arg);
+   RAM_FAIL_NOTNULL(pool_arg);
    
    assert(rampg_theglobals.rampgg_initflag);
-   RAMFAIL_RETURN(ramslot_chkpool(&pool_arg->rampgp_slotpool));
-   RAMFAIL_RETURN(ramvec_chkpool(&pool_arg->rampgp_vpool, &rampg_chkvnode));
+   RAM_FAIL_TRAP(ramslot_chkpool(&pool_arg->rampgp_slotpool));
+   RAM_FAIL_TRAP(ramvec_chkpool(&pool_arg->rampgp_vpool, &rampg_chkvnode));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_chkvnode(const ramvec_node_t *node_arg)
+ram_reply_t rampg_chkvnode(const ramvec_node_t *node_arg)
 {
    const rampg_vnode_t *node = NULL;
    size_t i = 0;
@@ -420,64 +420,64 @@ ramfail_status_t rampg_chkvnode(const ramvec_node_t *node_arg)
    RAMMETA_BACKCAST(node, const rampg_vnode_t, rampgvn_vnode, node_arg);
 
    /* the node cannot be empty. */
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, !RAMPG_ISEMPTY(node));
+   RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, !RAMPG_ISEMPTY(node));
    /* the base address should be on a page boundary. */
-   RAMFAIL_RETURN(rammem_ispage(&ispage, node->rampgvn_pages));
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, ispage);
+   RAM_FAIL_TRAP(rammem_ispage(&ispage, node->rampgvn_pages));
+   RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, ispage);
    /* the free list length should not exceed the node capacity. */
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, node->rampgvn_freestksz <= rampg_theglobals.rampgg_nodecapacity);
+   RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, node->rampgvn_freestksz <= rampg_theglobals.rampgg_nodecapacity);
    /* the free list should only contain indices on the range of [0, ramvecvp_nodecapacity). */
    for (i = 0; i < node->rampgvn_freestksz; ++i)
-      RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, node->rampgvn_freestk[i] < rampg_theglobals.rampgg_nodecapacity);
+      RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, node->rampgvn_freestk[i] < rampg_theglobals.rampgg_nodecapacity);
    /* the commit flags should only contain values 0 or 1 */
    for (i = 0; i < rampg_theglobals.rampgg_nodecapacity; ++i)
    {
-      RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, 
+      RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, 
          0 == node->rampgvn_commitflags[i] || 1 == node->rampgvn_commitflags[i]);
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_mksnode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg)
+ram_reply_t rampg_mksnode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg)
 {
    rampg_snode_t *snode = NULL;
 
-   RAMFAIL_DISALLOWNULL(node_arg);
+   RAM_FAIL_NOTNULL(node_arg);
    *node_arg = NULL;
-   RAMFAIL_DISALLOWNULL(slots_arg);
+   RAM_FAIL_NOTNULL(slots_arg);
    *slots_arg = NULL;
-   RAMFAIL_DISALLOWNULL(pool_arg);
+   RAM_FAIL_NOTNULL(pool_arg);
    assert(rampg_theglobals.rampgg_initflag);
 
-   RAMFAIL_RETURN(ramsys_bulkalloc((char **)&snode));
+   RAM_FAIL_TRAP(ramsys_bulkalloc((char **)&snode));
    *slots_arg = snode->rampgsn_slots;
    *node_arg = &snode->rampgsn_slotnode;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_rmsnode(ramslot_node_t *node_arg)
+ram_reply_t rampg_rmsnode(ramslot_node_t *node_arg)
 {
    rampg_snode_t *snode = NULL;
 
-   RAMFAIL_DISALLOWNULL(node_arg);
+   RAM_FAIL_NOTNULL(node_arg);
    assert(rampg_theglobals.rampgg_initflag);
 
    RAMMETA_BACKCAST(snode, rampg_snode_t, rampgsn_slotnode, node_arg);
-   RAMFAIL_RETURN(ramsys_release((char *)snode));
+   RAM_FAIL_TRAP(ramsys_release((char *)snode));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_initslot(void *slot_arg, ramslot_node_t *node_arg)
+ram_reply_t rampg_initslot(void *slot_arg, ramslot_node_t *node_arg)
 {
    rampg_snode_t *snode = NULL;
    rampg_slot_t *slot = NULL;
    rampg_pool_t *pool = NULL;
    ramslot_pool_t *slotpool = NULL;
 
-   RAMFAIL_DISALLOWNULL(slot_arg);
-   RAMFAIL_DISALLOWNULL(node_arg);
+   RAM_FAIL_NOTNULL(slot_arg);
+   RAM_FAIL_NOTNULL(node_arg);
    assert(rampg_theglobals.rampgg_initflag);
 
    RAMMETA_BACKCAST(snode, rampg_snode_t, rampgsn_slotnode, node_arg);
@@ -487,16 +487,16 @@ ramfail_status_t rampg_initslot(void *slot_arg, ramslot_node_t *node_arg)
    slot->rampgg_signature = pool->rampgp_slotsig;
    slot->rampgg_snode = snode;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rampg_getgranularity(size_t *granularity_arg)
+ram_reply_t rampg_getgranularity(size_t *granularity_arg)
 {
-   RAMFAIL_DISALLOWNULL(granularity_arg);
+   RAM_FAIL_NOTNULL(granularity_arg);
    *granularity_arg = 0;
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, rampg_theglobals.rampgg_initflag);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, rampg_theglobals.rampgg_initflag);
 
    *granularity_arg = rampg_theglobals.rampgg_granularity;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }

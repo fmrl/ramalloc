@@ -43,7 +43,7 @@ void * ramcompat_malloc(size_t size_arg)
       return rammem_supmalloc(size_arg);
    else
    {
-      ramfail_status_t e = RAMFAIL_INSANE;
+      ram_reply_t e = RAM_REPLY_INSANE;
       void *p = NULL;
 
       e = ramdefault_acquire(&p, size_arg);
@@ -51,10 +51,10 @@ void * ramcompat_malloc(size_t size_arg)
       {
       default:
          return NULL;
-      case RAMFAIL_OK:
+      case RAM_REPLY_OK:
          return p;
-      case RAMFAIL_RANGE:
-         /* ramalloc will return RAMFAIL_RANGE if the allocator cannot accomidate
+      case RAM_REPLY_RANGEFAIL:
+         /* ramalloc will return RAM_REPLY_RANGEFAIL if the allocator cannot accomidate
           * an object of size 'size_arg' (i.e. too big or too small). i can defer to
           * the supplimental allocator for this. */
          return rammem_supmalloc(size_arg);
@@ -69,7 +69,7 @@ void ramcompat_free(void *ptr_arg)
       return;
    else
    {
-      ramfail_status_t e = RAMFAIL_INSANE;
+      ram_reply_t e = RAM_REPLY_INSANE;
       size_t sz = 0;
 
       e = ramdefault_query(&sz, ptr_arg);
@@ -77,15 +77,15 @@ void ramcompat_free(void *ptr_arg)
       {
       default:
          /* i don't have any other avenue through which i can report an error. */
-         ramfail_epicfail("i got an unexpected eror from ramdefault_query().");
+         ram_fail_panic("i got an unexpected eror from ramdefault_query().");
          return;
-      case RAMFAIL_OK:
+      case RAM_REPLY_OK:
          e = ramdefault_discard(ptr_arg);
-         if (RAMFAIL_OK != e)
-            ramfail_epicfail("i got an unexpected eror from ramdefault_discard().");
+         if (RAM_REPLY_OK != e)
+            ram_fail_panic("i got an unexpected eror from ramdefault_discard().");
          return;
-      case RAMFAIL_NOTFOUND:
-         /* ramalloc will return RAMFAIL_NOTFOUND if ptr_arg was allocated with a different
+      case RAM_REPLY_NOTFOUND:
+         /* ramalloc will return RAM_REPLY_NOTFOUND if ptr_arg was allocated with a different
           * allocator. */
          rammem_supfree(ptr_arg);
          return;

@@ -66,10 +66,10 @@ typedef struct ramfoot_spec
    ramsig_signature_t master_signature;
 } ramfoot_spec_t;
 
-ramfail_status_t ramfoot_mkspec(ramfoot_spec_t *spec_arg, size_t writezn_arg, 
+ram_reply_t ramfoot_mkspec(ramfoot_spec_t *spec_arg, size_t writezn_arg, 
    size_t footsz_arg, size_t storalign_arg, size_t storofs_arg, const char *sig_arg);
-ramfail_status_t ramfoot_mkfooter(void **storage_arg, const ramfoot_spec_t *spec_arg, void *page_arg);
-ramfail_status_t ramfoot_getstorage(void **result_arg,
+ram_reply_t ramfoot_mkfooter(void **storage_arg, const ramfoot_spec_t *spec_arg, void *page_arg);
+ram_reply_t ramfoot_getstorage(void **result_arg,
       const ramfoot_spec_t *spec_arg, void *ptr_arg);
 
 #define RAMFOOT_MKSPEC2(Spec, Type, WriteZone, Signature, FooterTag, TmpVar) \
@@ -79,7 +79,7 @@ ramfail_status_t ramfoot_getstorage(void **result_arg,
          ramsig_signature_t ft_signature; \
          Type ft_storage; \
       }; \
-      RAMFAIL_RETURN(ramfoot_mkspec((Spec), (WriteZone), \
+      RAM_FAIL_TRAP(ramfoot_mkspec((Spec), (WriteZone), \
          sizeof(struct FooterTag), RAMSYS_ALIGNOF(struct FooterTag), \
          offsetof(struct FooterTag, ft_storage), Signature)); \
    } while (0)

@@ -44,173 +44,173 @@
 
 static SYSTEM_INFO ramwin_sysinfo = {0};
 
-static ramfail_status_t ramwin_basename2(char *dest_arg, size_t len_arg, 
+static ram_reply_t ramwin_basename2(char *dest_arg, size_t len_arg, 
    const char *pathn_arg);
 
-ramfail_status_t ramwin_initialize()
+ram_reply_t ramwin_initialize()
 {
    GetSystemInfo(&ramwin_sysinfo);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_pagesize(size_t *pagesz_arg)
+ram_reply_t ramwin_pagesize(size_t *pagesz_arg)
 {
-   RAMFAIL_DISALLOWNULL(pagesz_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwPageSize != 0);
+   RAM_FAIL_NOTNULL(pagesz_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, ramwin_sysinfo.dwPageSize != 0);
 
    *pagesz_arg = ramwin_sysinfo.dwPageSize;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_mmapgran(size_t *mmapgran_arg)
+ram_reply_t ramwin_mmapgran(size_t *mmapgran_arg)
 {
-   RAMFAIL_DISALLOWNULL(mmapgran_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwAllocationGranularity != 0);
+   RAM_FAIL_NOTNULL(mmapgran_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, ramwin_sysinfo.dwAllocationGranularity != 0);
 
    *mmapgran_arg = ramwin_sysinfo.dwAllocationGranularity;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_cpucount(size_t *cpucount_arg)
+ram_reply_t ramwin_cpucount(size_t *cpucount_arg)
 {
-   RAMFAIL_DISALLOWNULL(cpucount_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwNumberOfProcessors != 0);
+   RAM_FAIL_NOTNULL(cpucount_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, ramwin_sysinfo.dwNumberOfProcessors != 0);
 
    *cpucount_arg = ramwin_sysinfo.dwNumberOfProcessors;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_commit(char *page_arg)
+ram_reply_t ramwin_commit(char *page_arg)
 {
    int ispage = 0;
 
-   RAMFAIL_DISALLOWNULL(page_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwPageSize != 0);
-   RAMFAIL_RETURN(rammem_ispage(&ispage, page_arg));
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
+   RAM_FAIL_NOTNULL(page_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, ramwin_sysinfo.dwPageSize != 0);
+   RAM_FAIL_TRAP(rammem_ispage(&ispage, page_arg));
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, ispage);
    
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, 
       VirtualAlloc(page_arg, ramwin_sysinfo.dwPageSize, MEM_COMMIT, 
       PAGE_READWRITE) == page_arg);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_decommit(char *page_arg)
+ram_reply_t ramwin_decommit(char *page_arg)
 {
    int ispage = 0;
 
-   RAMFAIL_DISALLOWNULL(page_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwPageSize != 0);
-   RAMFAIL_RETURN(rammem_ispage(&ispage, page_arg));
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
+   RAM_FAIL_NOTNULL(page_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, ramwin_sysinfo.dwPageSize != 0);
+   RAM_FAIL_TRAP(rammem_ispage(&ispage, page_arg));
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, ispage);
    
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL,
          VirtualFree(page_arg, ramwin_sysinfo.dwPageSize, MEM_DECOMMIT));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_reset(char *page_arg)
+ram_reply_t ramwin_reset(char *page_arg)
 {
    int ispage = 0;
 
-   RAMFAIL_DISALLOWNULL(page_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwPageSize != 0);
-   RAMFAIL_RETURN(rammem_ispage(&ispage, page_arg));
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
+   RAM_FAIL_NOTNULL(page_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, ramwin_sysinfo.dwPageSize != 0);
+   RAM_FAIL_TRAP(rammem_ispage(&ispage, page_arg));
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, ispage);
 
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, 
       VirtualAlloc(page_arg, ramwin_sysinfo.dwPageSize, MEM_RESET, 
       PAGE_NOACCESS) == page_arg);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_reserve(char **pages_arg)
+ram_reply_t ramwin_reserve(char **pages_arg)
 {
    char *p = NULL;
    
-   RAMFAIL_DISALLOWNULL(pages_arg);
+   RAM_FAIL_NOTNULL(pages_arg);
    *pages_arg = NULL;
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwAllocationGranularity != 0);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, ramwin_sysinfo.dwAllocationGranularity != 0);
 
    p = (char *)VirtualAlloc(NULL, ramwin_sysinfo.dwAllocationGranularity, 
       MEM_RESERVE, PAGE_NOACCESS);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, p != NULL);
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, p != NULL);
 
    *pages_arg = p;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_bulkalloc(char **pages_arg)
+ram_reply_t ramwin_bulkalloc(char **pages_arg)
 {
    char *p = NULL;
 
-   RAMFAIL_DISALLOWNULL(pages_arg);
+   RAM_FAIL_NOTNULL(pages_arg);
    *pages_arg = NULL;
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, ramwin_sysinfo.dwAllocationGranularity != 0);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, ramwin_sysinfo.dwAllocationGranularity != 0);
 
    p = (char *)VirtualAlloc(NULL, ramwin_sysinfo.dwAllocationGranularity, 
       MEM_RESERVE | MEM_COMMIT, PAGE_READWRITE);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, p != NULL);
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, p != NULL);
 
    *pages_arg = p;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_release(char *pages_arg)
+ram_reply_t ramwin_release(char *pages_arg)
 {
    int ispage = 0;
 
-   RAMFAIL_DISALLOWNULL(pages_arg);
-   RAMFAIL_RETURN(rammem_ispage(&ispage, pages_arg));
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
+   RAM_FAIL_NOTNULL(pages_arg);
+   RAM_FAIL_TRAP(rammem_ispage(&ispage, pages_arg));
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, ispage);
    
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL,
          VirtualFree(pages_arg, 0, MEM_RELEASE));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_mktlskey(ramwin_tlskey_t *key_arg)
+ram_reply_t ramwin_mktlskey(ramwin_tlskey_t *key_arg)
 {
    ramwin_tlskey_t k = RAMWIN_NILTLSKEY;
 
-   RAMFAIL_DISALLOWNULL(key_arg);
+   RAM_FAIL_NOTNULL(key_arg);
    *key_arg = RAMWIN_NILTLSKEY;
 
    k = TlsAlloc();
    if (TLS_OUT_OF_INDEXES == k)
-      return RAMFAIL_RESOURCE;
+      return RAM_REPLY_RESOURCEFAIL;
    else
    {
       *key_arg = k;
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
 }
 
-ramfail_status_t ramwin_rmtlskey(ramwin_tlskey_t key_arg)
+ram_reply_t ramwin_rmtlskey(ramwin_tlskey_t key_arg)
 {
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, key_arg != RAMWIN_NILTLSKEY);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, key_arg != RAMWIN_NILTLSKEY);
 
    if (TlsFree(key_arg))
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    else
-      return RAMFAIL_PLATFORM;
+      return RAM_REPLY_APIFAIL;
 }
 
-ramfail_status_t ramwin_rcltls(void **value_arg, ramwin_tlskey_t key_arg)
+ram_reply_t ramwin_rcltls(void **value_arg, ramwin_tlskey_t key_arg)
 {
    void *p = NULL;
 
-   RAMFAIL_DISALLOWNULL(value_arg);
+   RAM_FAIL_NOTNULL(value_arg);
    *value_arg = NULL;
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, key_arg != RAMWIN_NILTLSKEY);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, key_arg != RAMWIN_NILTLSKEY);
 
    p = TlsGetValue(key_arg);
    /* NULL is an ambiguous return value. i must check to see if an error
@@ -220,131 +220,131 @@ ramfail_status_t ramwin_rcltls(void **value_arg, ramwin_tlskey_t key_arg)
    if (p || ERROR_SUCCESS == GetLastError())
    {
       *value_arg = p;
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
    else
-      return RAMFAIL_PLATFORM;
+      return RAM_REPLY_APIFAIL;
 }
 
-ramfail_status_t ramwin_stotls(ramwin_tlskey_t key_arg, void *value_arg)
+ram_reply_t ramwin_stotls(ramwin_tlskey_t key_arg, void *value_arg)
 {
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, key_arg != RAMWIN_NILTLSKEY);
-   RAMFAIL_DISALLOWNULL(value_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, key_arg != RAMWIN_NILTLSKEY);
+   RAM_FAIL_NOTNULL(value_arg);
 
    if (TlsSetValue(key_arg, value_arg))
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    else
-      return RAMFAIL_PLATFORM;
+      return RAM_REPLY_APIFAIL;
 }
 
-ramfail_status_t ramwin_mkmutex(ramwin_mutex_t *mutex_arg)
+ram_reply_t ramwin_mkmutex(ramwin_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWNULL(mutex_arg);
+   RAM_FAIL_NOTNULL(mutex_arg);
 
    InitializeCriticalSection(mutex_arg);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_rmmutex(ramwin_mutex_t *mutex_arg)
+ram_reply_t ramwin_rmmutex(ramwin_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWNULL(mutex_arg);
+   RAM_FAIL_NOTNULL(mutex_arg);
 
    DeleteCriticalSection(mutex_arg);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
 
-ramfail_status_t ramwin_waitformutex(ramwin_mutex_t *mutex_arg)
+ram_reply_t ramwin_waitformutex(ramwin_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWNULL(mutex_arg);
+   RAM_FAIL_NOTNULL(mutex_arg);
 
    EnterCriticalSection(mutex_arg);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_quitmutex(ramwin_mutex_t *mutex_arg)
+ram_reply_t ramwin_quitmutex(ramwin_mutex_t *mutex_arg)
 {
-   RAMFAIL_DISALLOWNULL(mutex_arg);
+   RAM_FAIL_NOTNULL(mutex_arg);
 
    LeaveCriticalSection(mutex_arg);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_mkthread(ramwin_thread_t *thread_arg, 
+ram_reply_t ramwin_mkthread(ramwin_thread_t *thread_arg, 
 	  ramsys_threadmain_t main_arg, void *arg_arg)
 {
    HANDLE thread = NULL;
 
-   RAMFAIL_DISALLOWNULL(thread_arg);
+   RAM_FAIL_NOTNULL(thread_arg);
    *thread_arg = NULL;
-   RAMFAIL_DISALLOWNULL(main_arg);
+   RAM_FAIL_NOTNULL(main_arg);
 
    /* TODO: casting 'main_arg' to LPTHREAD_START_ROUTINE simplifies the code but it
     * sacrifies type safety. if i end up needing a more sophisticated threading
     * interface, i'll consider changing this. */
    thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)main_arg, arg_arg, 0, NULL);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, NULL != thread);
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, NULL != thread);
 
    *thread_arg = thread;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_jointhread(ramfail_status_t *reply_arg,
+ram_reply_t ramwin_jointhread(ram_reply_t *reply_arg,
       ramwin_thread_t thread_arg)
 {
    DWORD exitcode = STILL_ACTIVE, result = WAIT_FAILED;
 
-   RAMFAIL_DISALLOWNULL(reply_arg);
-   *reply_arg = RAMFAIL_INSANE;
-   RAMFAIL_DISALLOWNULL(thread_arg);
+   RAM_FAIL_NOTNULL(reply_arg);
+   *reply_arg = RAM_REPLY_INSANE;
+   RAM_FAIL_NOTNULL(thread_arg);
 
    result = WaitForSingleObject(thread_arg, INFINITE);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, WAIT_OBJECT_0 == result);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, WAIT_OBJECT_0 == result);
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL,
          GetExitCodeThread(thread_arg, &exitcode));
-   RAMFAIL_CONFIRM(RAMFAIL_INSANE, exitcode != STILL_ACTIVE);
+   RAM_FAIL_EXPECT(RAM_REPLY_INSANE, exitcode != STILL_ACTIVE);
 
-   *reply_arg = (ramfail_status_t)exitcode;
-   return RAMFAIL_OK;
+   *reply_arg = (ram_reply_t)exitcode;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, size_t capacity_arg)
+ram_reply_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, size_t capacity_arg)
 {
-   RAMFAIL_DISALLOWNULL(barrier_arg);
+   RAM_FAIL_NOTNULL(barrier_arg);
 
    memset(barrier_arg, 0, sizeof(*barrier_arg));
 
-   RAMFAIL_RETURN(ramcast_sizetolong(&barrier_arg->ramwinb_capacity, capacity_arg));
+   RAM_FAIL_TRAP(ramcast_sizetolong(&barrier_arg->ramwinb_capacity, capacity_arg));
    barrier_arg->ramwinb_vacancy = barrier_arg->ramwinb_capacity;
    barrier_arg->ramwinb_event = CreateEvent(NULL, FALSE, FALSE, NULL);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, NULL != barrier_arg->ramwinb_event);
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, NULL != barrier_arg->ramwinb_event);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_rmbarrier(ramwin_barrier_t *barrier_arg)
+ram_reply_t ramwin_rmbarrier(ramwin_barrier_t *barrier_arg)
 {
-   RAMFAIL_DISALLOWNULL(barrier_arg);
+   RAM_FAIL_NOTNULL(barrier_arg);
    /* i don't allow destruction of the barrier while it's in use. */
-   RAMFAIL_CONFIRM(RAMFAIL_UNSUPPORTED,
+   RAM_FAIL_EXPECT(RAM_REPLY_UNSUPPORTED,
          barrier_arg->ramwinb_vacancy == barrier_arg->ramwinb_capacity);
 
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL,
          CloseHandle(&barrier_arg->ramwinb_event));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_waitonbarrier(ramwin_barrier_t *barrier_arg)
+ram_reply_t ramwin_waitonbarrier(ramwin_barrier_t *barrier_arg)
 {
    LONG n = 0;
 
-   RAMFAIL_DISALLOWNULL(barrier_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED, barrier_arg->ramwinb_capacity > 0);
+   RAM_FAIL_NOTNULL(barrier_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, barrier_arg->ramwinb_capacity > 0);
 
    n = InterlockedDecrement(&barrier_arg->ramwinb_vacancy);
    if (n > 0)
@@ -352,33 +352,33 @@ ramfail_status_t ramwin_waitonbarrier(ramwin_barrier_t *barrier_arg)
       DWORD result = WAIT_FAILED;
 
       result = WaitForSingleObject(barrier_arg->ramwinb_event, INFINITE);
-      RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, WAIT_OBJECT_0 == result);
+      RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, WAIT_OBJECT_0 == result);
    }
    else if (0 == n)
    {
       /* if i'm the last one waiting on the barrier, i set it to the signaled state,
        * rather than wait on it.*/
-      RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, SetEvent(barrier_arg->ramwinb_event));
+      RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, SetEvent(barrier_arg->ramwinb_event));
    }
    else
    {
       assert(n < 0);
 
       /* if n < 0, then it means that i should inform the caller of an underflow. */
-      return RAMFAIL_UNDERFLOW;
+      return RAM_REPLY_UNDERFLOW;
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramwin_basename(char *dest_arg, size_t len_arg, 
+ram_reply_t ramwin_basename(char *dest_arg, size_t len_arg, 
    const char *pathn_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
    e = ramwin_basename2(dest_arg, len_arg, pathn_arg);
-   if (RAMFAIL_OK == e)
-      return RAMFAIL_OK;
+   if (RAM_REPLY_OK == e)
+      return RAM_REPLY_OK;
    else
    {
       /* i'd like to avoid returning inconsistent results. */
@@ -387,7 +387,7 @@ ramfail_status_t ramwin_basename(char *dest_arg, size_t len_arg,
    }
 }
 
-ramfail_status_t ramwin_basename2(char *dest_arg, size_t len_arg, 
+ram_reply_t ramwin_basename2(char *dest_arg, size_t len_arg, 
    const char *pathn_arg)
 {
    char drive[_MAX_DRIVE];
@@ -397,19 +397,19 @@ ramfail_status_t ramwin_basename2(char *dest_arg, size_t len_arg,
    errno_t e = -1;
    int n = -1;
 
-   RAMFAIL_DISALLOWNULL(dest_arg);
-   RAMFAIL_DISALLOWZ(len_arg);
-   RAMFAIL_DISALLOWNULL(pathn_arg);
+   RAM_FAIL_NOTNULL(dest_arg);
+   RAM_FAIL_NOTZERO(len_arg);
+   RAM_FAIL_NOTNULL(pathn_arg);
 
    /* first, i use _splitpath_s() to get the components. */
    e = _splitpath_s(pathn_arg, drive, _MAX_DRIVE, dir, _MAX_DIR, filen,
       _MAX_FNAME, ext, _MAX_EXT);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == e);
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, 0 == e);
    /* now, i need to reassemble them into the equivalent of a basename. */
    n = _snprintf_s(dest_arg, len_arg, 
       _MAX_FNAME + _MAX_EXT, "%s%s", filen, ext);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, -1 < n);
-   return RAMFAIL_OK;
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, -1 < n);
+   return RAM_REPLY_OK;
 }
 
 #endif /* RAMSYS_WINDOWS */

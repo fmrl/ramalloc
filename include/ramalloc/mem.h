@@ -39,14 +39,14 @@
 #include <ramalloc/stdint.h>
 
 
-ramfail_status_t rammem_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg);
+ram_reply_t rammem_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg);
 
 void * rammem_supmalloc(size_t size_arg);
 void rammem_supfree(void *ptr_arg);
 
-ramfail_status_t rammem_pagesize(size_t *pgsz_arg);
-ramfail_status_t rammem_mmapgran(size_t *mg_arg);
-ramfail_status_t rammem_getpage(char **page_arg, void *ptr_arg);
-ramfail_status_t rammem_ispage(int *ispage_arg, const void *ptr_arg);
+ram_reply_t rammem_pagesize(size_t *pgsz_arg);
+ram_reply_t rammem_mmapgran(size_t *mg_arg);
+ram_reply_t rammem_getpage(char **page_arg, void *ptr_arg);
+ram_reply_t rammem_ispage(int *ispage_arg, const void *ptr_arg);
 
 #endif /* RAMMEM_H_IS_INCLUDED */

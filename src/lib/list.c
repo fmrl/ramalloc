@@ -35,67 +35,67 @@
 #include <ramalloc/misc.h>
 #include <stdlib.h>
 
-ramfail_status_t ramlist_chklist(const ramlist_list_t *list_arg)
+ram_reply_t ramlist_chklist(const ramlist_list_t *list_arg)
 {
    /* NULL represents a nil list but i'm going to expect that to be checked
     * ahead of time because once a non-nil list, NULL pointers are not
     * allowed. */
-   RAMFAIL_DISALLOWNULL(list_arg);
+   RAM_FAIL_NOTNULL(list_arg);
 
    /* if a nil list is acceptable in a given situation, filter it before
     * calling this function. */
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, !RAMLIST_ISNIL(list_arg));
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, !RAMLIST_ISNIL(list_arg));
 
    /* neither the predecessor nor the successor can be NULL. */
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, list_arg->ramlistl_next);
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, list_arg->ramlistl_prev);
+   RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, list_arg->ramlistl_next);
+   RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, list_arg->ramlistl_prev);
 
    /* either both of the fields can point to 'list_arg' or none of them can. */
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT,
+   RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT,
       (list_arg != list_arg->ramlistl_prev && list_arg != list_arg->ramlistl_next)
       || (list_arg->ramlistl_prev == list_arg->ramlistl_next)
       );
 
    /* everything is okay, as far as i can tell. */
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlist_mklist(ramlist_list_t *list_arg)
+ram_reply_t ramlist_mklist(ramlist_list_t *list_arg)
 {
-   RAMFAIL_DISALLOWNULL(list_arg);
+   RAM_FAIL_NOTNULL(list_arg);
 
    list_arg->ramlistl_next = list_arg->ramlistl_prev = list_arg;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlist_splice(ramlist_list_t *lhs_arg, ramlist_list_t *rhs_arg)
+ram_reply_t ramlist_splice(ramlist_list_t *lhs_arg, ramlist_list_t *rhs_arg)
 {
    ramlist_list_t *rp = NULL;
    ramlist_list_t *ls = NULL;
 
-   RAMFAIL_DISALLOWNULL(lhs_arg);
-   RAMFAIL_DISALLOWNULL(rhs_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, !RAMLIST_ISNIL(lhs_arg));
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, !RAMLIST_ISNIL(rhs_arg));
+   RAM_FAIL_NOTNULL(lhs_arg);
+   RAM_FAIL_NOTNULL(rhs_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, !RAMLIST_ISNIL(lhs_arg));
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, !RAMLIST_ISNIL(rhs_arg));
 
    rp = rhs_arg->ramlistl_prev;
    ls = lhs_arg->ramlistl_next;
-   RAMFAIL_RETURN(rammisc_swap(&rp->ramlistl_next, &lhs_arg->ramlistl_next, sizeof(ramlist_list_t *)));
-   RAMFAIL_RETURN(rammisc_swap(&ls->ramlistl_prev, &rhs_arg->ramlistl_prev, sizeof(ramlist_list_t *)));
+   RAM_FAIL_TRAP(rammisc_swap(&rp->ramlistl_next, &lhs_arg->ramlistl_next, sizeof(ramlist_list_t *)));
+   RAM_FAIL_TRAP(rammisc_swap(&ls->ramlistl_prev, &rhs_arg->ramlistl_prev, sizeof(ramlist_list_t *)));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlist_pop(ramlist_list_t **tail_arg, ramlist_list_t *head_arg)
+ram_reply_t ramlist_pop(ramlist_list_t **tail_arg, ramlist_list_t *head_arg)
 {
-   RAMFAIL_DISALLOWNULL(tail_arg);
+   RAM_FAIL_NOTNULL(tail_arg);
    *tail_arg = NULL;
-   RAMFAIL_DISALLOWNULL(head_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, !RAMLIST_ISNIL(head_arg));
+   RAM_FAIL_NOTNULL(head_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, !RAMLIST_ISNIL(head_arg));
 
    if (head_arg->ramlistl_next == head_arg)
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    else
    {
       ramlist_list_t *tail = head_arg->ramlistl_next;
@@ -105,59 +105,59 @@ ramfail_status_t ramlist_pop(ramlist_list_t **tail_arg, ramlist_list_t *head_arg
       head_arg->ramlistl_next = head_arg->ramlistl_prev = head_arg;
 
       *tail_arg = tail;
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
 }
 
-ramfail_status_t ramlist_hastail(int *result_arg, const ramlist_list_t *list_arg)
+ram_reply_t ramlist_hastail(int *result_arg, const ramlist_list_t *list_arg)
 {
-   RAMFAIL_DISALLOWNULL(result_arg);
+   RAM_FAIL_NOTNULL(result_arg);
    *result_arg = 0;
-   RAMFAIL_DISALLOWNULL(list_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, !RAMLIST_ISNIL(list_arg));
+   RAM_FAIL_NOTNULL(list_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, !RAMLIST_ISNIL(list_arg));
 
    *result_arg = (list_arg != list_arg->ramlistl_next);
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlist_next(ramlist_list_t **succ_arg, ramlist_list_t *of_arg)
+ram_reply_t ramlist_next(ramlist_list_t **succ_arg, ramlist_list_t *of_arg)
 {
-   RAMFAIL_DISALLOWNULL(succ_arg);
+   RAM_FAIL_NOTNULL(succ_arg);
    *succ_arg = 0;
-   RAMFAIL_DISALLOWNULL(of_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, !RAMLIST_ISNIL(of_arg));
+   RAM_FAIL_NOTNULL(of_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, !RAMLIST_ISNIL(of_arg));
 
    *succ_arg = of_arg->ramlistl_next;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlist_foreach(ramlist_list_t *begin_arg, ramlist_list_t *end_arg,
+ram_reply_t ramlist_foreach(ramlist_list_t *begin_arg, ramlist_list_t *end_arg,
    ramlist_foreach_t func_arg, void *context_arg)
 {
    ramlist_list_t *i = NULL;
-   ramfail_status_t e = RAMFAIL_TRYAGAIN;
+   ram_reply_t e = RAM_REPLY_AGAIN;
 
-   RAMFAIL_DISALLOWNULL(begin_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, !RAMLIST_ISNIL(begin_arg));
-   RAMFAIL_DISALLOWNULL(end_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, !RAMLIST_ISNIL(end_arg));
-   RAMFAIL_DISALLOWNULL(func_arg);
+   RAM_FAIL_NOTNULL(begin_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, !RAMLIST_ISNIL(begin_arg));
+   RAM_FAIL_NOTNULL(end_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, !RAMLIST_ISNIL(end_arg));
+   RAM_FAIL_NOTNULL(func_arg);
 
-   for (i = begin_arg; RAMFAIL_TRYAGAIN == e && i != end_arg; i = i->ramlistl_next)
+   for (i = begin_arg; RAM_REPLY_AGAIN == e && i != end_arg; i = i->ramlistl_next)
       e = func_arg(i, context_arg);
 
-   if (RAMFAIL_TRYAGAIN == e)
-      return RAMFAIL_OK;
+   if (RAM_REPLY_AGAIN == e)
+      return RAM_REPLY_OK;
    else
       return e;
 }
 
-ramfail_status_t ramlist_mknil(ramlist_list_t *list_arg)
+ram_reply_t ramlist_mknil(ramlist_list_t *list_arg)
 {
-   RAMFAIL_DISALLOWNULL(list_arg);
+   RAM_FAIL_NOTNULL(list_arg);
 
    list_arg->ramlistl_next = NULL;
    list_arg->ramlistl_prev = NULL;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }

@@ -33,52 +33,52 @@
 
 #include <ramalloc/slst.h>
 
-ramfail_status_t ramslst_mklist(ramslst_slist_t *slist_arg)
+ram_reply_t ramslst_mklist(ramslst_slist_t *slist_arg)
 {
-   RAMFAIL_DISALLOWNULL(slist_arg);
+   RAM_FAIL_NOTNULL(slist_arg);
 
    slist_arg->ramslstsl_next = NULL;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramslst_insert(ramslst_slist_t *what_arg, ramslst_slist_t *after_arg)
+ram_reply_t ramslst_insert(ramslst_slist_t *what_arg, ramslst_slist_t *after_arg)
 {
-   RAMFAIL_DISALLOWNULL(what_arg);
-   RAMFAIL_DISALLOWNULL(after_arg);
+   RAM_FAIL_NOTNULL(what_arg);
+   RAM_FAIL_NOTNULL(after_arg);
 
    what_arg->ramslstsl_next = after_arg->ramslstsl_next;
    after_arg->ramslstsl_next = what_arg;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramslst_remove(ramslst_slist_t *pred_arg)
+ram_reply_t ramslst_remove(ramslst_slist_t *pred_arg)
 {
-   RAMFAIL_DISALLOWNULL(pred_arg);
+   RAM_FAIL_NOTNULL(pred_arg);
 
    if (RAMSLST_ISTAIL(pred_arg))
-      return RAMFAIL_NOTFOUND;
+      return RAM_REPLY_NOTFOUND;
    else
    {
       pred_arg->ramslstsl_next = pred_arg->ramslstsl_next->ramslstsl_next;
-      return RAMFAIL_OK;      
+      return RAM_REPLY_OK;      
    }
 }
 
-ramfail_status_t ramslst_foreach(ramslst_slist_t *list_arg, ramslst_foreach_t func_arg, void *context_arg)
+ram_reply_t ramslst_foreach(ramslst_slist_t *list_arg, ramslst_foreach_t func_arg, void *context_arg)
 {
    ramslst_slist_t *node = list_arg;
-   ramfail_status_t e = RAMFAIL_TRYAGAIN;
+   ram_reply_t e = RAM_REPLY_AGAIN;
 
-   RAMFAIL_DISALLOWNULL(func_arg);
+   RAM_FAIL_NOTNULL(func_arg);
 
-   while (RAMFAIL_TRYAGAIN == e && node)
+   while (RAM_REPLY_AGAIN == e && node)
    {
       e = func_arg(node, context_arg);
       node = node->ramslstsl_next;
    }
 
-   if (RAMFAIL_TRYAGAIN == e)
-      return RAMFAIL_OK;
+   if (RAM_REPLY_AGAIN == e)
+      return RAM_REPLY_OK;
    else
       return e;
 }

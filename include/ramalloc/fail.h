@@ -34,99 +34,245 @@
 /**
  * @file fail.h
  * @brief failure management.
- * @internal
- * this is internal documentation.
  */
 
-#ifndef RAMFAIL_H_IS_INCLUDED
-#define RAMFAIL_H_IS_INCLUDED
+#ifndef RAMALLOC_FAIL_H_IS_INCLUDED
+#define RAMALLOC_FAIL_H_IS_INCLUDED
 
 #include <ramalloc/opt.h>
 #include <ramalloc/meta.h>
 #include <ramalloc/annotate.h>
+#include <ramalloc/reply.h>
 #include <assert.h>
 #include <stdlib.h>
 
-typedef enum ramfail_status
-{
-   RAMFAIL_OK = 0,
-   RAMFAIL_INSANE,         /* logic is bad; review assumptions the code makes. */
-   RAMFAIL_CRT,            /* C runtime library related failure; check errno. */
-   RAMFAIL_PLATFORM,       /* platform related error; e.g. check GetLastError() on Windows. */
-   RAMFAIL_DISALLOWED,
-   RAMFAIL_RANGE,
-   RAMFAIL_RESOURCE,
-   RAMFAIL_NOTFOUND,
-   RAMFAIL_UNSUPPORTED,
-   RAMFAIL_UNINITIALIZED,
-   RAMFAIL_TRYAGAIN,
-   RAMFAIL_CORRUPT,        /* a data structure failed a runtime check. */
-   RAMFAIL_UNDERFLOW,
-   RAMFAIL_OVERFLOW,
-   RAMFAIL_INPUT,
-} ramfail_status_t;
+/**
+ * @brief signature of the unanticipated reply reporter.
+ * @details a reporter performs a client-defined action when a reply wrapper
+ *    detects an unexpected reply.
+ * @param code_arg the reply code encountered.
+ * @param expr_arg a string containing the expression being evaluated.
+ *    this is usually a preprocessor-generated string.
+ * @param funcn_arg a string containing the name of the function where
+ *    @e expr_arg can be found.
+ * @param filen_arg a string containing the name of the file where
+ *    @e expr_arg can be found.
+ * @param lineno_arg the line number where expr_arg can be found in file
+ *    @e filen_arg.
+ * @see ram_fail_setreporter()
+ */
+typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
+      const char *expr_arg, const char *funcn_arg, const char *filen_arg,
+      int lineno_arg);
 
-typedef void (*ramfail_reporter_t)(ramfail_status_t code_arg, const char *expr_arg, 
-   const char *funcn_arg, const char *filen_arg, int lineno_arg);
-
-#define RAMFAIL_ACTIF(Condition, Action) \
-      do \
-      { \
-         if (Condition) \
-         { \
-            Action; \
-         } \
-      } \
-      while (0)
-
-#define RAMFAIL_CONFIRM(FailCode, Condition) \
+/**
+ * @brief reply if precondition is not met.
+ * @details use RAM_FAIL_EXPECT() to reply if a given boolean expression
+ *    evaluates to @e false.
+ * @param Reply how to reply, should @e Condition be @e false. reply @c
+ *    RAM_REPLY_OK is disallowed.
+ * @param Condition a boolean expression that determines whether a function
+ *    should reply early or not.
+ * @remark if @e Condition is @e true, then this macro will cause the
+ *    function to immediately return a reply to the caller. this means that
+ *    the contextual function must have declared its return type as
+ *    ram_reply_t for this macro to function properly.
+ * @remark if RAMOPT_UNSUPPORTED_OVERCONFIDENT expands to @e true, then this
+ *    macro does nothing.
+ * @see ram_reply_t
+ */
+#define RAM_FAIL_EXPECT(Reply, Condition) \
    do \
    { \
-      assert(RAMFAIL_OK != (FailCode)); \
-      RAMFAIL_ACTIF(!(Condition), ramfail_report((FailCode), #Condition, NULL, __FILE__, __LINE__); return (FailCode)); \
+      assert(RAM_REPLY_OK != (Reply)); \
+      RAMMETA_IFTHEN(!(Condition), \
+            ram_fail_report((Reply), #Condition, NULL, __FILE__, \
+                  __LINE__); return (Reply)); \
    } \
    while (0)
 
+/**
+ * @brief disallow argument value zero.
+ * @details use RAM_FAIL_NOTZERO() to prevent a function argument from
+ *    having the value 0.
+ * @param Value the value to test. if 0, then the contextual function
+ *    returns immediately with reply @e RAM_REPLY_DISALLOWED.
+ * @remark if the disallowed value is encountered, this macro will cause the
+ *    function to immediately return a reply to the caller. this means that
+ *    the contextual function must have declared its return type as
+ *    ram_reply_t for this macro to function properly.
+ * @remark if RAMOPT_UNSUPPORTED_OVERCONFIDENT expands to @e true, then this
+ *    macro has no effect.
+ * @see ram_reply_t
+ */
 #if RAMOPT_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_DISALLOWZ(Value) RAMANNOTATE_UNUSEDARG(Value)
+#  define RAM_FAIL_NOTZERO(Value) RAMANNOTATE_UNUSEDARG(Value)
 #else
-#  define RAMFAIL_DISALLOWZ(Value) RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, 0 != (Value))
+#  define RAM_FAIL_NOTZERO(Value) \
+      RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, 0 != (Value))
 #endif
 
+/**
+ * @brief disallow argument value @c NULL.
+ * @details use RAM_FAIL_NOTNULL() to prevent a function argument from
+ *    having the value @c NULL.
+ * @param Value the value to test. if 0, then the contextual function
+ *    returns immediately with reply @e RAM_REPLY_DISALLOWED.
+ * @remark if the disallowed value is encountered, this macro will cause the
+ *    function to immediately return a reply to the caller. this means that
+ *    the contextual function must have declared its return type as
+ *    ram_reply_t for this macro to function properly.
+ * @remark if RAMOPT_UNSUPPORTED_OVERCONFIDENT expands to @e true, then this
+ *    macro has no effect.
+ * @see ram_reply_t
+ */
 #if RAMOPT_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_DISALLOWNULL(Value) RAMANNOTATE_UNUSEDARG(Value)
+#  define RAM_FAIL_NOTNULL(Value) RAMANNOTATE_UNUSEDARG(Value)
 #else
-#  define RAMFAIL_DISALLOWNULL(Value) \
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, NULL != (Value))
+#  define RAM_FAIL_NOTNULL(Value) \
+      RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, NULL != (Value))
 #endif
 
+/**
+ * @internal
+ * @brief support macro for RAM_FAIL_TRAP().
+ * @param Reply the reply expression to check.
+ * @param ReplyCache a prefix to use to name a variable used to cache the
+ *    value of @e Reply.
+ * @see RAM_FAIL_TRAP().
+ */
 #if RAMOPT_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_RETURN2(Result, ResultCache) ((void)(Result))
+#  define RAM_FAIL_TRAP2(Reply, ReplyCache) ((void)(Reply))
 #else
-#  define RAMFAIL_RETURN2(Result, ResultCache) \
+#  define RAM_FAIL_TRAP2(Reply, ReplyCache) \
          do \
          { \
-            const ramfail_status_t ResultCache = (Result); \
-            RAMFAIL_ACTIF(RAMFAIL_OK != ResultCache, ramfail_report(ResultCache, #Result, NULL, __FILE__, __LINE__); return ResultCache); \
+            const ram_reply_t ReplyCache = (Reply); \
+            RAMMETA_IFTHEN(RAM_REPLY_OK != ReplyCache, \
+                  ram_fail_report(ReplyCache, #Reply, NULL, __FILE__, \
+                        __LINE__); return ReplyCache); \
          } \
          while (0)
 #endif
 
-#define RAMFAIL_RETURN(Result) \
-         RAMFAIL_RETURN2((Result), RAMMETA_GENERATENAME(RAMFAIL_RETURN_resultcache))
-
+/**
+ * @brief the default reply wrapper.
+ * @details this macro is a reply wrapper that designates all replies
+ *    returned by a function as unexpected, with the exception of @c
+ *    RAM_REPLY_OK.
+ * @param Reply an expression that evaluates to a reply.
+ * @remark if you are unsure of which reply wrapper to use,
+ *    RAM_FAIL_TRAP() is a good default.
+ * @remark if an unexpected reply is encountered, this macro will cause the
+ *    function to return that reply to the caller. this means that the
+ *    contextual function must have declared its return type as ram_reply_t
+ *    for this macro to function properly.
+ * @remark if RAMOPT_UNSUPPORTED_OVERCONFIDENT expands to @e true, then this
+ *    macro simply evaluates @e Reply.
+ * @see ram_reply_t
+ */
 #if RAMOPT_UNSUPPORTED_OVERCONFIDENT
-#  define RAMFAIL_EPICFAIL(Result) ((void)(Result))
+#  define RAM_FAIL_TRAP(Reply) (Reply)
 #else
-#define RAMFAIL_EPICFAIL(Result) \
-         RAMFAIL_ACTIF(RAMFAIL_OK != (Result), ramfail_epicfail("omgwtfbbq!"); return RAMFAIL_INSANE)
+#define RAM_FAIL_TRAP(Reply) \
+         RAM_FAIL_TRAP2((Reply), \
+               RAMMETA_GENERATENAME(RAM_REPLY_TRAP_replycache))
 #endif
 
-void ramfail_epicfail(const char *why_arg);
-void ramfail_setreporter(ramfail_reporter_t reporter_arg);
-void ramfail_report(ramfail_status_t code_arg, const char *expr_arg, const char *funcn_arg, const char *filen_arg, int lineno_arg);
-ramfail_status_t ramfail_accumulate(ramfail_status_t *reply_arg,
-      ramfail_status_t newreply_arg);
+/**
+ * @brief denotes unreachable code.
+ * @details use RAM_FAIL_UNREACHABLE() to indicate a part of the code that
+ *    should never be executed (e.g. following a call to a function that
+ *    never returns). if this is ever discovered to not be the case, the
+ *    process will panic.
+ * @remark this macro expands to code that returns @c RAM_REPLY_INSANE to
+ *    prevent unnecessary warnings from being generated. this means that
+ *    the contextual function must have declared its return type as
+ *    ram_reply_t for this macro to function properly.
+ */
+#define RAM_FAIL_UNREACHABLE() \
+   do \
+   { \
+      ram_fail_panic("unreachable code"); \
+      return RAM_REPLY_INSANE; \
+   } \
+   while (0);
 
+/**
+ * @brief panics if reply is not okay.
+ * @details like RAM_FAIL_TRAP(), this macro is a reply wrapper that
+ *    designates all replies returned by a function as unexpected, with the
+ *    exception of @c RAM_REPLY_OK. unlike RAM_FAIL_TRAP(),
+ *    RAM_FAIL_PANIC() will terminate the process.
+ * @remark this macro expands to code that returns @c RAM_REPLY_INSANE to
+ *    prevent unnecessary warnings from being generated. this means that
+ *    the contextual function must have declared its return type as
+ *    ram_reply_t for this macro to function properly.
+ */
+#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#  define RAM_FAIL_PANIC(Reply) ((void)(Reply))
+#else
+#define RAM_FAIL_PANIC(Reply) \
+         RAMMETA_IFTHEN(RAM_REPLY_OK != (Reply), \
+               ram_fail_panic("omgwtfbbq!"); RAM_FAIL_UNREACHABLE(); )
+#endif
 
-#endif /* RAMFAIL_H_IS_INCLUDED */
+/**
+ * @brief terminate the process due to an irrecoverable failure.
+ * @details ram_fail_panic() prints a message to @b stderr and terminates
+ *    the process by calling @c abort().
+ * @param why_arg a message for the user explaining why the process stopped.
+ * @remarks ram_fail_panic() does not return. follow up with
+ *    RAM_FAIL_UNREACHABLE() afterwards to ensure that you don't generate
+ *    unnecessary warnings in a function that returns a ram_reply_t.
+ */
+void ram_fail_panic(const char *why_arg);
+
+/**
+ * @brief change the reporting callback.
+ * @details call ram_fail_setreporter() to change the unexpected reply
+ *    reporting callback.
+ * @param reporter_arg the address of the reporting callback.
+ * @see ram_fail_reporter_t
+ */
+void ram_fail_setreporter(ram_fail_reporter_t reporter_arg);
+
+/**
+ * @internal
+ * @brief report an unexpected reply.
+ * @details ram_fail_report() will invoke the unexpected reply reporting
+ *    callback, either as specified by ram_fail_setreporter() or a default
+ *    implementation.
+ * @param reply_arg an unexpected reply to report.
+ * @param expr_arg a string representation of the expression that produced
+ *    the unexpected reply.
+ * @param funcn_arg the name of the function that received the unexpected
+ *    reply.
+ * @param filen_arg the name of the source file where the expression can be
+ *    found.
+ * @param lineno_arg the line number where the expression can be found.
+ * @todo currently, @e funcn_arg isn't actually being used anywhere.
+ */
+void ram_fail_report(ram_reply_t reply_arg, const char *expr_arg,
+      const char *funcn_arg, const char *filen_arg, int lineno_arg);
+
+/**
+ * @brief accumulate replies.
+ * @details ram_fail_accumulate() is used to capture the first reply
+ *    that is not RAM_REPLY_OK in a series of calls with a common reply_arg
+ *    argument. this is useful because usually, in a series of operations,
+ *    the first failure is the one that is interesting.
+ * @param reply_arg the address of the reply accumulator. the reply must
+ *    be initialized to RAM_REPLY_OK. if it ceases to remain this value in
+ *    the course of a series of calls to ram_fail_accumulate(), then it will
+ *    retain it's value.
+ * @param newreply_arg a new reply for the accumulator.
+ * @remarks it's always better to return from a function if an unexpected
+ *    reply is encountered. sometimes, this isn't possible and
+ *    ram_fail_accumulate() is intended for use in those situations.
+ * @return a reply as described in reply.h.
+ */
+ram_reply_t ram_fail_accumulate(ram_reply_t *reply_arg,
+      ram_reply_t newreply_arg);
+
+#endif /* RAMALLOC_FAIL_H_IS_INCLUDED */

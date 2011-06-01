@@ -59,39 +59,39 @@ typedef struct ramwin_barrier
    LONG ramwinb_capacity;
 } ramwin_barrier_t;
 
-ramfail_status_t ramwin_initialize();
+ram_reply_t ramwin_initialize();
 
-ramfail_status_t ramwin_pagesize(size_t *pagesz_arg);
-ramfail_status_t ramwin_mmapgran(size_t *mmapgran_arg);
-ramfail_status_t ramwin_cpucount(size_t *cpucount_arg);
-ramfail_status_t ramwin_commit(char *page_arg);
-ramfail_status_t ramwin_decommit(char *page_arg);
-ramfail_status_t ramwin_reset(char *page_arg);
-ramfail_status_t ramwin_reserve(char **pages_arg);
-ramfail_status_t ramwin_bulkalloc(char **pages_arg);
-ramfail_status_t ramwin_release(char *pages_arg);
+ram_reply_t ramwin_pagesize(size_t *pagesz_arg);
+ram_reply_t ramwin_mmapgran(size_t *mmapgran_arg);
+ram_reply_t ramwin_cpucount(size_t *cpucount_arg);
+ram_reply_t ramwin_commit(char *page_arg);
+ram_reply_t ramwin_decommit(char *page_arg);
+ram_reply_t ramwin_reset(char *page_arg);
+ram_reply_t ramwin_reserve(char **pages_arg);
+ram_reply_t ramwin_bulkalloc(char **pages_arg);
+ram_reply_t ramwin_release(char *pages_arg);
 
-ramfail_status_t ramwin_mktlskey(ramwin_tlskey_t *key_arg);
-ramfail_status_t ramwin_rmtlskey(ramwin_tlskey_t key_arg);
-ramfail_status_t ramwin_rcltls(void **value_arg, ramwin_tlskey_t key_arg);
-ramfail_status_t ramwin_stotls(ramwin_tlskey_t key_arg, void *value_arg);
+ram_reply_t ramwin_mktlskey(ramwin_tlskey_t *key_arg);
+ram_reply_t ramwin_rmtlskey(ramwin_tlskey_t key_arg);
+ram_reply_t ramwin_rcltls(void **value_arg, ramwin_tlskey_t key_arg);
+ram_reply_t ramwin_stotls(ramwin_tlskey_t key_arg, void *value_arg);
 
-ramfail_status_t ramwin_mkmutex(ramwin_mutex_t *mutex_arg);
-ramfail_status_t ramwin_rmmutex(ramwin_mutex_t *mutex_arg);
-ramfail_status_t ramwin_waitformutex(ramwin_mutex_t *mutex_arg);
-ramfail_status_t ramwin_quitmutex(ramwin_mutex_t *mutex_arg);
+ram_reply_t ramwin_mkmutex(ramwin_mutex_t *mutex_arg);
+ram_reply_t ramwin_rmmutex(ramwin_mutex_t *mutex_arg);
+ram_reply_t ramwin_waitformutex(ramwin_mutex_t *mutex_arg);
+ram_reply_t ramwin_quitmutex(ramwin_mutex_t *mutex_arg);
 
-ramfail_status_t ramwin_mkthread(ramwin_thread_t *thread_arg, 
+ram_reply_t ramwin_mkthread(ramwin_thread_t *thread_arg, 
       ramsys_threadmain_t main_arg, void *arg_arg);
-ramfail_status_t ramwin_jointhread(ramfail_status_t *reply_arg,
+ram_reply_t ramwin_jointhread(ram_reply_t *reply_arg,
       ramwin_thread_t thread_arg);
 
-ramfail_status_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, 
+ram_reply_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, 
       size_t capacity_arg);
-ramfail_status_t ramwin_rmbarrier(ramwin_barrier_t *barrier_arg);
-ramfail_status_t ramwin_waitonbarrier(ramwin_barrier_t *barrier_arg);
+ram_reply_t ramwin_rmbarrier(ramwin_barrier_t *barrier_arg);
+ram_reply_t ramwin_waitonbarrier(ramwin_barrier_t *barrier_arg);
 
-ramfail_status_t ramwin_basename(char *dest_arg, size_t len_arg, 
+ram_reply_t ramwin_basename(char *dest_arg, size_t len_arg, 
    const char *pathn_arg);
 
 #define ramsys_initialize ramwin_initialize

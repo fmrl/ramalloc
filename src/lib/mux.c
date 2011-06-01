@@ -36,17 +36,17 @@
 
 static ramsig_signature_t rammux_thesignature = { RAMSIG_MKUINT32('M', 'U', 'X', 'P') };
 
-static ramfail_status_t rammux_mkpool2(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg);
-static ramfail_status_t rammux_getalgnpool(ramalgn_pool_t **apool_arg, size_t size_arg, rammux_pool_t *mpool_arg);
+static ram_reply_t rammux_mkpool2(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg);
+static ram_reply_t rammux_getalgnpool(ramalgn_pool_t **apool_arg, size_t size_arg, rammux_pool_t *mpool_arg);
 
-ramfail_status_t rammux_mkpool(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg)
+ram_reply_t rammux_mkpool(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(mpool_arg);
+   RAM_FAIL_NOTNULL(mpool_arg);
 
    e = rammux_mkpool2(mpool_arg, appetite_arg);
-   if (RAMFAIL_OK == e)
+   if (RAM_REPLY_OK == e)
       return e;
    else
    {
@@ -55,7 +55,7 @@ ramfail_status_t rammux_mkpool(rammux_pool_t *mpool_arg, ramopt_appetite_t appet
    }
 }
 
-ramfail_status_t rammux_mkpool2(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg)
+ram_reply_t rammux_mkpool2(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg)
 {
    assert(mpool_arg != NULL);
 
@@ -70,64 +70,64 @@ ramfail_status_t rammux_mkpool2(rammux_pool_t *mpool_arg, ramopt_appetite_t appe
    mpool_arg->rammuxp_tag.ramalgnt_values[0] = rammux_thesignature.ramsigs_n;
    mpool_arg->rammuxp_tag.ramalgnt_values[1] = (uintptr_t)mpool_arg;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rammux_acquire(void **newptr_arg, rammux_pool_t *mpool_arg, size_t size_arg)
+ram_reply_t rammux_acquire(void **newptr_arg, rammux_pool_t *mpool_arg, size_t size_arg)
 {
    ramalgn_pool_t *apool = NULL;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(newptr_arg);
+   RAM_FAIL_NOTNULL(newptr_arg);
    *newptr_arg = NULL;
-   RAMFAIL_DISALLOWNULL(mpool_arg);
-   RAMFAIL_DISALLOWZ(size_arg);
+   RAM_FAIL_NOTNULL(mpool_arg);
+   RAM_FAIL_NOTZERO(size_arg);
 
    e = rammux_getalgnpool(&apool, size_arg, mpool_arg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
+      RAM_FAIL_TRAP(e);
       /* i shouldn't ever get here. */
-      return RAMFAIL_INSANE;
-   case RAMFAIL_RANGE:
+      return RAM_REPLY_INSANE;
+   case RAM_REPLY_RANGEFAIL:
       return e;
-   case RAMFAIL_OK:
+   case RAM_REPLY_OK:
       break;
    }
 
-   RAMFAIL_RETURN(ramalgn_acquire(newptr_arg, apool));
+   RAM_FAIL_TRAP(ramalgn_acquire(newptr_arg, apool));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rammux_getalgnpool(ramalgn_pool_t **apool_arg, size_t size_arg, rammux_pool_t *mpool_arg)
+ram_reply_t rammux_getalgnpool(ramalgn_pool_t **apool_arg, size_t size_arg, rammux_pool_t *mpool_arg)
 {
    size_t idx = 0;
 
-   RAMFAIL_DISALLOWNULL(apool_arg);
+   RAM_FAIL_NOTNULL(apool_arg);
    *apool_arg = NULL;
-   RAMFAIL_DISALLOWZ(size_arg);
-   RAMFAIL_DISALLOWNULL(mpool_arg);
+   RAM_FAIL_NOTZERO(size_arg);
+   RAM_FAIL_NOTNULL(mpool_arg);
 
    idx = (size_arg + mpool_arg->rammuxp_step - 1) / mpool_arg->rammuxp_step - 1;
    /* if i can't accomidate the size of the pool, i need to inform the caller. */
    if (idx >= RAMMUX_MAXPOOLCOUNT)
-      return RAMFAIL_RANGE;
+      return RAM_REPLY_RANGEFAIL;
    if (!mpool_arg->rammuxp_initflags[idx])
    {
-      ramfail_status_t e = RAMFAIL_INSANE;
+      ram_reply_t e = RAM_REPLY_INSANE;
 
       e = ramalgn_mkpool(&mpool_arg->rammuxp_apools[idx], mpool_arg->rammuxp_appetite, mpool_arg->rammuxp_step * (idx + 1), &mpool_arg->rammuxp_tag);
       switch (e)
       {
       default:
-         RAMFAIL_RETURN(e);
+         RAM_FAIL_TRAP(e);
          /* i shouldn't ever get here. */
-         return RAMFAIL_INSANE;
-      case RAMFAIL_RANGE:
+         return RAM_REPLY_INSANE;
+      case RAM_REPLY_RANGEFAIL:
          return e;
-      case RAMFAIL_OK:
+      case RAM_REPLY_OK:
          break;
       }
 
@@ -137,49 +137,49 @@ ramfail_status_t rammux_getalgnpool(ramalgn_pool_t **apool_arg, size_t size_arg,
    }
 
    *apool_arg = &mpool_arg->rammuxp_apools[idx];
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rammux_chkpool(const rammux_pool_t *mpool_arg)
+ram_reply_t rammux_chkpool(const rammux_pool_t *mpool_arg)
 {
    size_t i = 0;
 
    for (i = 0; i < RAMMUX_MAXPOOLCOUNT; ++i)
    {
       if (mpool_arg->rammuxp_initflags[i])
-         RAMFAIL_RETURN(ramalgn_chkpool(&mpool_arg->rammuxp_apools[i]));
+         RAM_FAIL_TRAP(ramalgn_chkpool(&mpool_arg->rammuxp_apools[i]));
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rammux_query(rammux_pool_t **mpool_arg, size_t *size_arg, void *ptr_arg)
+ram_reply_t rammux_query(rammux_pool_t **mpool_arg, size_t *size_arg, void *ptr_arg)
 {
    ramalgn_pool_t *apool = NULL;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
    const ramalgn_tag_t *tag = NULL;
    ramsig_signature_t sig = {0};
 
-   RAMFAIL_DISALLOWNULL(mpool_arg);
+   RAM_FAIL_NOTNULL(mpool_arg);
    *mpool_arg = NULL;
-   RAMFAIL_DISALLOWNULL(size_arg);
+   RAM_FAIL_NOTNULL(size_arg);
    *size_arg = 0;
-   RAMFAIL_DISALLOWNULL(ptr_arg);
+   RAM_FAIL_NOTNULL(ptr_arg);
 
    e = ramalgn_query(&apool, ptr_arg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
+      RAM_FAIL_TRAP(e);
       /* i shouldn't ever get here. */
-      return RAMFAIL_INSANE;
-   case RAMFAIL_NOTFOUND:
+      return RAM_REPLY_INSANE;
+   case RAM_REPLY_NOTFOUND:
       return e;
-   case RAMFAIL_OK:
+   case RAM_REPLY_OK:
       break;
    }
 
-   RAMFAIL_RETURN(ramalgn_gettag(&tag, apool));
+   RAM_FAIL_TRAP(ramalgn_gettag(&tag, apool));
    /* i use the signature in the first half of the tag to increase the possibility that
     * an invalid address in 'ptr_arg' won't crash the process when someone attempts to dereference
     * the pointer that i expect to contain the mux pool. */
@@ -187,10 +187,10 @@ ramfail_status_t rammux_query(rammux_pool_t **mpool_arg, size_t *size_arg, void 
    /* i consider a signature mismatch an expected failure here it this function is used
     * to determine whether a pointer belongs to another allocator. */
    if (0 != RAMSIG_CMP(sig, rammux_thesignature))
-      return RAMFAIL_NOTFOUND;
+      return RAM_REPLY_NOTFOUND;
 
-   RAMFAIL_RETURN(ramalgn_getgranularity(size_arg, apool));
+   RAM_FAIL_TRAP(ramalgn_getgranularity(size_arg, apool));
    *mpool_arg = (rammux_pool_t *)tag->ramalgnt_values[1];
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }

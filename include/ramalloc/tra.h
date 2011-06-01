@@ -45,13 +45,13 @@ typedef struct ramtra_trash
    size_t ramtrat_size;
 } ramtra_trash_t;
 
-typedef ramfail_status_t (*ramtra_foreach_t)(void *ptr_arg, void *context_arg);
+typedef ram_reply_t (*ramtra_foreach_t)(void *ptr_arg, void *context_arg);
 
-ramfail_status_t ramtra_mktrash(ramtra_trash_t *trash_arg);
-ramfail_status_t ramtra_rmtrash(ramtra_trash_t *trash_arg);
-ramfail_status_t ramtra_push(ramtra_trash_t *trash_arg, void *ptr_arg);
-ramfail_status_t ramtra_pop(void **ptr_arg, ramtra_trash_t *trash_arg);
-ramfail_status_t ramtra_size(size_t *size_arg, ramtra_trash_t *trash_arg);
-ramfail_status_t ramtra_foreach(ramtra_trash_t *trash_arg, ramtra_foreach_t func_arg, void *context_arg);
+ram_reply_t ramtra_mktrash(ramtra_trash_t *trash_arg);
+ram_reply_t ramtra_rmtrash(ramtra_trash_t *trash_arg);
+ram_reply_t ramtra_push(ramtra_trash_t *trash_arg, void *ptr_arg);
+ram_reply_t ramtra_pop(void **ptr_arg, ramtra_trash_t *trash_arg);
+ram_reply_t ramtra_size(size_t *size_arg, ramtra_trash_t *trash_arg);
+ram_reply_t ramtra_foreach(ramtra_trash_t *trash_arg, ramtra_foreach_t func_arg, void *context_arg);
 
 #endif /* RAMTRA_H_IS_INCLUDED */

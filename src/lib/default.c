@@ -36,89 +36,89 @@
 
 rampara_pool_t ramdefault_thepool;
 
-ramfail_status_t ramdefault_initialize()
+ram_reply_t ramdefault_initialize()
 {
-   RAMFAIL_RETURN(rampara_mkpool(&ramdefault_thepool, RAMOPT_DEFAULTAPPETITE, RAMOPT_DEFAULTRECLAIMGOAL));
+   RAM_FAIL_TRAP(rampara_mkpool(&ramdefault_thepool, RAMOPT_DEFAULTAPPETITE, RAMOPT_DEFAULTRECLAIMGOAL));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramdefault_acquire(void **newptr_arg, size_t size_arg)
+ram_reply_t ramdefault_acquire(void **newptr_arg, size_t size_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
    e = rampara_acquire(newptr_arg, &ramdefault_thepool, size_arg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
+      RAM_FAIL_TRAP(e);
       /* i shouldn't ever get here. */
-      return RAMFAIL_INSANE;
-   case RAMFAIL_RANGE:
+      return RAM_REPLY_INSANE;
+   case RAM_REPLY_RANGEFAIL:
       return e;
-   case RAMFAIL_OK:
+   case RAM_REPLY_OK:
       break;
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramdefault_discard(void *ptr_arg)
+ram_reply_t ramdefault_discard(void *ptr_arg)
 {
-   RAMFAIL_RETURN(rampara_release(ptr_arg));
+   RAM_FAIL_TRAP(rampara_release(ptr_arg));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramdefault_reclaim(size_t *count_arg, size_t goal_arg)
+ram_reply_t ramdefault_reclaim(size_t *count_arg, size_t goal_arg)
 {
-   RAMFAIL_RETURN(rampara_reclaim(count_arg, &ramdefault_thepool, goal_arg));
+   RAM_FAIL_TRAP(rampara_reclaim(count_arg, &ramdefault_thepool, goal_arg));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramdefault_flush()
+ram_reply_t ramdefault_flush()
 {
-   RAMFAIL_RETURN(rampara_flush(&ramdefault_thepool));
+   RAM_FAIL_TRAP(rampara_flush(&ramdefault_thepool));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramdefault_query(size_t *size_arg, void *ptr_arg)
+ram_reply_t ramdefault_query(size_t *size_arg, void *ptr_arg)
 {
    rampara_pool_t *parapool = NULL;
    size_t sz = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(size_arg);
+   RAM_FAIL_NOTNULL(size_arg);
    *size_arg = 0;
-   RAMFAIL_DISALLOWNULL(ptr_arg);
+   RAM_FAIL_NOTNULL(ptr_arg);
 
    e = rampara_query(&parapool, &sz, ptr_arg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
+      RAM_FAIL_TRAP(e);
       /* i shouldn't ever get here. */
-      return RAMFAIL_INSANE;
-   case RAMFAIL_NOTFOUND:
+      return RAM_REPLY_INSANE;
+   case RAM_REPLY_NOTFOUND:
       return e;
-   case RAMFAIL_OK:
+   case RAM_REPLY_OK:
       break;
    }
 
    if (parapool == &ramdefault_thepool)
    {
       *size_arg = sz;
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
    else
-      return RAMFAIL_NOTFOUND;
+      return RAM_REPLY_NOTFOUND;
 }
 
-ramfail_status_t ramdefault_check()
+ram_reply_t ramdefault_check()
 {
-   RAMFAIL_RETURN(rampara_chkpool(&ramdefault_thepool));
+   RAM_FAIL_TRAP(rampara_chkpool(&ramdefault_thepool));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }

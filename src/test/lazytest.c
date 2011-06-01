@@ -56,54 +56,54 @@ typedef struct extra
    size_t e_poolcount;
 } extra_t;
 
-static ramfail_status_t main2(int argc, char *argv[]);
-static ramfail_status_t initdefaults(ramtest_params_t *params_arg);
-static ramfail_status_t runtest(const ramtest_params_t *params_arg);
-static ramfail_status_t runtest2(const ramtest_params_t *params_arg,
+static ram_reply_t main2(int argc, char *argv[]);
+static ram_reply_t initdefaults(ramtest_params_t *params_arg);
+static ram_reply_t runtest(const ramtest_params_t *params_arg);
+static ram_reply_t runtest2(const ramtest_params_t *params_arg,
       extra_t *extra_arg);
-static ramfail_status_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
+static ram_reply_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
       size_t threadidx_arg);
-static ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
+static ram_reply_t acquire(ramtest_allocdesc_t *desc_arg,
       size_t size_arg, void *extra_arg, size_t threadidx_arg);
-static ramfail_status_t release(ramtest_allocdesc_t *desc_arg);
-static ramfail_status_t query(void **pool_arg, size_t *size_arg,
+static ram_reply_t release(ramtest_allocdesc_t *desc_arg);
+static ram_reply_t query(void **pool_arg, size_t *size_arg,
       void *ptr_arg, void *extra_arg);
-static ramfail_status_t flush(void *extra_arg, size_t threadidx_arg);
-static ramfail_status_t check(void *extra_arg, size_t threadidx_arg);
+static ram_reply_t flush(void *extra_arg, size_t threadidx_arg);
+static ram_reply_t check(void *extra_arg, size_t threadidx_arg);
 
 int main(int argc, char *argv[])
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
    e = main2(argc, argv);
-   if (RAMFAIL_OK != e)
+   if (RAM_REPLY_OK != e)
       fprintf(stderr, "fail (%d).", e);
-   if (RAMFAIL_INPUT == e)
+   if (RAM_REPLY_INPUTFAIL == e)
    {
       usage(e, argc, argv);
-      ramfail_epicfail("unreachable code.");
-      return RAMFAIL_INSANE;
+      ram_fail_panic("unreachable code.");
+      return RAM_REPLY_INSANE;
    }
    else
       return e;
 }
 
-ramfail_status_t main2(int argc, char *argv[])
+ram_reply_t main2(int argc, char *argv[])
 {
    ramtest_params_t testparams;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_RETURN(ramalloc_initialize(NULL, NULL));
+   RAM_FAIL_TRAP(ramalloc_initialize(NULL, NULL));
 
-   RAMFAIL_RETURN(initdefaults(&testparams));
+   RAM_FAIL_TRAP(initdefaults(&testparams));
    e = parseargs(&testparams, argc, argv);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+   case RAM_REPLY_OK:
       break;
-   case RAMFAIL_INPUT:
+   case RAM_REPLY_INPUTFAIL:
       return e;
    }
 
@@ -111,19 +111,19 @@ ramfail_status_t main2(int argc, char *argv[])
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+   case RAM_REPLY_OK:
       break;
-   case RAMFAIL_INPUT:
+   case RAM_REPLY_INPUTFAIL:
       return e;
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t initdefaults(ramtest_params_t *params_arg)
+ram_reply_t initdefaults(ramtest_params_t *params_arg)
 {
-   RAMFAIL_DISALLOWNULL(params_arg);
+   RAM_FAIL_NOTNULL(params_arg);
    memset(params_arg, 0, sizeof(*params_arg));
 
    params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
@@ -134,105 +134,105 @@ ramfail_status_t initdefaults(ramtest_params_t *params_arg)
    params_arg->ramtestp_minsize = DEFAULT_MINIMUM_ALLOCATION_SIZE;
    params_arg->ramtestp_maxsize = DEFAULT_MAXIMUM_ALLOCATION_SIZE;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
+ram_reply_t getpool(ramlazy_pool_t **pool_arg, void *extra_arg,
       size_t threadidx_arg)
 {
    extra_t *x = NULL;
 
-   RAMFAIL_DISALLOWNULL(pool_arg);
+   RAM_FAIL_NOTNULL(pool_arg);
    *pool_arg = NULL;
-   RAMFAIL_DISALLOWNULL(extra_arg);
+   RAM_FAIL_NOTNULL(extra_arg);
    x = (extra_t *)extra_arg;
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, threadidx_arg < x->e_poolcount);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL, threadidx_arg < x->e_poolcount);
 
    *pool_arg = &x->e_pools[threadidx_arg];
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
+ram_reply_t acquire(ramtest_allocdesc_t *desc_arg,
       size_t size_arg, void *extra_arg, size_t threadidx_arg)
 {
    ramlazy_pool_t *pool = NULL;
    void *p = NULL;
 
-   RAMFAIL_DISALLOWNULL(desc_arg);
+   RAM_FAIL_NOTNULL(desc_arg);
    memset(desc_arg, 0, sizeof(*desc_arg));
-   RAMFAIL_DISALLOWZ(size_arg);
+   RAM_FAIL_NOTZERO(size_arg);
 
-   RAMFAIL_RETURN(getpool(&pool, extra_arg, threadidx_arg));
-   RAMFAIL_RETURN(ramlazy_acquire(&p, pool, size_arg));
+   RAM_FAIL_TRAP(getpool(&pool, extra_arg, threadidx_arg));
+   RAM_FAIL_TRAP(ramlazy_acquire(&p, pool, size_arg));
    desc_arg->ramtestad_ptr = (char *)p;
    desc_arg->ramtestad_pool = pool;
    desc_arg->ramtestad_sz = size_arg;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t release(ramtest_allocdesc_t *desc_arg)
+ram_reply_t release(ramtest_allocdesc_t *desc_arg)
 {
-   RAMFAIL_DISALLOWNULL(desc_arg);
+   RAM_FAIL_NOTNULL(desc_arg);
 
-   RAMFAIL_RETURN(ramlazy_release(desc_arg->ramtestad_ptr));
+   RAM_FAIL_TRAP(ramlazy_release(desc_arg->ramtestad_ptr));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
+ram_reply_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
       void *extra_arg)
 {
    ramlazy_pool_t *pool = NULL;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(pool_arg);
+   RAM_FAIL_NOTNULL(pool_arg);
    *pool_arg = NULL;
-   RAMFAIL_DISALLOWNULL(extra_arg);
+   RAM_FAIL_NOTNULL(extra_arg);
 
    e = ramlazy_query(&pool, size_arg, ptr_arg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-      return RAMFAIL_INSANE;
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+      return RAM_REPLY_INSANE;
+   case RAM_REPLY_OK:
       *pool_arg = pool;
-      return RAMFAIL_OK;
-   case RAMFAIL_NOTFOUND:
+      return RAM_REPLY_OK;
+   case RAM_REPLY_NOTFOUND:
       return e;
    }
 }
 
-ramfail_status_t flush(void *extra_arg, size_t threadidx_arg)
+ram_reply_t flush(void *extra_arg, size_t threadidx_arg)
 {
    ramlazy_pool_t *pool = NULL;
 
-   RAMFAIL_RETURN(getpool(&pool, extra_arg, threadidx_arg));
-   RAMFAIL_RETURN(ramlazy_flush(pool));
+   RAM_FAIL_TRAP(getpool(&pool, extra_arg, threadidx_arg));
+   RAM_FAIL_TRAP(ramlazy_flush(pool));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t check(void *extra_arg, size_t threadidx_arg)
+ram_reply_t check(void *extra_arg, size_t threadidx_arg)
 {
    ramlazy_pool_t *pool = NULL;
 
-   RAMFAIL_RETURN(getpool(&pool, extra_arg, threadidx_arg));
-   RAMFAIL_RETURN(ramlazy_chkpool(pool));
+   RAM_FAIL_TRAP(getpool(&pool, extra_arg, threadidx_arg));
+   RAM_FAIL_TRAP(ramlazy_chkpool(pool));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t runtest(const ramtest_params_t *params_arg)
+ram_reply_t runtest(const ramtest_params_t *params_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
    extra_t x = {0};
 
-   RAMFAIL_DISALLOWNULL(params_arg);
+   RAM_FAIL_NOTNULL(params_arg);
 
    if (0 == params_arg->ramtestp_threadcount)
-      RAMFAIL_RETURN(ramtest_defaultthreadcount(&x.e_poolcount));
+      RAM_FAIL_TRAP(ramtest_defaultthreadcount(&x.e_poolcount));
    else
       x.e_poolcount = params_arg->ramtestp_threadcount;
    x.e_pools = calloc(x.e_poolcount, sizeof(*x.e_pools));
@@ -242,7 +242,7 @@ ramfail_status_t runtest(const ramtest_params_t *params_arg)
    return e;
 }
 
-ramfail_status_t runtest2(const ramtest_params_t *params_arg,
+ram_reply_t runtest2(const ramtest_params_t *params_arg,
       extra_t *extra_arg)
 {
    size_t i = 0;
@@ -256,7 +256,7 @@ ramfail_status_t runtest2(const ramtest_params_t *params_arg,
    {
       fprintf(stderr, "you cannot specify a size smaller than %u bytes.\n",
             sizeof(void *));
-      return RAMFAIL_INPUT;
+      return RAM_REPLY_INPUTFAIL;
    }
    if (testparams.ramtestp_minsize > testparams.ramtestp_maxsize)
    {
@@ -264,7 +264,7 @@ ramfail_status_t runtest2(const ramtest_params_t *params_arg,
             "please specify a minimum size (%u bytes) that is smaller than "
             "or equal to the maximum (%u bytes).\n",
             testparams.ramtestp_minsize, testparams.ramtestp_maxsize);
-      return RAMFAIL_INPUT;
+      return RAM_REPLY_INPUTFAIL;
    }
    /* TODO: how do i determine the maximum allocation size ahead of time? */
    testparams.ramtestp_extra = extra_arg;
@@ -276,12 +276,12 @@ ramfail_status_t runtest2(const ramtest_params_t *params_arg,
 
    for (i = 0; i < extra_arg->e_poolcount; ++i)
    {
-      RAMFAIL_RETURN(ramlazy_mkpool(&extra_arg->e_pools[i],
+      RAM_FAIL_TRAP(ramlazy_mkpool(&extra_arg->e_pools[i],
             RAMOPT_DEFAULTAPPETITE, RECLAIM_RATIO));
    }
 
-   RAMFAIL_RETURN(ramtest_test(&testparams));
+   RAM_FAIL_TRAP(ramtest_test(&testparams));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 

@@ -31,20 +31,52 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#include <ramalloc/ramalloc.h>
-#include <ramalloc/pg.h>
-#include <ramalloc/algn.h>
-#include <ramalloc/para.h>
-#include <ramalloc/mem.h>
+/**
+ * @file reply.h
+ * @brief specific replies.
+ */
 
-ram_reply_t ramalloc_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg)
+#ifndef RAMALLOC_REPLY_H_IS_INCLUDED
+#define RAMALLOC_REPLY_H_IS_INCLUDED
+
+/**
+ * @brief replies.
+ * @section reply wrappers.
+ */
+typedef enum ram_reply
 {
-   RAM_FAIL_TRAP(ramsys_initialize());
-   RAM_FAIL_TRAP(rammem_initialize(supmalloc_arg, supfree_arg));
-   RAM_FAIL_TRAP(rampg_initialize());
-   RAM_FAIL_TRAP(ramalgn_initialize());
-   RAM_FAIL_TRAP(ramdefault_initialize());
+   /** indicates that everything is fine. */
+   RAM_REPLY_OK = 0,
+   /** indicates that the logic is probably bad. review assumptions the code
+    * makes. */
+   RAM_REPLY_INSANE,
+   /** indicates a C runtime library related failure; check errno. */
+   RAM_REPLY_CRTFAIL,
+   /** indicates a foreign API returned a failure code. */
+   RAM_REPLY_APIFAIL,
+   /** indicates a specific, disallowed value was provided as a function
+    * argument. */
+   RAM_REPLY_DISALLOWED,
+   /** indicates a value is out of its permitted range. */
+   RAM_REPLY_RANGEFAIL,
+   /** indicates a resource (e.g. file) related problem. */
+   RAM_REPLY_RESOURCEFAIL,
+   /** indicates a search failed. */
+   RAM_REPLY_NOTFOUND,
+   /** indicates that a specific action or request is unsupported. */
+   RAM_REPLY_UNSUPPORTED,
+   /** indicates that a complex state is inconsistent. */
+   RAM_REPLY_INCONSISTENT,
+   /** indicates that an action or request needs to be performed again. */
+   RAM_REPLY_AGAIN,
+   /** indicates that a data structure failed a runtime check. */
+   RAM_REPLY_CORRUPT,
+   /** indicates that an accumulator or collection exceeded its maximum. */
+   RAM_REPLY_UNDERFLOW,
+   /** indicates that an accumulator or collection exceeded its minimum. */
+   RAM_REPLY_OVERFLOW,
+   /** indicates a user input related problem. */
+   RAM_REPLY_INPUTFAIL,
+} ram_reply_t;
 
-   return RAM_REPLY_OK;
-}
-
+#endif /* RAMALLOC_REPLY_H_IS_INCLUDED */

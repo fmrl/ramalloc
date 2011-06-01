@@ -139,6 +139,7 @@ set(RAMALLOC_HEADERS
 	include/ramalloc/para.h
 	include/ramalloc/pg.h
 	include/ramalloc/ramalloc.h
+	include/ramalloc/reply.h
 	include/ramalloc/sig.h
 	include/ramalloc/slot.h
 	include/ramalloc/slst.h

@@ -48,10 +48,10 @@ typedef struct rammux_pool
    int8_t rammuxp_initflags[RAMMUX_MAXPOOLCOUNT];
 } rammux_pool_t;
 
-ramfail_status_t rammux_mkpool(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg);
-ramfail_status_t rammux_acquire(void **newptr_arg, rammux_pool_t *mpool_arg, size_t size_arg);
+ram_reply_t rammux_mkpool(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg);
+ram_reply_t rammux_acquire(void **newptr_arg, rammux_pool_t *mpool_arg, size_t size_arg);
 #define rammux_release ramalgn_release
-ramfail_status_t rammux_query(rammux_pool_t **mpool_arg, size_t *size_arg, void *ptr_arg);
-ramfail_status_t rammux_chkpool(const rammux_pool_t *mpool_arg);
+ram_reply_t rammux_query(rammux_pool_t **mpool_arg, size_t *size_arg, void *ptr_arg);
+ram_reply_t rammux_chkpool(const rammux_pool_t *mpool_arg);
 
 #endif /* RAMMUX_H_IS_INCLUDED */

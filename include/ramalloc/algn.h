@@ -49,14 +49,14 @@ typedef struct ramalgn_pool
    ramalgn_tag_t ramalgnp_tag;
 } ramalgn_pool_t;
 
-ramfail_status_t ramalgn_initialize();
-ramfail_status_t ramalgn_mkpool(ramalgn_pool_t *pool_arg, ramopt_appetite_t appetite_arg, 
+ram_reply_t ramalgn_initialize();
+ram_reply_t ramalgn_mkpool(ramalgn_pool_t *pool_arg, ramopt_appetite_t appetite_arg, 
    size_t granularity_arg, const ramalgn_tag_t *tag_arg);
-ramfail_status_t ramalgn_acquire(void **newptr_arg, ramalgn_pool_t *pool_arg);
-ramfail_status_t ramalgn_release(void *ptr_arg);
-ramfail_status_t ramalgn_chkpool(const ramalgn_pool_t *pool_arg);
-ramfail_status_t ramalgn_query(ramalgn_pool_t **apool_arg, void *ptr_arg);
-ramfail_status_t ramalgn_gettag(const ramalgn_tag_t **tag_arg, const ramalgn_pool_t *apool_arg);
-ramfail_status_t ramalgn_getgranularity(size_t *granularity_arg, const ramalgn_pool_t *apool_arg);
+ram_reply_t ramalgn_acquire(void **newptr_arg, ramalgn_pool_t *pool_arg);
+ram_reply_t ramalgn_release(void *ptr_arg);
+ram_reply_t ramalgn_chkpool(const ramalgn_pool_t *pool_arg);
+ram_reply_t ramalgn_query(ramalgn_pool_t **apool_arg, void *ptr_arg);
+ram_reply_t ramalgn_gettag(const ramalgn_tag_t **tag_arg, const ramalgn_pool_t *apool_arg);
+ram_reply_t ramalgn_getgranularity(size_t *granularity_arg, const ramalgn_pool_t *apool_arg);
 
 #endif /* RAMALGN_H_IS_INCLUDED */

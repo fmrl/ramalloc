@@ -36,12 +36,12 @@
 
 #include <ramalloc/fail.h>
 
-ramfail_status_t ramdefault_initialize();
-ramfail_status_t ramdefault_acquire(void **newptr_arg, size_t size_arg);
-ramfail_status_t ramdefault_discard(void *ptr_arg);
-ramfail_status_t ramdefault_reclaim(size_t *count_arg, size_t goal_arg);
-ramfail_status_t ramdefault_flush();
-ramfail_status_t ramdefault_query(size_t *size_arg, void *ptr_arg);
-ramfail_status_t ramdefault_check();
+ram_reply_t ramdefault_initialize();
+ram_reply_t ramdefault_acquire(void **newptr_arg, size_t size_arg);
+ram_reply_t ramdefault_discard(void *ptr_arg);
+ram_reply_t ramdefault_reclaim(size_t *count_arg, size_t goal_arg);
+ram_reply_t ramdefault_flush();
+ram_reply_t ramdefault_query(size_t *size_arg, void *ptr_arg);
+ram_reply_t ramdefault_check();
 
 #endif /* RAMDEFAULT_H_IS_INCLUDED */

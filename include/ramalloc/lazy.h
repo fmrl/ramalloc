@@ -45,13 +45,13 @@ typedef struct ramlazy_pool
    size_t ramlazyp_disposalratio;
 } ramlazy_pool_t;
 
-ramfail_status_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg);
-ramfail_status_t ramlazy_rmpool(ramlazy_pool_t *lpool_arg);
-ramfail_status_t ramlazy_acquire(void **newptr_arg, ramlazy_pool_t *lpool_arg, size_t size_arg);
-ramfail_status_t ramlazy_release(void *ptr_arg);
-ramfail_status_t ramlazy_reclaim(size_t *count_arg, ramlazy_pool_t *lpool_arg, size_t goal_arg);
-ramfail_status_t ramlazy_flush(ramlazy_pool_t *lpool_arg);
-ramfail_status_t ramlazy_query(ramlazy_pool_t **lpool_arg, size_t *size_arg, void *ptr_arg);
-ramfail_status_t ramlazy_chkpool(const ramlazy_pool_t *lpool_arg);
+ram_reply_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg);
+ram_reply_t ramlazy_rmpool(ramlazy_pool_t *lpool_arg);
+ram_reply_t ramlazy_acquire(void **newptr_arg, ramlazy_pool_t *lpool_arg, size_t size_arg);
+ram_reply_t ramlazy_release(void *ptr_arg);
+ram_reply_t ramlazy_reclaim(size_t *count_arg, ramlazy_pool_t *lpool_arg, size_t goal_arg);
+ram_reply_t ramlazy_flush(ramlazy_pool_t *lpool_arg);
+ram_reply_t ramlazy_query(ramlazy_pool_t **lpool_arg, size_t *size_arg, void *ptr_arg);
+ram_reply_t ramlazy_chkpool(const ramlazy_pool_t *lpool_arg);
 
 #endif /* RAMLAZY_H_IS_INCLUDED */

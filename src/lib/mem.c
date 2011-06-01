@@ -49,12 +49,12 @@ typedef struct rammem_globals
 static rammem_globals_t rammem_theglobals;
 
 
-ramfail_status_t rammem_initialize(ramopt_malloc_t supmalloc_arg,
+ram_reply_t rammem_initialize(ramopt_malloc_t supmalloc_arg,
       ramopt_free_t supfree_arg)
 {
    /* i don't support redundant calls to this function yet. */
    if (rammem_theglobals.rammemg_initflag)
-      return RAMFAIL_UNSUPPORTED;
+      return RAM_REPLY_UNSUPPORTED;
    else
    {
       if (NULL == supmalloc_arg)
@@ -66,15 +66,15 @@ ramfail_status_t rammem_initialize(ramopt_malloc_t supmalloc_arg,
       else
          rammem_theglobals.rammemg_supfree = supfree_arg;
 
-      RAMFAIL_RETURN(ramsys_pagesize(&rammem_theglobals.rammemg_pagesize));
-      RAMFAIL_RETURN(ramsys_mmapgran(&rammem_theglobals.rammemg_mmapgran));
+      RAM_FAIL_TRAP(ramsys_pagesize(&rammem_theglobals.rammemg_pagesize));
+      RAM_FAIL_TRAP(ramsys_mmapgran(&rammem_theglobals.rammemg_mmapgran));
       /* something's wrong with the platform-specific modules if any fields
        * in the structure are zero. */
-      RAMFAIL_CONFIRM(RAMFAIL_INSANE, rammem_theglobals.rammemg_mmapgran);
-      RAMFAIL_CONFIRM(RAMFAIL_INSANE, rammem_theglobals.rammemg_pagesize);
+      RAM_FAIL_EXPECT(RAM_REPLY_INSANE, rammem_theglobals.rammemg_mmapgran);
+      RAM_FAIL_EXPECT(RAM_REPLY_INSANE, rammem_theglobals.rammemg_pagesize);
       /* i depend upon the granularity being evenly divisible by the
        * hardware page size. */
-      RAMFAIL_CONFIRM(RAMFAIL_UNSUPPORTED,
+      RAM_FAIL_EXPECT(RAM_REPLY_UNSUPPORTED,
             0 == (rammem_theglobals.rammemg_mmapgran %
                   rammem_theglobals.rammemg_pagesize));
 
@@ -84,7 +84,7 @@ ramfail_status_t rammem_initialize(ramopt_malloc_t supmalloc_arg,
             ~(rammem_theglobals.rammemg_pagesize - 1);
 
       rammem_theglobals.rammemg_initflag = 1;
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
 }
 
@@ -94,7 +94,7 @@ void * rammem_supmalloc(size_t size_arg)
       return rammem_theglobals.rammemg_supmalloc(size_arg);
    else
    {
-      ramfail_epicfail("i'm unable to invoke the supilary malloc() because rammem hasn't been initialized.");
+      ram_fail_panic("i'm unable to invoke the supilary malloc() because rammem hasn't been initialized.");
       return NULL;
    }
 }
@@ -104,56 +104,56 @@ void rammem_supfree(void *ptr_arg)
    if (rammem_theglobals.rammemg_initflag)
       rammem_theglobals.rammemg_supfree(ptr_arg);
    else
-      ramfail_epicfail("i'm unable to invoke the supilary free() because rammem hasn't been initialized.");
+      ram_fail_panic("i'm unable to invoke the supilary free() because rammem hasn't been initialized.");
 }
 
-ramfail_status_t rammem_pagesize(size_t *pgsz_arg)
+ram_reply_t rammem_pagesize(size_t *pgsz_arg)
 {
-   RAMFAIL_DISALLOWNULL(pgsz_arg);
+   RAM_FAIL_NOTNULL(pgsz_arg);
    *pgsz_arg = 0;
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT,
          rammem_theglobals.rammemg_initflag);
 
    *pgsz_arg = rammem_theglobals.rammemg_pagesize;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rammem_mmapgran(size_t *mg_arg)
+ram_reply_t rammem_mmapgran(size_t *mg_arg)
 {
-   RAMFAIL_DISALLOWNULL(mg_arg);
+   RAM_FAIL_NOTNULL(mg_arg);
    *mg_arg = 0;
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT,
          rammem_theglobals.rammemg_initflag);
 
    *mg_arg = rammem_theglobals.rammemg_mmapgran;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rammem_ispage(int *ispage_arg, const void *ptr_arg)
+ram_reply_t rammem_ispage(int *ispage_arg, const void *ptr_arg)
 {
-   RAMFAIL_DISALLOWNULL(ispage_arg);
+   RAM_FAIL_NOTNULL(ispage_arg);
    *ispage_arg = 0;
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT,
          rammem_theglobals.rammemg_initflag);
 
    *ispage_arg = RAMMEM_ISPAGE(ptr_arg, rammem_theglobals.rammemg_pagemask);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t rammem_getpage(char **page_arg, void *ptr_arg)
+ram_reply_t rammem_getpage(char **page_arg, void *ptr_arg)
 {
-   RAMFAIL_DISALLOWNULL(page_arg);
+   RAM_FAIL_NOTNULL(page_arg);
    *page_arg = 0;
-   RAMFAIL_DISALLOWNULL(ptr_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_UNINITIALIZED,
+   RAM_FAIL_NOTNULL(ptr_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT,
          rammem_theglobals.rammemg_initflag);
 
    *page_arg = (char *)((uintptr_t)ptr_arg &
          rammem_theglobals.rammemg_pagemask);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 

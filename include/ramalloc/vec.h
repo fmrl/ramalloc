@@ -41,8 +41,8 @@
 typedef struct ramvec_pool ramvec_pool_t;
 typedef struct ramvec_node ramvec_node_t;
 
-typedef ramfail_status_t (*ramvec_mknode_t)(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg);
-typedef ramfail_status_t (*ramvec_chknode_t)(const ramvec_node_t *node_arg);
+typedef ram_reply_t (*ramvec_mknode_t)(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg);
+typedef ram_reply_t (*ramvec_chknode_t)(const ramvec_node_t *node_arg);
 
 struct ramvec_node
 {
@@ -59,11 +59,11 @@ struct ramvec_pool
    size_t ramvecvp_nodecapacity;
 };
 
-ramfail_status_t ramvec_mkpool(ramvec_pool_t *pool_arg, size_t nodecap_arg,
+ram_reply_t ramvec_mkpool(ramvec_pool_t *pool_arg, size_t nodecap_arg,
    ramvec_mknode_t mknode_arg);
-ramfail_status_t ramvec_getnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg);
-ramfail_status_t ramvec_acquire(ramvec_node_t *node_arg, int isfull_arg);
-ramfail_status_t ramvec_release(ramvec_node_t *node_arg, int wasfull_arg, int isempty_arg);
-ramfail_status_t ramvec_chkpool(const ramvec_pool_t *pool_arg, ramvec_chknode_t chknode_arg);
+ram_reply_t ramvec_getnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg);
+ram_reply_t ramvec_acquire(ramvec_node_t *node_arg, int isfull_arg);
+ram_reply_t ramvec_release(ramvec_node_t *node_arg, int wasfull_arg, int isempty_arg);
+ram_reply_t ramvec_chkpool(const ramvec_pool_t *pool_arg, ramvec_chknode_t chknode_arg);
 
 #endif /* RAMVEC_H_IS_INCLUDED */

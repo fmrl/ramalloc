@@ -58,136 +58,136 @@
  * *unrecog* errors. */
 /*@-unrecog@*/
 
-static ramfail_status_t ramuix_basename2(char *dest_arg, size_t len_arg,
+static ram_reply_t ramuix_basename2(char *dest_arg, size_t len_arg,
       const char *pathn_arg);
 
-ramfail_status_t ramuix_initialize()
+ram_reply_t ramuix_initialize()
 {
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramuix_pagesize(size_t *pagesz_arg)
+ram_reply_t ramuix_pagesize(size_t *pagesz_arg)
 {
    long pgsz = 0;
 
-   RAMFAIL_DISALLOWNULL(pagesz_arg);
+   RAM_FAIL_NOTNULL(pagesz_arg);
    *pagesz_arg = 0;
 
    /* on Linux, the memory mapping granularity is the page size. */
    errno = 0;
    pgsz = sysconf(_SC_PAGESIZE);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == errno);
-   RAMFAIL_CONFIRM(RAMFAIL_INSANE, pgsz > 0);
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, 0 == errno);
+   RAM_FAIL_EXPECT(RAM_REPLY_INSANE, pgsz > 0);
 
-   RAMFAIL_RETURN(ramcast_longtosize(pagesz_arg, pgsz));
-   return RAMFAIL_OK;
+   RAM_FAIL_TRAP(ramcast_longtosize(pagesz_arg, pgsz));
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramuix_mmapgran(size_t *mmapgran_arg)
+ram_reply_t ramuix_mmapgran(size_t *mmapgran_arg)
 {
    /* on Linux, the memory mapping granularity is the page size. */
-   RAMFAIL_RETURN(ramuix_pagesize(mmapgran_arg));
+   RAM_FAIL_TRAP(ramuix_pagesize(mmapgran_arg));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramuix_cpucount(size_t *cpucount_arg)
+ram_reply_t ramuix_cpucount(size_t *cpucount_arg)
 {
    long cpucount = 0;
 
-   RAMFAIL_DISALLOWNULL(cpucount_arg);
+   RAM_FAIL_NOTNULL(cpucount_arg);
    *cpucount_arg = 0;
 
    errno = 0;
    cpucount = sysconf(_SC_NPROCESSORS_ONLN);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == errno);
-   RAMFAIL_CONFIRM(RAMFAIL_INSANE, cpucount > 0);
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, 0 == errno);
+   RAM_FAIL_EXPECT(RAM_REPLY_INSANE, cpucount > 0);
 
-   RAMFAIL_RETURN(ramcast_longtosize(cpucount_arg, cpucount));
-   return RAMFAIL_OK;
+   RAM_FAIL_TRAP(ramcast_longtosize(cpucount_arg, cpucount));
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramuix_commit(char *page_arg)
+ram_reply_t ramuix_commit(char *page_arg)
 {
    RAMANNOTATE_UNUSEDARG(page_arg);
 
    /* there's no difference between commit and reserve on POSIX platforms.
     * everything was already taken care of in ramuix_reserve(). */
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramuix_decommit(char *page_arg)
+ram_reply_t ramuix_decommit(char *page_arg)
 {
    RAMANNOTATE_UNUSEDARG(page_arg);
 
    /* there's no difference between commit and reserve on POSIX platforms.
     * everything will be taken care of in ramuix_release(). */
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramuix_reset(char *page_arg)
+ram_reply_t ramuix_reset(char *page_arg)
 {
    /* POSIX doesn't offer an option analogous to *MEM_RESET* in Windows. */
    return ramuix_decommit(page_arg);
 }
 
-ramfail_status_t ramuix_reserve(char **pages_arg)
+ram_reply_t ramuix_reserve(char **pages_arg)
 {
    size_t pgsz = 0;
    char *p = NULL;
 
-   RAMFAIL_DISALLOWNULL(pages_arg);
+   RAM_FAIL_NOTNULL(pages_arg);
    *pages_arg = NULL;
 
-   RAMFAIL_RETURN(rammem_pagesize(&pgsz));
+   RAM_FAIL_TRAP(rammem_pagesize(&pgsz));
    p = mmap(NULL, pgsz,
          PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, MAP_FAILED != p);
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, MAP_FAILED != p);
 
    *pages_arg = p;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramuix_bulkalloc(char **pages_arg)
+ram_reply_t ramuix_bulkalloc(char **pages_arg)
 {
    size_t pgsz = 0;
    char *p = NULL;
 
-   RAMFAIL_DISALLOWNULL(pages_arg);
+   RAM_FAIL_NOTNULL(pages_arg);
    *pages_arg = NULL;
 
-   RAMFAIL_RETURN(rammem_pagesize(&pgsz));
+   RAM_FAIL_TRAP(rammem_pagesize(&pgsz));
    p = mmap(NULL, pgsz,
          PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, MAP_FAILED != p);
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, MAP_FAILED != p);
 
    *pages_arg = p;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramuix_release(char *pages_arg)
+ram_reply_t ramuix_release(char *pages_arg)
 {
    size_t pgsz = 0;
    int ispage = 0;
 
-   RAMFAIL_DISALLOWNULL(pages_arg);
-   RAMFAIL_RETURN(rammem_ispage(&ispage, pages_arg));
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, ispage);
+   RAM_FAIL_NOTNULL(pages_arg);
+   RAM_FAIL_TRAP(rammem_ispage(&ispage, pages_arg));
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, ispage);
 
-   RAMFAIL_RETURN(rammem_pagesize(&pgsz));
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM, 0 == munmap(pages_arg, pgsz));
+   RAM_FAIL_TRAP(rammem_pagesize(&pgsz));
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, 0 == munmap(pages_arg, pgsz));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramuix_basename(char *dest_arg, size_t len_arg,
+ram_reply_t ramuix_basename(char *dest_arg, size_t len_arg,
    const char *pathn_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
    e = ramuix_basename2(dest_arg, len_arg, pathn_arg);
-   if (RAMFAIL_OK == e)
-      return RAMFAIL_OK;
+   if (RAM_REPLY_OK == e)
+      return RAM_REPLY_OK;
    else
    {
       if (0 < len_arg)
@@ -196,15 +196,15 @@ ramfail_status_t ramuix_basename(char *dest_arg, size_t len_arg,
    }
 }
 
-ramfail_status_t ramuix_basename2(char *dest_arg, size_t len_arg,
+ram_reply_t ramuix_basename2(char *dest_arg, size_t len_arg,
    const char *pathn_arg)
 {
    char pathn[RAMSYS_PATH_MAX];
    const char *bn = NULL;
 
-   RAMFAIL_DISALLOWNULL(dest_arg);
-   RAMFAIL_DISALLOWZ(len_arg);
-   RAMFAIL_DISALLOWNULL(pathn_arg);
+   RAM_FAIL_NOTNULL(dest_arg);
+   RAM_FAIL_NOTZERO(len_arg);
+   RAM_FAIL_NOTNULL(pathn_arg);
 
    strncpy(pathn, pathn_arg, RAMSYS_PATH_MAX);
    pathn[RAMSYS_PATH_MAX - 1] = '\0';
@@ -212,7 +212,7 @@ ramfail_status_t ramuix_basename2(char *dest_arg, size_t len_arg,
    strncpy(dest_arg, bn, len_arg);
    dest_arg[len_arg - 1] = '\0';
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
 #endif /* RAMSYS_POSIX */

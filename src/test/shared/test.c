@@ -64,39 +64,39 @@ typedef struct ramtest_start
    size_t ramtests_threadidx;
 } ramtest_start_t;
 
-static ramfail_status_t ramtest_inittest(ramtest_test_t *test_arg,
+static ram_reply_t ramtest_inittest(ramtest_test_t *test_arg,
       const ramtest_params_t *params_arg);
-static ramfail_status_t ramtest_fintest(ramtest_test_t *test_arg);
-static ramfail_status_t ramtest_inittest2(ramtest_test_t *test_arg,
+static ram_reply_t ramtest_fintest(ramtest_test_t *test_arg);
+static ram_reply_t ramtest_inittest2(ramtest_test_t *test_arg,
       const ramtest_params_t *params_arg);
-static ramfail_status_t ramtest_describe(FILE *out_arg,
+static ram_reply_t ramtest_describe(FILE *out_arg,
       const ramtest_params_t *params_arg);
-static ramfail_status_t ramtest_test2(ramtest_test_t *test_arg);
-static ramfail_status_t ramtest_start(ramtest_test_t *test_arg);
-static ramfail_status_t ramtest_thread(void *arg);
-static ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
+static ram_reply_t ramtest_test2(ramtest_test_t *test_arg);
+static ram_reply_t ramtest_start(ramtest_test_t *test_arg);
+static ram_reply_t ramtest_thread(void *arg);
+static ram_reply_t ramtest_thread2(ramtest_test_t *test_arg,
       size_t threadidx_arg);
-static ramfail_status_t ramtest_next(size_t *next_arg,
+static ram_reply_t ramtest_next(size_t *next_arg,
       ramtest_test_t *test_arg);
-static ramfail_status_t ramtest_join(ramtest_test_t *test_arg);
-static ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *desc_arg,
+static ram_reply_t ramtest_join(ramtest_test_t *test_arg);
+static ram_reply_t ramtest_alloc(ramtest_allocdesc_t *desc_arg,
       ramtest_test_t *test_arg, size_t threadidx_arg);
-static ramfail_status_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
+static ram_reply_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
       ramtest_test_t *test_arg, size_t threadidx_arg);
-static ramfail_status_t ramtest_fill(char *ptr_arg, size_t sz_arg);
-static ramfail_status_t ramtest_chkfill(char *ptr_arg, size_t sz_arg);
+static ram_reply_t ramtest_fill(char *ptr_arg, size_t sz_arg);
+static ram_reply_t ramtest_chkfill(char *ptr_arg, size_t sz_arg);
 
 #define RAMTEST_SCALERAND(Type, Rand, LowerBound, UpperBound) \
          (((Type)((double)((UpperBound) - (LowerBound)) * (Rand) / \
          ((double)RAND_MAX + 1))) + (LowerBound))
 
-ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
+ram_reply_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
       uint32_t n1_arg)
 {
    uint32_t n = 0;
 
-   RAMFAIL_DISALLOWNULL(result_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, n0_arg < n1_arg);
+   RAM_FAIL_NOTNULL(result_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, n0_arg < n1_arg);
 
    /* this assertion tests the boundaries of the scaling formula. */
    assert(RAMTEST_SCALERAND(uint32_t, 0, n0_arg, n1_arg) >= n0_arg);
@@ -106,16 +106,16 @@ ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
    assert(n >= n0_arg);
    assert(n < n1_arg);
    *result_arg = n;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_randint32(int32_t *result_arg, int32_t n0_arg,
+ram_reply_t ramtest_randint32(int32_t *result_arg, int32_t n0_arg,
       int32_t n1_arg)
 {
    int32_t n = 0;
 
-   RAMFAIL_DISALLOWNULL(result_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, n0_arg < n1_arg);
+   RAM_FAIL_NOTNULL(result_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, n0_arg < n1_arg);
 
    /* this assertion tests the boundaries of the scaling formula. */
    assert(RAMTEST_SCALERAND(int32_t, 0, n0_arg, n1_arg) >= n0_arg);
@@ -125,17 +125,17 @@ ramfail_status_t ramtest_randint32(int32_t *result_arg, int32_t n0_arg,
    assert(n >= n0_arg);
    assert(n < n1_arg);
    *result_arg = n;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_shuffle(void *array_arg, size_t size_arg,
+ram_reply_t ramtest_shuffle(void *array_arg, size_t size_arg,
       size_t count_arg)
 {
    char *p = (char *)array_arg;
    size_t i = 0;
 
-   RAMFAIL_DISALLOWNULL(array_arg);
-   RAMFAIL_DISALLOWZ(size_arg);
+   RAM_FAIL_NOTNULL(array_arg);
+   RAM_FAIL_NOTZERO(size_arg);
 
    if (0 < count_arg)
    {
@@ -143,80 +143,80 @@ ramfail_status_t ramtest_shuffle(void *array_arg, size_t size_arg,
       {
          uint32_t j = 0;
 
-         RAMFAIL_RETURN(ramtest_randuint32(&j, 0, i));
-         RAMFAIL_RETURN(rammisc_swap(&p[i * size_arg], &p[j * size_arg],
+         RAM_FAIL_TRAP(ramtest_randuint32(&j, 0, i));
+         RAM_FAIL_TRAP(rammisc_swap(&p[i * size_arg], &p[j * size_arg],
                size_arg));
       }
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_inittest(ramtest_test_t *test_arg,
+ram_reply_t ramtest_inittest(ramtest_test_t *test_arg,
       const ramtest_params_t *params_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(test_arg);
+   RAM_FAIL_NOTNULL(test_arg);
 
    memset(test_arg, 0, sizeof(*test_arg));
    e = ramtest_inittest2(test_arg, params_arg);
-   if (RAMFAIL_OK == e)
-      return RAMFAIL_OK;
+   if (RAM_REPLY_OK == e)
+      return RAM_REPLY_OK;
    {
-      RAMFAIL_EPICFAIL(ramtest_fintest(test_arg));
-      RAMFAIL_RETURN(e);
-      return RAMFAIL_INSANE;
+      RAM_FAIL_PANIC(ramtest_fintest(test_arg));
+      RAM_FAIL_TRAP(e);
+      return RAM_REPLY_INSANE;
    }
 }
 
-ramfail_status_t ramtest_inittest2(ramtest_test_t *test_arg,
+ram_reply_t ramtest_inittest2(ramtest_test_t *test_arg,
       const ramtest_params_t *params_arg)
 {
    size_t i = 0;
    size_t seqlen = 0;
    size_t maxthreads = 0;
 
-   RAMFAIL_DISALLOWNULL(params_arg);
-   RAMFAIL_DISALLOWZ(params_arg->ramtestp_alloccount);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, params_arg->ramtestp_minsize > 0);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE,
+   RAM_FAIL_NOTNULL(params_arg);
+   RAM_FAIL_NOTZERO(params_arg->ramtestp_alloccount);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL, params_arg->ramtestp_minsize > 0);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL,
          params_arg->ramtestp_minsize <= params_arg->ramtestp_maxsize);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, params_arg->ramtestp_mallocchance >= 0);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE, params_arg->ramtestp_mallocchance <= 100);
-   RAMFAIL_DISALLOWNULL(params_arg->ramtestp_acquire);
-   RAMFAIL_DISALLOWNULL(params_arg->ramtestp_release);
-   RAMFAIL_DISALLOWNULL(params_arg->ramtestp_query);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL, params_arg->ramtestp_mallocchance >= 0);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL, params_arg->ramtestp_mallocchance <= 100);
+   RAM_FAIL_NOTNULL(params_arg->ramtestp_acquire);
+   RAM_FAIL_NOTNULL(params_arg->ramtestp_release);
+   RAM_FAIL_NOTNULL(params_arg->ramtestp_query);
    /* *params_arg->ramtestp_flush* is allowed to be NULL. */
-   RAMFAIL_DISALLOWNULL(params_arg->ramtestp_check);
+   RAM_FAIL_NOTNULL(params_arg->ramtestp_check);
 
-   RAMFAIL_RETURN(ramtest_maxthreadcount(&maxthreads));
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED,
+   RAM_FAIL_TRAP(ramtest_maxthreadcount(&maxthreads));
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED,
          params_arg->ramtestp_threadcount <= maxthreads);
 
    test_arg->ramtestt_params = *params_arg;
    if (0 == test_arg->ramtestt_params.ramtestp_threadcount)
    {
-      RAMFAIL_RETURN(ramtest_defaultthreadcount(
+      RAM_FAIL_TRAP(ramtest_defaultthreadcount(
             &test_arg->ramtestt_params.ramtestp_threadcount));
    }
    test_arg->ramtestt_records =
          calloc(test_arg->ramtestt_params.ramtestp_alloccount,
          sizeof(*test_arg->ramtestt_records));
-   RAMFAIL_CONFIRM(RAMFAIL_RESOURCE, NULL != test_arg->ramtestt_records);
+   RAM_FAIL_EXPECT(RAM_REPLY_RESOURCEFAIL, NULL != test_arg->ramtestt_records);
    test_arg->ramtestt_threads =
          calloc(test_arg->ramtestt_params.ramtestp_threadcount,
          sizeof(*test_arg->ramtestt_threads));
-   RAMFAIL_CONFIRM(RAMFAIL_RESOURCE, NULL != test_arg->ramtestt_threads);
+   RAM_FAIL_EXPECT(RAM_REPLY_RESOURCEFAIL, NULL != test_arg->ramtestt_threads);
    seqlen = test_arg->ramtestt_params.ramtestp_alloccount * 2;
    test_arg->ramtestt_sequence = calloc(seqlen,
          sizeof(*test_arg->ramtestt_sequence));
-   RAMFAIL_CONFIRM(RAMFAIL_RESOURCE, NULL != test_arg->ramtestt_sequence);
+   RAM_FAIL_EXPECT(RAM_REPLY_RESOURCEFAIL, NULL != test_arg->ramtestt_sequence);
 
-   RAMFAIL_RETURN(rammtx_mkmutex(&test_arg->ramtestt_mtx));
+   RAM_FAIL_TRAP(rammtx_mkmutex(&test_arg->ramtestt_mtx));
    for (i = 0; i < test_arg->ramtestt_params.ramtestp_alloccount; ++i)
    {
-      RAMFAIL_RETURN(rammtx_mkmutex(
+      RAM_FAIL_TRAP(rammtx_mkmutex(
             &test_arg->ramtestt_records[i].ramtestar_mtx));
    }
    /* the sequence array must contain two copies of each index into
@@ -226,7 +226,7 @@ ramfail_status_t ramtest_inittest2(ramtest_test_t *test_arg,
       test_arg->ramtestt_sequence[i] = (i / 2);
    /* i shuffle the sequence array to ensure a randomized order of
     * operations. */
-   RAMFAIL_RETURN(ramtest_shuffle(test_arg->ramtestt_sequence,
+   RAM_FAIL_TRAP(ramtest_shuffle(test_arg->ramtestt_sequence,
          sizeof(test_arg->ramtestt_sequence[0]), seqlen));
 
    if (!test_arg->ramtestt_params.ramtestp_userngseed)
@@ -237,12 +237,12 @@ ramfail_status_t ramtest_inittest2(ramtest_test_t *test_arg,
 
    test_arg->ramtestt_nextrec = 0;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_fintest(ramtest_test_t *test_arg)
+ram_reply_t ramtest_fintest(ramtest_test_t *test_arg)
 {
-   RAMFAIL_DISALLOWNULL(test_arg);
+   RAM_FAIL_NOTNULL(test_arg);
 
    if (NULL != test_arg->ramtestt_records)
       free(test_arg->ramtestt_records);
@@ -254,14 +254,14 @@ ramfail_status_t ramtest_fintest(ramtest_test_t *test_arg)
    if (NULL != test_arg->ramtestt_sequence)
       free(test_arg->ramtestt_sequence);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_describe(FILE *out_arg,
+ram_reply_t ramtest_describe(FILE *out_arg,
       const ramtest_params_t *params_arg)
 {
-   RAMFAIL_DISALLOWNULL(out_arg);
-   RAMFAIL_DISALLOWNULL(params_arg);
+   RAM_FAIL_NOTNULL(out_arg);
+   RAM_FAIL_NOTNULL(params_arg);
 
    if (params_arg->ramtestp_dryrun)
       fprintf(out_arg, "you have specified the following test:\n\n");
@@ -304,55 +304,55 @@ ramfail_status_t ramtest_describe(FILE *out_arg,
    else
       fprintf(out_arg, "-----\n");
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_test(const ramtest_params_t *params_arg)
+ram_reply_t ramtest_test(const ramtest_params_t *params_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
    ramtest_test_t test = {0};
 
-   RAMFAIL_DISALLOWNULL(params_arg);
+   RAM_FAIL_NOTNULL(params_arg);
 
-   RAMFAIL_RETURN(ramtest_describe(stderr, params_arg));
+   RAM_FAIL_TRAP(ramtest_describe(stderr, params_arg));
 
    /* if a dry run has been specified, i'll quit now. */
    if (params_arg->ramtestp_dryrun)
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
 
-   RAMFAIL_RETURN(ramtest_inittest(&test, params_arg));
+   RAM_FAIL_TRAP(ramtest_inittest(&test, params_arg));
 
    e = ramtest_test2(&test);
-   RAMFAIL_RETURN(ramfail_accumulate(&e, ramtest_fintest(&test)));
+   RAM_FAIL_TRAP(ram_fail_accumulate(&e, ramtest_fintest(&test)));
 
-   if (RAMFAIL_OK == e)
+   if (RAM_REPLY_OK == e)
    {
       fprintf(stderr, "[0] the test succeeded.\n");
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
    else
    {
       fprintf(stderr, "[0] the test failed (reply code %d).\n", e);
-      RAMFAIL_RETURN(e);
-      return RAMFAIL_INSANE;
+      RAM_FAIL_TRAP(e);
+      return RAM_REPLY_INSANE;
    }
 }
 
-ramfail_status_t ramtest_test2(ramtest_test_t *test_arg)
+ram_reply_t ramtest_test2(ramtest_test_t *test_arg)
 {
    fprintf(stderr, "[0] beginning test...\n");
 
-   RAMFAIL_RETURN(ramtest_start(test_arg));
-   RAMFAIL_RETURN(ramtest_join(test_arg));
+   RAM_FAIL_TRAP(ramtest_start(test_arg));
+   RAM_FAIL_TRAP(ramtest_join(test_arg));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_start(ramtest_test_t *test_arg)
+ram_reply_t ramtest_start(ramtest_test_t *test_arg)
 {
    size_t i = 0;
 
-   RAMFAIL_DISALLOWNULL(test_arg);
+   RAM_FAIL_NOTNULL(test_arg);
 
    for (i = 0; i < test_arg->ramtestt_params.ramtestp_threadcount; ++i)
    {
@@ -363,31 +363,31 @@ ramfail_status_t ramtest_start(ramtest_test_t *test_arg)
       /* i'm the sole producer of this memory; *ramtest_start()* is the sole
        * consumer. */
       start = (ramtest_start_t *)calloc(sizeof(*start), 1);
-      RAMFAIL_CONFIRM(RAMFAIL_RESOURCE, NULL != start);
+      RAM_FAIL_EXPECT(RAM_REPLY_RESOURCEFAIL, NULL != start);
       start->ramtests_test = test_arg;
       start->ramtests_threadidx = i;
-      RAMFAIL_RETURN(ramthread_mkthread(&test_arg->ramtestt_threads[i],
+      RAM_FAIL_TRAP(ramthread_mkthread(&test_arg->ramtestt_threads[i],
             &ramtest_thread, start));
       fprintf(stderr, "[0] started thread %u.\n", threadid);
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_join(ramtest_test_t *test_arg)
+ram_reply_t ramtest_join(ramtest_test_t *test_arg)
 {
    size_t i = 0;
-   ramfail_status_t myreply = RAMFAIL_OK;
+   ram_reply_t myreply = RAM_REPLY_OK;
 
-   RAMFAIL_DISALLOWNULL(test_arg);
+   RAM_FAIL_NOTNULL(test_arg);
 
    fprintf(stderr, "[0] i am waiting for my threads to finish...\n");
    for (i = 0; i < test_arg->ramtestt_params.ramtestp_threadcount; ++i)
    {
-      ramfail_status_t e = RAMFAIL_INSANE;
+      ram_reply_t e = RAM_REPLY_INSANE;
 
-      RAMFAIL_RETURN(ramthread_join(&e, test_arg->ramtestt_threads[i]));
-      if (RAMFAIL_OK != e)
+      RAM_FAIL_TRAP(ramthread_join(&e, test_arg->ramtestt_threads[i]));
+      if (RAM_REPLY_OK != e)
       {
          fprintf(stderr,
                "[0] thread %d replied with an unexpected failure (%d).\n",
@@ -395,7 +395,7 @@ ramfail_status_t ramtest_join(ramtest_test_t *test_arg)
          /* if i haven't yet recorded an error as my reply, do so now. this
           * ensures that the primary symptom is recorded and not any echoes
           * of the problem. */
-         RAMFAIL_RETURN(ramfail_accumulate(&myreply, e));
+         RAM_FAIL_TRAP(ram_fail_accumulate(&myreply, e));
       }
    }
 
@@ -403,34 +403,34 @@ ramfail_status_t ramtest_join(ramtest_test_t *test_arg)
 }
 
 
-ramfail_status_t ramtest_next(size_t *next_arg, ramtest_test_t *test_arg)
+ram_reply_t ramtest_next(size_t *next_arg, ramtest_test_t *test_arg)
 {
    size_t i = 0;
    size_t j = 0;
 
-   RAMFAIL_DISALLOWNULL(next_arg);
-   RAMFAIL_DISALLOWNULL(test_arg);
+   RAM_FAIL_NOTNULL(next_arg);
+   RAM_FAIL_NOTNULL(test_arg);
 
    j = test_arg->ramtestt_params.ramtestp_alloccount;
 
-   RAMFAIL_RETURN(rammtx_wait(&test_arg->ramtestt_mtx));
+   RAM_FAIL_TRAP(rammtx_wait(&test_arg->ramtestt_mtx));
    i = test_arg->ramtestt_nextrec;
    if (i < j)
       ++test_arg->ramtestt_nextrec;
-   RAMFAIL_EPICFAIL(rammtx_quit(&test_arg->ramtestt_mtx));
+   RAM_FAIL_PANIC(rammtx_quit(&test_arg->ramtestt_mtx));
 
    *next_arg = i;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_thread(void *arg)
+ram_reply_t ramtest_thread(void *arg)
 {
    ramtest_start_t *start = (ramtest_start_t *)arg;
    ramtest_test_t *test = NULL;
    size_t threadidx = 0, threadid = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(arg);
+   RAM_FAIL_NOTNULL(arg);
 
    test = start->ramtests_test;
    threadidx = start->ramtests_threadidx;
@@ -445,19 +445,19 @@ ramfail_status_t ramtest_thread(void *arg)
    return e;
 }
 
-ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
+ram_reply_t ramtest_thread2(ramtest_test_t *test_arg,
       size_t threadidx_arg)
 {
    size_t i = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
    int cachedflag = 0;
    ramtest_allocdesc_t cached = {0};
 
-   RAMFAIL_DISALLOWNULL(test_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE,
+   RAM_FAIL_NOTNULL(test_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL,
          threadidx_arg < test_arg->ramtestt_params.ramtestp_threadcount);
 
-   while ((RAMFAIL_OK == (e = ramtest_next(&i, test_arg)))
+   while ((RAM_REPLY_OK == (e = ramtest_next(&i, test_arg)))
          && i < test_arg->ramtestt_params.ramtestp_alloccount)
    {
       ramtest_allocrec_t *info = NULL;
@@ -468,14 +468,14 @@ ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
        * mutex, so i'll prepare an allocation ahead of time. */
       if (!cachedflag)
       {
-         RAMFAIL_RETURN(ramtest_alloc(&cached, test_arg,
+         RAM_FAIL_TRAP(ramtest_alloc(&cached, test_arg,
                threadidx_arg));
       }
       /* there's actually a race condition between the call to
        * *ramtest_next()* and this point. the worst that could happen
        * (i think) is  that the first thread to draw a given record's index
        * might end up being the deallocating thread. */
-      RAMFAIL_RETURN(rammtx_wait(&info->ramtestar_mtx));
+      RAM_FAIL_TRAP(rammtx_wait(&info->ramtestar_mtx));
       /* if there's a pointer stored in *info->ramtestar_desc.ramtestad_ptr*
        * we'll assume we're the allocating thread. otherwise, we need to
        * deallocate. */
@@ -488,47 +488,47 @@ ramfail_status_t ramtest_thread2(ramtest_test_t *test_arg,
       }
       else
          condemned = info->ramtestar_desc;
-      RAMFAIL_EPICFAIL(rammtx_quit(&info->ramtestar_mtx));
+      RAM_FAIL_PANIC(rammtx_quit(&info->ramtestar_mtx));
       /* if i have a condemned pointer, i need to deallocate it. */
       if (condemned.ramtestad_ptr != NULL)
       {
-         RAMFAIL_RETURN(ramtest_dealloc(&condemned, test_arg,
+         RAM_FAIL_TRAP(ramtest_dealloc(&condemned, test_arg,
                threadidx_arg));
          condemned.ramtestad_ptr = NULL;
       }
 
-      RAMFAIL_RETURN(test_arg->ramtestt_params.ramtestp_check(
+      RAM_FAIL_TRAP(test_arg->ramtestt_params.ramtestp_check(
             test_arg->ramtestt_params.ramtestp_extra, threadidx_arg));
    }
 
-   RAMFAIL_RETURN(test_arg->ramtestt_params.ramtestp_flush(
+   RAM_FAIL_TRAP(test_arg->ramtestt_params.ramtestp_flush(
          test_arg->ramtestt_params.ramtestp_extra, threadidx_arg));
-   RAMFAIL_RETURN(test_arg->ramtestt_params.ramtestp_check(
+   RAM_FAIL_TRAP(test_arg->ramtestt_params.ramtestp_check(
          test_arg->ramtestt_params.ramtestp_extra, threadidx_arg));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
+ram_reply_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
       ramtest_test_t *test_arg, size_t threadidx_arg)
 {
    int32_t roll = 0;
    ramtest_allocdesc_t desc = {0};
    uint32_t n = 0;
 
-   RAMFAIL_DISALLOWNULL(newptr_arg);
+   RAM_FAIL_NOTNULL(newptr_arg);
    memset(newptr_arg, 0, sizeof(*newptr_arg));
-   RAMFAIL_DISALLOWNULL(test_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE,
+   RAM_FAIL_NOTNULL(test_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL,
          threadidx_arg < test_arg->ramtestt_params.ramtestp_threadcount);
 
-   RAMFAIL_RETURN(ramtest_randuint32(&n,
+   RAM_FAIL_TRAP(ramtest_randuint32(&n,
          test_arg->ramtestt_params.ramtestp_minsize,
          test_arg->ramtestt_params.ramtestp_maxsize + 1));
    desc.ramtestad_sz = n;
    /* i want a certain percentage of allocations to be performed by
     * an alternate allocator. */
-   RAMFAIL_RETURN(ramtest_randint32(&roll, 0, 100));
+   RAM_FAIL_TRAP(ramtest_randint32(&roll, 0, 100));
    if (roll < test_arg->ramtestt_params.ramtestp_mallocchance)
    {
       desc.ramtestad_pool = NULL;
@@ -536,34 +536,34 @@ ramfail_status_t ramtest_alloc(ramtest_allocdesc_t *newptr_arg,
    }
    else
    {
-      RAMFAIL_RETURN(test_arg->ramtestt_params.ramtestp_acquire(&desc,
+      RAM_FAIL_TRAP(test_arg->ramtestt_params.ramtestp_acquire(&desc,
             desc.ramtestad_sz, test_arg->ramtestt_params.ramtestp_extra,
             threadidx_arg));
    }
 
    if (!test_arg->ramtestt_params.ramtestp_nofill)
-      RAMFAIL_RETURN(ramtest_fill(desc.ramtestad_ptr, desc.ramtestad_sz));
+      RAM_FAIL_TRAP(ramtest_fill(desc.ramtestad_ptr, desc.ramtestad_sz));
 
    *newptr_arg = desc;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
+ram_reply_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
       ramtest_test_t *test_arg, size_t threadidx_arg)
 {
    void *pool = NULL;
    size_t sz = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(ptrdesc_arg);
-   RAMFAIL_DISALLOWNULL(ptrdesc_arg->ramtestad_ptr);
-   RAMFAIL_DISALLOWNULL(test_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_RANGE,
+   RAM_FAIL_NOTNULL(ptrdesc_arg);
+   RAM_FAIL_NOTNULL(ptrdesc_arg->ramtestad_ptr);
+   RAM_FAIL_NOTNULL(test_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_RANGEFAIL,
          threadidx_arg < test_arg->ramtestt_params.ramtestp_threadcount);
 
    if (!test_arg->ramtestt_params.ramtestp_nofill)
    {
-      RAMFAIL_RETURN(ramtest_chkfill(ptrdesc_arg->ramtestad_ptr,
+      RAM_FAIL_TRAP(ramtest_chkfill(ptrdesc_arg->ramtestad_ptr,
             ptrdesc_arg->ramtestad_sz));
    }
    e = test_arg->ramtestt_params.ramtestp_query(&pool, &sz,
@@ -572,80 +572,80 @@ ramfail_status_t ramtest_dealloc(ramtest_allocdesc_t *ptrdesc_arg,
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-      return RAMFAIL_INSANE;
-   case RAMFAIL_OK:
-      RAMFAIL_CONFIRM(RAMFAIL_CORRUPT,
+      RAM_FAIL_TRAP(e);
+      return RAM_REPLY_INSANE;
+   case RAM_REPLY_OK:
+      RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT,
             ptrdesc_arg->ramtestad_pool == pool);
       /* the size won't always be identical due to the nature of mux pools.
        * the size will never be smaller, though. */
-      RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, sz >= ptrdesc_arg->ramtestad_sz);
-      RAMFAIL_RETURN(
+      RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, sz >= ptrdesc_arg->ramtestad_sz);
+      RAM_FAIL_TRAP(
             test_arg->ramtestt_params.ramtestp_release(ptrdesc_arg));
       break;
-   case RAMFAIL_NOTFOUND:
-      RAMFAIL_CONFIRM(RAMFAIL_INSANE, NULL == ptrdesc_arg->ramtestad_pool);
+   case RAM_REPLY_NOTFOUND:
+      RAM_FAIL_EXPECT(RAM_REPLY_INSANE, NULL == ptrdesc_arg->ramtestad_pool);
       free(ptrdesc_arg->ramtestad_ptr);
       break;
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_fill(char *ptr_arg, size_t sz_arg)
+ram_reply_t ramtest_fill(char *ptr_arg, size_t sz_arg)
 {
-   RAMFAIL_DISALLOWNULL(ptr_arg);
-   RAMFAIL_DISALLOWZ(sz_arg);
+   RAM_FAIL_NOTNULL(ptr_arg);
+   RAM_FAIL_NOTZERO(sz_arg);
 
    memset(ptr_arg, sz_arg & 0xff, sz_arg);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_chkfill(char *ptr_arg, size_t sz_arg)
+ram_reply_t ramtest_chkfill(char *ptr_arg, size_t sz_arg)
 {
    char *p = NULL, *z = NULL;
 
-   RAMFAIL_DISALLOWNULL(ptr_arg);
-   RAMFAIL_DISALLOWZ(sz_arg);
+   RAM_FAIL_NOTNULL(ptr_arg);
+   RAM_FAIL_NOTZERO(sz_arg);
 
    for (p = ptr_arg, z = ptr_arg + sz_arg;
       p < z && ((char)(sz_arg & 0xff)) == *p; ++p)
       continue;
 
    if (p != z)
-      return RAMFAIL_CORRUPT;
+      return RAM_REPLY_CORRUPT;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_defaultthreadcount(size_t *count_arg)
+ram_reply_t ramtest_defaultthreadcount(size_t *count_arg)
 {
    size_t cpucount = 0;
 
-   RAMFAIL_DISALLOWNULL(count_arg);
+   RAM_FAIL_NOTNULL(count_arg);
    *count_arg = 0;
 
-   RAMFAIL_RETURN(ramsys_cpucount(&cpucount));
+   RAM_FAIL_TRAP(ramsys_cpucount(&cpucount));
    /* the default level of parallelism shall be 2.5 * the number of CPUs
     * detected on the system. tests that only support single-threaded
     * configurations will want to set this parameter in advance. */
    *count_arg = (size_t)(cpucount * 2.5);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramtest_maxthreadcount(size_t *count_arg)
+ram_reply_t ramtest_maxthreadcount(size_t *count_arg)
 {
    size_t cpucount = 0;
 
-   RAMFAIL_DISALLOWNULL(count_arg);
+   RAM_FAIL_NOTNULL(count_arg);
    *count_arg = 0;
 
-   RAMFAIL_RETURN(ramsys_cpucount(&cpucount));
+   RAM_FAIL_TRAP(ramsys_cpucount(&cpucount));
    /* if the thread count is greater than 5 times the number of CPU's,
     * i'm going to disallow it. */
    *count_arg = cpucount * 5;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }

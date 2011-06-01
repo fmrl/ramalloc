@@ -41,17 +41,17 @@
 #include <memory.h>
 #include <errno.h>
 
-static ramfail_status_t parseargs2(ramtest_params_t *params_arg,
+static ram_reply_t parseargs2(ramtest_params_t *params_arg,
       int argc_arg, char *argv_arg[]);
-static ramfail_status_t parseulong(unsigned long *n_arg,
+static ram_reply_t parseulong(unsigned long *n_arg,
       const char *str_arg);
-static ramfail_status_t parselong(long *n_arg, const char *str_arg);
-static ramfail_status_t parsealloccount(size_t *alloccount_arg);
-static ramfail_status_t parsethreadcount(size_t *threadcount_arg);
-static ramfail_status_t parsemallocchance(int *mallocchance_arg);
-static ramfail_status_t parseminsize(size_t *minsize_arg);
-static ramfail_status_t parsemaxsize(size_t *maxsize_arg);
-static ramfail_status_t parserngseed(unsigned int *rngseed_arg);
+static ram_reply_t parselong(long *n_arg, const char *str_arg);
+static ram_reply_t parsealloccount(size_t *alloccount_arg);
+static ram_reply_t parsethreadcount(size_t *threadcount_arg);
+static ram_reply_t parsemallocchance(int *mallocchance_arg);
+static ram_reply_t parseminsize(size_t *minsize_arg);
+static ram_reply_t parsemaxsize(size_t *maxsize_arg);
+static ram_reply_t parserngseed(unsigned int *rngseed_arg);
 
 
 static const char usagemsg[] =
@@ -90,37 +90,37 @@ static const char usagemsg[] =
       "\tparallelized tests.\n";
 
 
-void usage(ramfail_status_t exit_arg, int argc_arg, char *argv_arg[])
+void usage(ram_reply_t exit_arg, int argc_arg, char *argv_arg[])
 {
    char bn[RAMSYS_PATH_MAX];
 
    /* i expect argv_arg to contain at least one element. */
    if (1 > argc_arg)
-      ramfail_epicfail("i expect at least one argument.");
+      ram_fail_panic("i expect at least one argument.");
    if (NULL == argv_arg)
-      ramfail_epicfail("i encountered an unexpected NULL pointer.");
+      ram_fail_panic("i encountered an unexpected NULL pointer.");
 
-   if (RAMFAIL_OK != ramsys_basename(bn, RAMSYS_PATH_MAX, argv_arg[0]))
-      ramfail_epicfail("i failed to get the basename of the process.");
+   if (RAM_REPLY_OK != ramsys_basename(bn, RAMSYS_PATH_MAX, argv_arg[0]))
+      ram_fail_panic("i failed to get the basename of the process.");
 
    fprintf(stderr, usagemsg, bn, bn);
    exit(exit_arg);
 }
 
-ramfail_status_t parseargs(ramtest_params_t *params_arg, int argc_arg,
+ram_reply_t parseargs(ramtest_params_t *params_arg, int argc_arg,
       char *argv_arg[])
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(params_arg);
+   RAM_FAIL_NOTNULL(params_arg);
    e = parseargs2(params_arg, argc_arg, argv_arg);
-   if (RAMFAIL_OK != e)
+   if (RAM_REPLY_OK != e)
       memset(params_arg, 0, sizeof(*params_arg));
 
    return e;
 }
 
-ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
+ram_reply_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
       char *argv_arg[])
 {
    int c = 0, i = 0;
@@ -138,8 +138,8 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
    };
 
    assert(params_arg != NULL);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, argc_arg >= 0);
-   RAMFAIL_DISALLOWNULL(argv_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, argc_arg >= 0);
+   RAM_FAIL_NOTNULL(argv_arg);
 
    while (-1 != (c = getopt_long(argc_arg, argv_arg,
          "a:p:m:s:l:n", longopts, &i)))
@@ -149,21 +149,21 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
       default:
          /* this would be where options that don't have a short name would
           * be processed. */
-         ramfail_epicfail("unexpected option.");
+         ram_fail_panic("unexpected option.");
          break;
 
       case 'a':
       {
-         ramfail_status_t e = RAMFAIL_INSANE;
+         ram_reply_t e = RAM_REPLY_INSANE;
 
          e = parsealloccount(&params_arg->ramtestp_alloccount);
          switch (e)
          {
          default:
-            RAMFAIL_RETURN(e);
-         case RAMFAIL_OK:
+            RAM_FAIL_TRAP(e);
+         case RAM_REPLY_OK:
             break;
-         case RAMFAIL_INPUT:
+         case RAM_REPLY_INPUTFAIL:
             return e;
          }
          break;
@@ -171,16 +171,16 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
 
       case 'p':
       {
-         ramfail_status_t e = RAMFAIL_INSANE;
+         ram_reply_t e = RAM_REPLY_INSANE;
 
          e = parsethreadcount(&params_arg->ramtestp_threadcount);
          switch (e)
          {
          default:
-            RAMFAIL_RETURN(e);
-         case RAMFAIL_OK:
+            RAM_FAIL_TRAP(e);
+         case RAM_REPLY_OK:
             break;
-         case RAMFAIL_INPUT:
+         case RAM_REPLY_INPUTFAIL:
             return e;
          }
          break;
@@ -188,16 +188,16 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
 
       case 'm':
       {
-         ramfail_status_t e = RAMFAIL_INSANE;
+         ram_reply_t e = RAM_REPLY_INSANE;
 
          e = parsemallocchance(&params_arg->ramtestp_mallocchance);
          switch (e)
          {
          default:
-            RAMFAIL_RETURN(e);
-         case RAMFAIL_OK:
+            RAM_FAIL_TRAP(e);
+         case RAM_REPLY_OK:
             break;
-         case RAMFAIL_INPUT:
+         case RAM_REPLY_INPUTFAIL:
             return e;
          }
          break;
@@ -205,16 +205,16 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
 
       case 's':
       {
-         ramfail_status_t e = RAMFAIL_INSANE;
+         ram_reply_t e = RAM_REPLY_INSANE;
 
          e = parseminsize(&params_arg->ramtestp_minsize);
          switch (e)
          {
          default:
-            RAMFAIL_RETURN(e);
-         case RAMFAIL_OK:
+            RAM_FAIL_TRAP(e);
+         case RAM_REPLY_OK:
             break;
-         case RAMFAIL_INPUT:
+         case RAM_REPLY_INPUTFAIL:
             return e;
          }
          break;
@@ -222,16 +222,16 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
 
       case 'l':
       {
-         ramfail_status_t e = RAMFAIL_INSANE;
+         ram_reply_t e = RAM_REPLY_INSANE;
 
          e = parsemaxsize(&params_arg->ramtestp_maxsize);
          switch (e)
          {
          default:
-            RAMFAIL_RETURN(e);
-         case RAMFAIL_OK:
+            RAM_FAIL_TRAP(e);
+         case RAM_REPLY_OK:
             break;
-         case RAMFAIL_INPUT:
+         case RAM_REPLY_INPUTFAIL:
             return e;
          }
          break;
@@ -239,17 +239,17 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
 
       case 'S':
       {
-         ramfail_status_t e = RAMFAIL_INSANE;
+         ram_reply_t e = RAM_REPLY_INSANE;
 
          e = parserngseed(&params_arg->ramtestp_rngseed);
          switch (e)
          {
          default:
-            RAMFAIL_RETURN(e);
-         case RAMFAIL_OK:
+            RAM_FAIL_TRAP(e);
+         case RAM_REPLY_OK:
             params_arg->ramtestp_userngseed = 1;
             break;
-         case RAMFAIL_INPUT:
+         case RAM_REPLY_INPUTFAIL:
             return e;
          }
          break;
@@ -263,12 +263,12 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
 
       case ':':   /* missing argument. */
       case '?':   /* unrecognized option */
-         usage(RAMFAIL_INPUT, argc_arg, argv_arg);
-         return RAMFAIL_INSANE;
+         usage(RAM_REPLY_INPUTFAIL, argc_arg, argv_arg);
+         return RAM_REPLY_INSANE;
 
       case 'h':
-         usage(RAMFAIL_OK, argc_arg, argv_arg);
-         return RAMFAIL_INSANE;
+         usage(RAM_REPLY_OK, argc_arg, argv_arg);
+         return RAM_REPLY_INSANE;
       }
   }
 
@@ -276,7 +276,7 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
   {
      fprintf(stderr, "i don't understand what you mean by \"%s\".\n",
            argv_arg[optind]);
-     return RAMFAIL_INPUT;
+     return RAM_REPLY_INPUTFAIL;
   }
 
   /* if the test is parallelized, it's meaningless to specify a seed. */
@@ -287,166 +287,166 @@ ramfail_status_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
            "it's meaningless to specify is seed value for a parallelized "
            "test. either specify --parallelized=1 or omit the --rng-seed "
            "option.\n");
-     return RAMFAIL_INPUT;
+     return RAM_REPLY_INPUTFAIL;
   }
 
-  return RAMFAIL_OK;
+  return RAM_REPLY_OK;
 }
 
-ramfail_status_t parseulong(unsigned long *n_arg, const char *str_arg)
+ram_reply_t parseulong(unsigned long *n_arg, const char *str_arg)
 {
    unsigned long n = 0;
 
-   RAMFAIL_DISALLOWNULL(n_arg);
+   RAM_FAIL_NOTNULL(n_arg);
    *n_arg = 0;
-   RAMFAIL_DISALLOWNULL(str_arg);
+   RAM_FAIL_NOTNULL(str_arg);
 
    errno = 0;
    n = strtoul(str_arg, NULL, 10);
    if (0 != n || 0 == errno)
    {
       *n_arg = n;
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
    else
-      return RAMFAIL_CRT;
+      return RAM_REPLY_CRTFAIL;
 }
 
-ramfail_status_t parselong(long *n_arg, const char *str_arg)
+ram_reply_t parselong(long *n_arg, const char *str_arg)
 {
    long n = 0;
 
-   RAMFAIL_DISALLOWNULL(n_arg);
+   RAM_FAIL_NOTNULL(n_arg);
    *n_arg = 0;
-   RAMFAIL_DISALLOWNULL(str_arg);
+   RAM_FAIL_NOTNULL(str_arg);
 
    errno = 0;
    n = strtol(str_arg, NULL, 10);
    if (0 != n || 0 == errno)
    {
       *n_arg = n;
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
    else
-      return RAMFAIL_CRT;
+      return RAM_REPLY_CRTFAIL;
 }
 
-ramfail_status_t parsealloccount(size_t *alloccount_arg)
+ram_reply_t parsealloccount(size_t *alloccount_arg)
 {
    unsigned long n = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(alloccount_arg);
+   RAM_FAIL_NOTNULL(alloccount_arg);
    *alloccount_arg = 0;
 
    e = parseulong(&n, optarg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+   case RAM_REPLY_OK:
       *alloccount_arg = n;
-      return RAMFAIL_OK;
-   case RAMFAIL_CRT:
+      return RAM_REPLY_OK;
+   case RAM_REPLY_CRTFAIL:
       fprintf(stderr, "you must specify a numeric argument for the "
             "--allocations (or -a) argument.\n");
-      return RAMFAIL_INPUT;
+      return RAM_REPLY_INPUTFAIL;
    }
 }
 
-ramfail_status_t parsethreadcount(size_t *threadcount_arg)
+ram_reply_t parsethreadcount(size_t *threadcount_arg)
 {
    unsigned long n = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
    size_t cpucount = 0, toomany = 0;
 
-   RAMFAIL_DISALLOWNULL(threadcount_arg);
+   RAM_FAIL_NOTNULL(threadcount_arg);
    *threadcount_arg = 0;
 
    /* i'll allow up to 3x the number of CPUs in the system. anything more
     * seems nonsensical and could freeze the system. */
-   RAMFAIL_RETURN(ramsys_cpucount(&cpucount));
+   RAM_FAIL_TRAP(ramsys_cpucount(&cpucount));
    toomany = 3 * cpucount;
 
    e = parseulong(&n, optarg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+   case RAM_REPLY_OK:
       if (n > toomany)
       {
          fprintf(stderr, "you cannot specify more than %u parallel "
                "operations.\n", toomany);
-         return RAMFAIL_INPUT;
+         return RAM_REPLY_INPUTFAIL;
       }
       else if (n < 1)
       {
          fprintf(stderr, "you cannot specify fewer than 1 parallel "
                "operations.\n");
-         return RAMFAIL_INPUT;
+         return RAM_REPLY_INPUTFAIL;
 
       }
       else
       {
          *threadcount_arg = n;
-         return RAMFAIL_OK;
+         return RAM_REPLY_OK;
       }
-   case RAMFAIL_CRT:
+   case RAM_REPLY_CRTFAIL:
       fprintf(stderr, "you must specify a numeric argument for the "
             "--parallel (or -p) argument.\n");
-      return RAMFAIL_INPUT;
+      return RAM_REPLY_INPUTFAIL;
    }
 }
 
-ramfail_status_t parsemallocchance(int *mallocchance_arg)
+ram_reply_t parsemallocchance(int *mallocchance_arg)
 {
    long n = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(mallocchance_arg);
+   RAM_FAIL_NOTNULL(mallocchance_arg);
    *mallocchance_arg = 0;
 
    e = parselong(&n, optarg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+   case RAM_REPLY_OK:
       if (n >= 100)
       {
          fprintf(stderr,
                "you cannot specify that 100%% or more allocations "
                "be performed with malloc().");
-         return RAMFAIL_INPUT;
+         return RAM_REPLY_INPUTFAIL;
       }
       else if (n < 0)
       {
          fprintf(stderr, "please specify a valid percentage argument for "
                "the --malloc (or -m) option.");
-         return RAMFAIL_INPUT;
+         return RAM_REPLY_INPUTFAIL;
       }
       else
       {
          /* it's impossible for this cast to fail, since n cannot be larger
           * than 99. */
          *mallocchance_arg = n;
-         return RAMFAIL_OK;
+         return RAM_REPLY_OK;
       }
-   case RAMFAIL_CRT:
+   case RAM_REPLY_CRTFAIL:
       fprintf(stderr,
             "you must specify a numeric argument representing a percentage "
             "for the --malloc (or -m) argument.\n");
-      return RAMFAIL_INPUT;
+      return RAM_REPLY_INPUTFAIL;
    }
 }
 
-ramfail_status_t parseminsize(size_t *minsize_arg)
+ram_reply_t parseminsize(size_t *minsize_arg)
 {
    unsigned long n = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(minsize_arg);
+   RAM_FAIL_NOTNULL(minsize_arg);
    *minsize_arg = 0;
 
    e = parseulong(&n, optarg);
@@ -454,69 +454,69 @@ ramfail_status_t parseminsize(size_t *minsize_arg)
    {
    default:
       /* TODO: should i create a new macro for something i know is not
-       * RAMFAIL_OK? it would be something akin to rethrowing an
+       * RAM_REPLY_OK? it would be something akin to rethrowing an
        * exception. */
-      RAMFAIL_RETURN(e);
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+   case RAM_REPLY_OK:
       /* the upper and lower bounds for this argument must be policed by
        * the individual tests. */
       *minsize_arg = n;
-      return RAMFAIL_OK;
-   case RAMFAIL_CRT:
+      return RAM_REPLY_OK;
+   case RAM_REPLY_CRTFAIL:
       fprintf(stderr,
             "you must specify a numeric argument for the lower bound of "
             "the allocation size for the --smallest (or -s) argument.\n");
-      return RAMFAIL_INPUT;
+      return RAM_REPLY_INPUTFAIL;
    }
 }
 
-ramfail_status_t parsemaxsize(size_t *maxsize_arg)
+ram_reply_t parsemaxsize(size_t *maxsize_arg)
 {
    unsigned long n = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(maxsize_arg);
+   RAM_FAIL_NOTNULL(maxsize_arg);
    *maxsize_arg = 0;
 
    e = parseulong(&n, optarg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+   case RAM_REPLY_OK:
       /* the upper and lower bounds for this argument must be policed by
        * the individual tests. */
       *maxsize_arg = n;
-      return RAMFAIL_OK;
-   case RAMFAIL_CRT:
+      return RAM_REPLY_OK;
+   case RAM_REPLY_CRTFAIL:
       fprintf(stderr,
             "you must specify a numeric argument for the upper bound of "
             "the allocation size for the --largest (or -l) argument.\n");
-      return RAMFAIL_INPUT;
+      return RAM_REPLY_INPUTFAIL;
    }
 }
 
-ramfail_status_t parserngseed(unsigned int *rngseed_arg)
+ram_reply_t parserngseed(unsigned int *rngseed_arg)
 {
    unsigned long n = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(rngseed_arg);
+   RAM_FAIL_NOTNULL(rngseed_arg);
    *rngseed_arg = 0;
 
    e = parseulong(&n, optarg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+   case RAM_REPLY_OK:
       /* the upper and lower bounds for this argument must be policed by
        * the individual tests. */
       return ramcast_ulongtouint(rngseed_arg, n);
-   case RAMFAIL_CRT:
+   case RAM_REPLY_CRTFAIL:
       fprintf(stderr,
             "you must specify a numeric argument for the --rng-seed (or "
             "-S) argument.\n");
-      return RAMFAIL_INPUT;
+      return RAM_REPLY_INPUTFAIL;
    }
 }
