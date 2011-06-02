@@ -318,7 +318,7 @@ ram_reply_t ramwin_mkbarrier(ramwin_barrier_t *barrier_arg, size_t capacity_arg)
 
    memset(barrier_arg, 0, sizeof(*barrier_arg));
 
-   RAM_FAIL_TRAP(ramcast_sizetolong(&barrier_arg->ramwinb_capacity, capacity_arg));
+   RAM_FAIL_TRAP(ram_cast_sizetolong(&barrier_arg->ramwinb_capacity, capacity_arg));
    barrier_arg->ramwinb_vacancy = barrier_arg->ramwinb_capacity;
    barrier_arg->ramwinb_event = CreateEvent(NULL, FALSE, FALSE, NULL);
    RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, NULL != barrier_arg->ramwinb_event);

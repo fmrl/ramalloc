@@ -79,7 +79,7 @@ ram_reply_t ramuix_pagesize(size_t *pagesz_arg)
    RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, 0 == errno);
    RAM_FAIL_EXPECT(RAM_REPLY_INSANE, pgsz > 0);
 
-   RAM_FAIL_TRAP(ramcast_longtosize(pagesz_arg, pgsz));
+   RAM_FAIL_TRAP(ram_cast_longtosize(pagesz_arg, pgsz));
    return RAM_REPLY_OK;
 }
 
@@ -103,7 +103,7 @@ ram_reply_t ramuix_cpucount(size_t *cpucount_arg)
    RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL, 0 == errno);
    RAM_FAIL_EXPECT(RAM_REPLY_INSANE, cpucount > 0);
 
-   RAM_FAIL_TRAP(ramcast_longtosize(cpucount_arg, cpucount));
+   RAM_FAIL_TRAP(ram_cast_longtosize(cpucount_arg, cpucount));
    return RAM_REPLY_OK;
 }
 

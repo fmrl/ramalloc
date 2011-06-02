@@ -512,7 +512,7 @@ ram_reply_t parserngseed(unsigned int *rngseed_arg)
    case RAM_REPLY_OK:
       /* the upper and lower bounds for this argument must be policed by
        * the individual tests. */
-      return ramcast_ulongtouint(rngseed_arg, n);
+      return ram_cast_ulongtouint(rngseed_arg, n);
    case RAM_REPLY_CRTFAIL:
       fprintf(stderr,
             "you must specify a numeric argument for the --rng-seed (or "

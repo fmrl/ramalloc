@@ -252,7 +252,7 @@ ram_reply_t ramslot_calcindex(ramslot_index_t *idx_arg, const ramslot_node_t *no
    RAMMETA_BACKCAST(pool, ramslot_pool_t, ramslotp_vpool, 
       node_arg->ramslotn_vnode.ramvecn_vpool);
 
-   RAM_FAIL_TRAP(ramcast_sizetoint(&n, pool->ramslotp_granularity));
+   RAM_FAIL_TRAP(ram_cast_sizetoint(&n, pool->ramslotp_granularity));
    d = div(ptr_arg - node_arg->ramslotn_slots, n);
    /* it's safe to cast the node capacity to ramslot_index_t because
     * when the pool was initialized, i ensured that the node capacity

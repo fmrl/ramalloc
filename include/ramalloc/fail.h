@@ -32,7 +32,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 /**
- * @file fail.h
+ * @file
  * @brief failure management.
  */
 

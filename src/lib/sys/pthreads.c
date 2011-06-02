@@ -208,7 +208,7 @@ ram_reply_t ramuix_mkbarrier(ramuix_barrier_t *barrier_arg,
 
    RAM_FAIL_NOTNULL(barrier_arg);
 
-   RAM_FAIL_TRAP(ramcast_sizetouint(&capacity, capacity_arg));
+   RAM_FAIL_TRAP(ram_cast_sizetouint(&capacity, capacity_arg));
    RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL,
          0 == pthread_barrier_init(barrier_arg, NULL, capacity));
 
