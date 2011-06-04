@@ -1,0 +1,4 @@
+<hr class="footer"/><address class="footer"><small>
+<a href="http://github.com/fmrl/ramalloc">$projectname</a> documentation. copyright &copy; 2011, michael lowell roberts. all rights reserved. licensed under <a href="http://www.opensource.org/licenses/BSD-3-Clause">the New BSD License</a>. generated on $datetime using &#160;<a href="http://www.doxygen.org/index.html"><img class="footer" src="$relpath$doxygen.png" alt="doxygen"/></a> $doxygenversion.</small></address>
+</body>
+</html>
