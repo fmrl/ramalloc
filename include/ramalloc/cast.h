@@ -38,7 +38,7 @@
 
 /**
  * @file
- * @brief checked type casting.
+ * @brief checked type casting module.
  */
 
 /**

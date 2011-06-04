@@ -31,11 +31,23 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMMETA_H_IS_INCLUDED
-#define RAMMETA_H_IS_INCLUDED
+/**
+ * @file
+ * @brief metaprogramming tools for C.
+ */
 
-#define RAMMETA_CONCATTOK2(A, B) A##B
-#define RAMMETA_CONCATTOK(A, B) RAMMETA_CONCATTOK2(A, B)
+#ifndef RAM_META_H_IS_INCLUDED
+#define RAM_META_H_IS_INCLUDED
+
+/**
+ * @internal
+ * @brief a support macro for RAMMETA_CONCATTOK().
+ * @details this macro is part of a common pattern that is used to
+ *    concatenate two tokens together with support for expansion of special
+ *    preprocessor symbols such as @c __FILE__.
+ */
+#define RAM_META_CONCATTOK2(A, B) A##B
+#define RAMMETA_CONCATTOK(A, B) RAM_META_CONCATTOK2(A, B)
 
 #define RAMMETA_GENERATENAME(Prefix) RAMMETA_CONCATTOK(Prefix, __COUNTER__)
 
@@ -55,4 +67,4 @@
 #define RAMMETA_NOP() do { } while (0)
 
 
-#endif /* RAMMETA_H_IS_INCLUDED */
+#endif /* RAM_META_H_IS_INCLUDED */

@@ -33,7 +33,7 @@
 
 /**
  * @file
- * @brief failure management.
+ * @brief failure management module.
  */
 
 #ifndef RAMALLOC_FAIL_H_IS_INCLUDED
@@ -49,7 +49,7 @@
 /**
  * @brief signature of the unanticipated reply reporter.
  * @details a reporter performs a client-defined action when a reply wrapper
- *    detects an unexpected reply.
+ *    detects an unanticipated reply.
  * @param code_arg the reply code encountered.
  * @param expr_arg a string containing the expression being evaluated.
  *    this is usually a preprocessor-generated string.
@@ -158,18 +158,19 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
 /**
  * @brief the default reply wrapper.
  * @details this macro is a reply wrapper that designates all replies
- *    returned by a function as unexpected, with the exception of @c
+ *    returned by a function as unanticipated, with the exception of @c
  *    RAM_REPLY_OK.
  * @param Reply an expression that evaluates to a reply.
  * @remark if you are unsure of which reply wrapper to use,
  *    RAM_FAIL_TRAP() is a good default.
- * @remark if an unexpected reply is encountered, this macro will cause the
+ * @remark if an unanticipated reply is encountered, this macro will cause the
  *    function to return that reply to the caller. this means that the
  *    contextual function must have declared its return type as ram_reply_t
  *    for this macro to function properly.
  * @remark if RAMOPT_UNSUPPORTED_OVERCONFIDENT expands to @e true, then this
  *    macro simply evaluates @e Reply.
  * @see ram_reply_t
+ * @see reply.h
  */
 #if RAMOPT_UNSUPPORTED_OVERCONFIDENT
 #  define RAM_FAIL_TRAP(Reply) (Reply)
@@ -201,7 +202,7 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
 /**
  * @brief panics if reply is not okay.
  * @details like RAM_FAIL_TRAP(), this macro is a reply wrapper that
- *    designates all replies returned by a function as unexpected, with the
+ *    designates all replies returned by a function as unanticipated, with the
  *    exception of @c RAM_REPLY_OK. unlike RAM_FAIL_TRAP(),
  *    RAM_FAIL_PANIC() will terminate the process.
  * @remark this macro expands to code that returns @c RAM_REPLY_INSANE to
@@ -230,7 +231,7 @@ void ram_fail_panic(const char *why_arg);
 
 /**
  * @brief change the reporting callback.
- * @details call ram_fail_setreporter() to change the unexpected reply
+ * @details call ram_fail_setreporter() to change the unanticipated reply
  *    reporting callback.
  * @param reporter_arg the address of the reporting callback.
  * @see ram_fail_reporter_t
@@ -239,14 +240,14 @@ void ram_fail_setreporter(ram_fail_reporter_t reporter_arg);
 
 /**
  * @internal
- * @brief report an unexpected reply.
- * @details ram_fail_report() will invoke the unexpected reply reporting
+ * @brief report an unanticipated reply.
+ * @details ram_fail_report() will invoke the unanticipated reply reporting
  *    callback, either as specified by ram_fail_setreporter() or a default
  *    implementation.
- * @param reply_arg an unexpected reply to report.
+ * @param reply_arg an unanticipated reply to report.
  * @param expr_arg a string representation of the expression that produced
- *    the unexpected reply.
- * @param funcn_arg the name of the function that received the unexpected
+ *    the unanticipated reply.
+ * @param funcn_arg the name of the function that received the unanticipated
  *    reply.
  * @param filen_arg the name of the source file where the expression can be
  *    found.
@@ -267,7 +268,7 @@ void ram_fail_report(ram_reply_t reply_arg, const char *expr_arg,
  *    the course of a series of calls to ram_fail_accumulate(), then it will
  *    retain it's value.
  * @param newreply_arg a new reply for the accumulator.
- * @remarks it's always better to return from a function if an unexpected
+ * @remarks it's always better to return from a function if an unanticipated
  *    reply is encountered. sometimes, this isn't possible and
  *    ram_fail_accumulate() is intended for use in those situations.
  * @return a reply as described in reply.h.
