@@ -63,7 +63,7 @@ static ram_reply_t ram_cast_testinttoint();
 
 #define RAM_CAST_MATCHING(To, ToType, From, FromType) \
       RAM_CAST_MATCHING2(To, ToType, From, FromType, \
-            RAMMETA_GENERATENAME(RAM_CAST_UINTTOUINT_tmp))
+            RAM_META_GENNAME(RAM_CAST_UINTTOUINT_tmp))
 
 #define RAM_CAST_UINTTOINT2(To, ToType, ToMax, From, Tmp) \
    do \
@@ -84,7 +84,7 @@ static ram_reply_t ram_cast_testinttoint();
 
 #define RAM_CAST_UINTTOINT(To, ToType, ToMax, From) \
       RAM_CAST_UINTTOINT2(To, ToType, ToMax, From, \
-            RAMMETA_GENERATENAME(RAM_CAST_UINTTOINT_tmp))
+            RAM_META_GENNAME(RAM_CAST_UINTTOINT_tmp))
 
 #define RAM_CAST_INTTOUINT2(To, ToType, ToMax, From, Tmp) \
       do \
@@ -107,7 +107,7 @@ static ram_reply_t ram_cast_testinttoint();
 
 #define RAM_CAST_INTTOUINT(To, ToType, ToMax, From) \
       RAM_CAST_INTTOUINT2(To, ToType, ToMax, From, \
-            RAMMETA_GENERATENAME(RAM_CAST_INTTOUINT_tmp))
+            RAM_META_GENNAME(RAM_CAST_INTTOUINT_tmp))
 
 #define RAM_CAST_INTTOINT(To, ToType, From, FromType) \
       RAM_CAST_MATCHING(To, ToType, From, FromType)

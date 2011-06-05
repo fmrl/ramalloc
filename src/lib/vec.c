@@ -33,6 +33,7 @@
 
 #include <ramalloc/opt.h>
 #include <ramalloc/vec.h>
+#include <ramalloc/cast.h>
 #include <assert.h>
 #include <memory.h>
 
@@ -117,7 +118,7 @@ ram_reply_t ramvec_getnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg)
 
       /* there's something on the availability stack; i need to retrieve it. */
       RAM_FAIL_TRAP(ramlist_next(&l, &pool_arg->ramvecvp_avail));
-      RAMMETA_BACKCAST(*node_arg, ramvec_node_t, ramvecn_avail, l);
+      *node_arg = RAM_CAST_STRUCTBASE(ramvec_node_t, ramvecn_avail, l);
 
       return RAM_REPLY_OK;
    }
@@ -223,7 +224,7 @@ ram_reply_t ramvec_chkinv(ramlist_list_t *list_arg, void *context_arg)
    assert(context_arg != NULL);
 
    RAM_FAIL_TRAP(ramlist_chklist(list_arg));
-   RAMMETA_BACKCAST(node, ramvec_node_t, ramvecn_inv, list_arg);
+   node = RAM_CAST_STRUCTBASE(ramvec_node_t, ramvecn_inv, list_arg);
    RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, c->ramveccc_pool == node->ramvecn_vpool);
 
    /* if additional checking was specified, pass control to that function with
@@ -243,7 +244,7 @@ ram_reply_t ramvec_chkavail(ramlist_list_t *list_arg, void *context_arg)
    assert(context_arg != NULL);
 
    RAM_FAIL_TRAP(ramlist_chklist(list_arg));
-   RAMMETA_BACKCAST(node, ramvec_node_t, ramvecn_avail, list_arg);
+   node = RAM_CAST_STRUCTBASE(ramvec_node_t, ramvecn_avail, list_arg);
    RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, c->ramveccc_pool == node->ramvecn_vpool);
 
    return RAM_REPLY_AGAIN;

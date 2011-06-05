@@ -32,6 +32,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include <ramalloc/lazy.h>
+#include <ramalloc/cast.h>
 #include <string.h>
 
 typedef struct ramlazy_chktrashnode
@@ -228,6 +229,7 @@ ram_reply_t ramlazy_query(ramlazy_pool_t **lpool_arg, size_t *size_arg, void *pt
       break;
    }
 
-   RAMMETA_BACKCAST(*lpool_arg, ramlazy_pool_t, ramlazyp_muxpool, muxpool);
+   *lpool_arg = RAM_CAST_STRUCTBASE(ramlazy_pool_t, ramlazyp_muxpool,
+         muxpool);
    return RAM_REPLY_OK;
 }

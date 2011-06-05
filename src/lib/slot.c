@@ -115,7 +115,7 @@ ram_reply_t ramslot_acquire(void **ptr_arg, ramslot_pool_t *pool_arg)
 
    /* first, i acquire a memory object from the next available node in the pool. */
    RAM_FAIL_TRAP(ramvec_getnode(&vnode, &pool_arg->ramslotp_vpool));
-   RAMMETA_BACKCAST(node, ramslot_node_t, ramslotn_vnode, vnode);
+   node = RAM_CAST_STRUCTBASE(ramslot_node_t, ramslotn_vnode, vnode);
    /* ramvec_getnode() should never return a full node. */
    assert(!RAMSLOT_ISFULL(node));
    /* ramvec_getnode() should never return someone else's node. */
@@ -157,8 +157,8 @@ ram_reply_t ramslot_release(void *ptr_arg, ramslot_node_t *node_arg)
 
    RAM_FAIL_NOTNULL(ptr_arg);
 
-   RAMMETA_BACKCAST(pool, ramslot_pool_t, ramslotp_vpool, 
-      node_arg->ramslotn_vnode.ramvecn_vpool);
+   pool = RAM_CAST_STRUCTBASE(ramslot_pool_t, ramslotp_vpool,
+         node_arg->ramslotn_vnode.ramvecn_vpool);
    RAM_FAIL_TRAP(ramslot_calcindex(&idx, node_arg, ptr_arg));
    wasfull = RAMSLOT_ISFULL(node_arg);
 
@@ -197,7 +197,7 @@ ram_reply_t ramslot_mknode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg)
    assert(node_arg != NULL);
    assert(pool_arg != NULL);
 
-   RAMMETA_BACKCAST(pool, ramslot_pool_t, ramslotp_vpool, pool_arg);
+   pool = RAM_CAST_STRUCTBASE(ramslot_pool_t, ramslotp_vpool, pool_arg);
    RAM_FAIL_TRAP(pool->ramslotp_mknode(&node, &slots, pool));
    e = ramslot_initnode(node, pool, (char *)slots);
    if (RAM_REPLY_OK == e)
@@ -249,8 +249,8 @@ ram_reply_t ramslot_calcindex(ramslot_index_t *idx_arg, const ramslot_node_t *no
    RAM_FAIL_NOTNULL(node_arg);
    RAM_FAIL_NOTNULL(ptr_arg);
 
-   RAMMETA_BACKCAST(pool, ramslot_pool_t, ramslotp_vpool, 
-      node_arg->ramslotn_vnode.ramvecn_vpool);
+   pool = RAM_CAST_STRUCTBASE(ramslot_pool_t, ramslotp_vpool,
+         node_arg->ramslotn_vnode.ramvecn_vpool);
 
    RAM_FAIL_TRAP(ram_cast_sizetoint(&n, pool->ramslotp_granularity));
    d = div(ptr_arg - node_arg->ramslotn_slots, n);
@@ -285,7 +285,7 @@ ram_reply_t ramslot_chknode(const ramvec_node_t *node_arg)
 
    assert(node_arg != NULL);
 
-   RAMMETA_BACKCAST(node, ramslot_node_t, ramslotn_vnode, node_arg);
+   node = RAM_CAST_STRUCTBASE(ramslot_node_t, ramslotn_vnode, node_arg);
 
    /* the node cannot be empty. */
    RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, !RAMSLOT_ISEMPTY(node));
@@ -312,8 +312,8 @@ ram_reply_t ramslot_chkfree(const ramslot_node_t *node_arg)
 
    assert(node_arg != NULL);
 
-   RAMMETA_BACKCAST(pool, ramslot_pool_t, ramslotp_vpool, 
-      node_arg->ramslotn_vnode.ramvecn_vpool);
+   pool = RAM_CAST_STRUCTBASE(ramslot_pool_t, ramslotp_vpool,
+         node_arg->ramslotn_vnode.ramvecn_vpool);
 
    /* i traverse the free stack (also a linked list) and count the
     * number of elements */

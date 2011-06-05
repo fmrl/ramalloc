@@ -40,6 +40,7 @@
 #include <ramalloc/barrier.h>
 #include <ramalloc/stdint.h>
 #include <ramalloc/annotate.h>
+#include <ramalloc/cast.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
@@ -342,7 +343,7 @@ ram_reply_t initslot(void *slot_arg, ramslot_node_t *node_arg)
    RAM_FAIL_NOTNULL(slot_arg);
    RAM_FAIL_NOTNULL(node_arg);
 
-   RAMMETA_BACKCAST(node, node_t, n_slotnode, node_arg);
+   node = RAM_CAST_STRUCTBASE(node_t, n_slotnode, node_arg);
    slot = (slot_t *)slot_arg;
    slot->s_sig = thesig;
    slot->s_node = node;

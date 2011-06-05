@@ -37,6 +37,7 @@
 #include <ramalloc/foot.h>
 #include <ramalloc/opt.h>
 #include <ramalloc/sys.h>
+#include <ramalloc/cast.h>
 #include <assert.h>
 #include <memory.h>
 
@@ -199,7 +200,7 @@ ram_reply_t ramalgn_mknode(ramslot_node_t **node_arg, void **slots_arg, ramslot_
    RAM_FAIL_NOTNULL(pool_arg);
    assert(ramalgn_theglobals.ramalgng_initflag);
 
-   RAMMETA_BACKCAST(pool, ramalgn_pool_t, ramalgnp_slotpool, pool_arg);
+   pool = RAM_CAST_STRUCTBASE(ramalgn_pool_t, ramalgnp_slotpool, pool_arg);
    RAM_FAIL_TRAP(rampg_acquire(&page, &pool->ramalgnp_pgpool));
    e = ramalgn_mknode2(&node, pool, (char *)page);
    if (RAM_REPLY_OK == e)
@@ -269,9 +270,9 @@ ram_reply_t ramalgn_query(ramalgn_pool_t **apool_arg, void *ptr_arg)
    }
 
    /* i need to find the slot pool before i can back-cast to get the aligned pool. */
-   RAMMETA_BACKCAST(spool, ramslot_pool_t, ramslotp_vpool, 
-      anode->ramalgnn_slotnode.ramslotn_vnode.ramvecn_vpool);
-   RAMMETA_BACKCAST(apool, ramalgn_pool_t, ramalgnp_slotpool, spool);
+   spool = RAM_CAST_STRUCTBASE(ramslot_pool_t, ramslotp_vpool,
+         anode->ramalgnn_slotnode.ramslotn_vnode.ramvecn_vpool);
+   apool = RAM_CAST_STRUCTBASE(ramalgn_pool_t, ramalgnp_slotpool, spool);
 
    *apool_arg = apool;
    return RAM_REPLY_OK;

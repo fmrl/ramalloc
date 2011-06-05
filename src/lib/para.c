@@ -33,6 +33,7 @@
 
 #include <ramalloc/para.h>
 #include <ramalloc/mem.h>
+#include <ramalloc/cast.h>
 #include <string.h>
 
 typedef struct rampara_tls
@@ -254,6 +255,7 @@ ram_reply_t rampara_querytls(rampara_tls_t **tls_arg, size_t *size_arg, void *pt
       break;
    }
 
-   RAMMETA_BACKCAST(*tls_arg, rampara_tls_t, ramparat_lazypool, lazypool);
+   *tls_arg = RAM_CAST_STRUCTBASE(rampara_tls_t, ramparat_lazypool,
+         lazypool);
    return RAM_REPLY_OK;
 }

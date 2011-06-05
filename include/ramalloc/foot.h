@@ -86,6 +86,6 @@ ram_reply_t ramfoot_getstorage(void **result_arg,
 
 #define RAMFOOT_MKSPEC(Spec, Type, WriteZone, Signature) \
    RAMFOOT_MKSPEC2(Spec, Type, WriteZone, Signature, \
-      RAMMETA_GENERATENAME(RAMFOOT_MKSPEC_footer), RAMMETA_GENERATENAME(RAMFOOT_MKSPEC_unused))
+      RAM_META_GENNAME(RAMFOOT_MKSPEC_footer), RAM_META_GENNAME(RAMFOOT_MKSPEC_unused))
 
 #endif /* RAMFOOT_H_IS_INCLUDED */

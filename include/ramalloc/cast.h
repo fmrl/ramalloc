@@ -35,19 +35,38 @@
 #define RAMALLOC_CAST_H_IS_INCLUDED
 
 #include <ramalloc/fail.h>
+#include <stddef.h>
 
 /**
  * @file
- * @brief checked type casting module.
+ * @brief type casting module.
  */
+
+/**
+ * @brief calculate the base address of a structure.
+ * @details use RAM_CAST_STRUCTBASE() to calculate the base address of a
+ *    structure, given the address of one of its member fields.
+ * @param StructType
+ *    the type of the struct.
+ * @param FieldName
+ *    the name of the field associated with @e FieldPtr.
+ * @param FieldPtr
+ *    the address of a field from a struct of type @e StructType.
+ * @return this macro evaluates to the base address of the struct
+ *    associated with its field at @e FieldPtr.
+ */
+#define RAM_CAST_STRUCTBASE(StructType, FieldName, FieldPtr) \
+   ((StructType *)((char *)(FieldPtr) - offsetof(StructType, FieldName)))
 
 /**
  * @brief convert an @b unsigned @b long to a @b char.
  * @details use ram_cast_ulongtochar() to convert an @b unsigned @b long
  *    value to a @b char. if the value cannot be preserved, this function
  *    notifies the caller.
- * @param to_arg address of destination value.
- * @param from_arg the source value (or the value to be converted).
+ * @param to_arg
+ *    address of destination value.
+ * @param from_arg
+ *    the source value (or the value to be converted).
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
@@ -60,8 +79,10 @@ ram_reply_t ram_cast_ulongtochar(char *to_arg, unsigned long from_arg);
  * @brief convert a @c size_t to an @b int.
  * @details use ram_cast_sizetoint() to convert a @c size_t to an @b int.
  *    if the value cannot be preserved, this function notifies the caller.
- * @param to_arg address of destination value.
- * @param from_arg the source value (or the value to be converted).
+ * @param to_arg
+ *    address of destination value.
+ * @param from_arg
+ *    the source value (or the value to be converted).
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
@@ -74,8 +95,10 @@ ram_reply_t ram_cast_sizetoint(int *to_arg, size_t from_arg);
  * @brief convert a @c size_t to a @b long.
  * @details use ram_cast_sizetolong() to convert a @c size_t to a @b long.
  *    if the value cannot be preserved, this function notifies the caller.
- * @param to_arg address of destination value.
- * @param from_arg the source value (or the value to be converted).
+ * @param to_arg
+ *    address of destination value.
+ * @param from_arg
+ *    the source value (or the value to be converted).
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
@@ -89,8 +112,10 @@ ram_reply_t ram_cast_sizetolong(long *to_arg, size_t from_arg);
  * @details use ram_cast_ulongtolong() to convert an @b unsigned @b long to
  *    a @b long. if the value cannot be preserved, this function notifies
  *    the caller.
- * @param to_arg address of destination value.
- * @param from_arg the source value (or the value to be converted).
+ * @param to_arg
+ *    address of destination value.
+ * @param from_arg
+ *    the source value (or the value to be converted).
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
@@ -103,8 +128,10 @@ ram_reply_t ram_cast_ulongtolong(long *to_arg, unsigned long from_arg);
  * @brief convert a @b long to a @c size_t.
  * @details use ram_cast_longtosize() to convert a @b long to a @c size_t.
  *    if the value cannot be preserved, this function notifies the caller.
- * @param to_arg address of destination value.
- * @param from_arg the source value (or the value to be converted).
+ * @param to_arg
+ *    address of destination value.
+ * @param from_arg
+ *    the source value (or the value to be converted).
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
@@ -118,8 +145,10 @@ ram_reply_t ram_cast_longtosize(size_t *to_arg, long from_arg);
  * @details use ram_cast_sizetouint() to convert a @c size_t to an
  *    @b unsigned @b int. if the value cannot be preserved, this function
  *    notifies the caller.
- * @param to_arg address of destination value.
- * @param from_arg the source value (or the value to be converted).
+ * @param to_arg
+ *    address of destination value.
+ * @param from_arg
+ *    the source value (or the value to be converted).
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
@@ -133,8 +162,10 @@ ram_reply_t ram_cast_sizetouint(unsigned int *to_arg, size_t from_arg);
  * @details use ram_cast_ulongtouint() to convert an @b unsigned @b int to
  *    an @b int. if the value cannot be preserved, this function notifies
  *    the caller.
- * @param to_arg address of destination value.
- * @param from_arg the source value (or the value to be converted).
+ * @param to_arg
+ *    address of destination value.
+ * @param from_arg
+ *    the source value (or the value to be converted).
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
@@ -149,8 +180,10 @@ ram_reply_t ram_cast_ulongtouint(unsigned int *to_arg,
  * @details use ram_cast_ulongtouint() to convert an @b unsigned @b int to
  *    an @b int. if the value cannot be preserved, this function notifies
  *    the caller.
- * @param to_arg address of destination value.
- * @param from_arg the source value (or the value to be converted).
+ * @param to_arg
+ *    address of destination value.
+ * @param from_arg
+ *    the source value (or the value to be converted).
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
@@ -164,8 +197,10 @@ ram_reply_t ram_cast_ulongtouchar(unsigned char *to_arg,
  * @brief convert a @b long to a @b char.
  * @details use ram_cast_longtochar() to convert a @b long to a @b char.
  *    if the value cannot be preserved, this function notifies the caller.
- * @param to_arg address of destination value.
- * @param from_arg the source value (or the value to be converted).
+ * @param to_arg
+ *    address of destination value.
+ * @param from_arg
+ *    the source value (or the value to be converted).
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.

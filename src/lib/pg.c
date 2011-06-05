@@ -36,6 +36,7 @@
 #include <ramalloc/sys.h>
 #include <ramalloc/slot.h>
 #include <ramalloc/mem.h>
+#include <ramalloc/cast.h>
 #include <assert.h>
 #include <memory.h>
 
@@ -187,7 +188,7 @@ ram_reply_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
 
    /* first, i acquire a memory object from the next available node in the pool. */
    RAM_FAIL_TRAP(ramvec_getnode(&p, &pool_arg->rampgp_vpool));
-   RAMMETA_BACKCAST(vnode, rampg_vnode_t, rampgvn_vnode, p);
+   vnode = RAM_CAST_STRUCTBASE(rampg_vnode_t, rampgvn_vnode, p);
    /* ramvec_getnode() should never return a full node. */
    assert(!RAMPG_ISFULL(vnode));
    /* ramvec_getnode() should never return someone else's node. */
@@ -236,7 +237,8 @@ ram_reply_t rampg_release(void *ptr_arg)
    RAM_FAIL_EXPECT(RAM_REPLY_INCONSISTENT, rampg_theglobals.rampgg_initflag);
 
    RAM_FAIL_TRAP(rampg_findvnode(&vnode, (char *)ptr_arg));
-   RAMMETA_BACKCAST(pool, rampg_pool_t, rampgp_vpool, vnode->rampgvn_vnode.ramvecn_vpool);
+   pool = RAM_CAST_STRUCTBASE(rampg_pool_t, rampgp_vpool,
+         vnode->rampgvn_vnode.ramvecn_vpool);
    RAM_FAIL_TRAP(rampg_calcindex(&idx, vnode, ptr_arg));
    /* depending upon the release strategy, i either return the page to the system
     * or i wipe it and deny access to it. */
@@ -300,7 +302,7 @@ ram_reply_t rampg_mkvnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg)
    assert(rampg_theglobals.rampgg_initflag);
    assert(node_arg != NULL);
 
-   RAMMETA_BACKCAST(pool, rampg_pool_t, rampgp_vpool, pool_arg);
+   pool = RAM_CAST_STRUCTBASE(rampg_pool_t, rampgp_vpool, pool_arg);
    RAM_FAIL_TRAP(ramslot_acquire((void **)&slot, &pool->rampgp_slotpool));
    e = rampg_initvnode(&slot->rampgg_vnode);
    if (RAM_REPLY_OK == e)
@@ -349,8 +351,9 @@ ram_reply_t rampg_rmvnode(rampg_vnode_t *node_arg)
    assert(rampg_theglobals.rampgg_initflag);
    assert(node_arg != NULL);
 
-   RAMMETA_BACKCAST(pool, rampg_pool_t, rampgp_vpool, node_arg->rampgvn_vnode.ramvecn_vpool);
-   RAMMETA_BACKCAST(slot, rampg_slot_t, rampgg_vnode, node_arg);
+   pool = RAM_CAST_STRUCTBASE(rampg_pool_t, rampgp_vpool,
+         node_arg->rampgvn_vnode.ramvecn_vpool);
+   slot = RAM_CAST_STRUCTBASE(rampg_slot_t, rampgg_vnode, node_arg);
    RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT,
       0 == RAMSIG_CMP(slot->rampgg_signature, pool->rampgp_slotsig));
    RAM_FAIL_TRAP(ramsys_release(node_arg->rampgvn_pages));
@@ -417,7 +420,7 @@ ram_reply_t rampg_chkvnode(const ramvec_node_t *node_arg)
 
    assert(node_arg != NULL);
 
-   RAMMETA_BACKCAST(node, const rampg_vnode_t, rampgvn_vnode, node_arg);
+   node = RAM_CAST_STRUCTBASE(const rampg_vnode_t, rampgvn_vnode, node_arg);
 
    /* the node cannot be empty. */
    RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, !RAMPG_ISEMPTY(node));
@@ -463,7 +466,7 @@ ram_reply_t rampg_rmsnode(ramslot_node_t *node_arg)
    RAM_FAIL_NOTNULL(node_arg);
    assert(rampg_theglobals.rampgg_initflag);
 
-   RAMMETA_BACKCAST(snode, rampg_snode_t, rampgsn_slotnode, node_arg);
+   snode = RAM_CAST_STRUCTBASE(rampg_snode_t, rampgsn_slotnode, node_arg);
    RAM_FAIL_TRAP(ramsys_release((char *)snode));
 
    return RAM_REPLY_OK;
@@ -480,9 +483,10 @@ ram_reply_t rampg_initslot(void *slot_arg, ramslot_node_t *node_arg)
    RAM_FAIL_NOTNULL(node_arg);
    assert(rampg_theglobals.rampgg_initflag);
 
-   RAMMETA_BACKCAST(snode, rampg_snode_t, rampgsn_slotnode, node_arg);
-   RAMMETA_BACKCAST(slotpool, ramslot_pool_t, ramslotp_vpool, snode->rampgsn_slotnode.ramslotn_vnode.ramvecn_vpool);
-   RAMMETA_BACKCAST(pool, rampg_pool_t, rampgp_slotpool, slotpool);
+   snode = RAM_CAST_STRUCTBASE(rampg_snode_t, rampgsn_slotnode, node_arg);
+   slotpool = RAM_CAST_STRUCTBASE(ramslot_pool_t, ramslotp_vpool,
+         snode->rampgsn_slotnode.ramslotn_vnode.ramvecn_vpool);
+   pool = RAM_CAST_STRUCTBASE(rampg_pool_t, rampgp_slotpool, slotpool);
    slot = (rampg_slot_t *)slot_arg;
    slot->rampgg_signature = pool->rampgp_slotsig;
    slot->rampgg_snode = snode;

@@ -50,15 +50,19 @@
  * @brief signature of the unanticipated reply reporter.
  * @details a reporter performs a client-defined action when a reply wrapper
  *    detects an unanticipated reply.
- * @param code_arg the reply code encountered.
- * @param expr_arg a string containing the expression being evaluated.
- *    this is usually a preprocessor-generated string.
- * @param funcn_arg a string containing the name of the function where
- *    @e expr_arg can be found.
- * @param filen_arg a string containing the name of the file where
- *    @e expr_arg can be found.
- * @param lineno_arg the line number where expr_arg can be found in file
- *    @e filen_arg.
+ * @param code_arg
+ *    the reply code encountered.
+ * @param expr_arg
+ *    a string containing the expression being evaluated. this is usually a
+ *    preprocessor-generated string.
+ * @param funcn_arg
+ *    a string containing the name of the function where @e expr_arg can be
+ *    found.
+ * @param filen_arg
+ *    a string containing the name of the file where @e expr_arg can be
+ *    found.
+ * @param lineno_arg
+ *    the line number where expr_arg can be found in file @e filen_arg.
  * @see ram_fail_setreporter()
  */
 typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
@@ -69,10 +73,12 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  * @brief reply if precondition is not met.
  * @details use RAM_FAIL_EXPECT() to reply if a given boolean expression
  *    evaluates to @e false.
- * @param Reply how to reply, should @e Condition be @e false. reply @c
- *    RAM_REPLY_OK is disallowed.
- * @param Condition a boolean expression that determines whether a function
- *    should reply early or not.
+ * @param Reply
+ *    how to reply, should @e Condition be @e false. reply @c RAM_REPLY_OK
+ *    is disallowed.
+ * @param Condition
+ *    a boolean expression that determines whether a function should reply
+ *    early or not.
  * @remark if @e Condition is @e true, then this macro will cause the
  *    function to immediately return a reply to the caller. this means that
  *    the contextual function must have declared its return type as
@@ -85,7 +91,7 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
    do \
    { \
       assert(RAM_REPLY_OK != (Reply)); \
-      RAMMETA_IFTHEN(!(Condition), \
+      RAM_META_IFTHEN(!(Condition), \
             ram_fail_report((Reply), #Condition, NULL, __FILE__, \
                   __LINE__); return (Reply)); \
    } \
@@ -95,8 +101,9 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  * @brief disallow argument value zero.
  * @details use RAM_FAIL_NOTZERO() to prevent a function argument from
  *    having the value 0.
- * @param Value the value to test. if 0, then the contextual function
- *    returns immediately with reply @e RAM_REPLY_DISALLOWED.
+ * @param Value
+ *    the value to test. if 0, then the contextual function returns
+ *    immediately with reply @e RAM_REPLY_DISALLOWED.
  * @remark if the disallowed value is encountered, this macro will cause the
  *    function to immediately return a reply to the caller. this means that
  *    the contextual function must have declared its return type as
@@ -116,8 +123,9 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  * @brief disallow argument value @c NULL.
  * @details use RAM_FAIL_NOTNULL() to prevent a function argument from
  *    having the value @c NULL.
- * @param Value the value to test. if 0, then the contextual function
- *    returns immediately with reply @e RAM_REPLY_DISALLOWED.
+ * @param Value
+ *    the value to test. if 0, then the contextual function returns
+ *    immediately with reply @e RAM_REPLY_DISALLOWED.
  * @remark if the disallowed value is encountered, this macro will cause the
  *    function to immediately return a reply to the caller. this means that
  *    the contextual function must have declared its return type as
@@ -136,9 +144,11 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
 /**
  * @internal
  * @brief support macro for RAM_FAIL_TRAP().
- * @param Reply the reply expression to check.
- * @param ReplyCache a prefix to use to name a variable used to cache the
- *    value of @e Reply.
+ * @param Reply
+ *    the reply expression to check.
+ * @param ReplyCache
+ *    a prefix to use to name a variable used to cache the value of
+ *    @e Reply.
  * @see RAM_FAIL_TRAP().
  */
 #if RAMOPT_UNSUPPORTED_OVERCONFIDENT
@@ -148,7 +158,7 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
          do \
          { \
             const ram_reply_t ReplyCache = (Reply); \
-            RAMMETA_IFTHEN(RAM_REPLY_OK != ReplyCache, \
+            RAM_META_IFTHEN(RAM_REPLY_OK != ReplyCache, \
                   ram_fail_report(ReplyCache, #Reply, NULL, __FILE__, \
                         __LINE__); return ReplyCache); \
          } \
@@ -160,7 +170,8 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  * @details this macro is a reply wrapper that designates all replies
  *    returned by a function as unanticipated, with the exception of @c
  *    RAM_REPLY_OK.
- * @param Reply an expression that evaluates to a reply.
+ * @param Reply
+ *    an expression that evaluates to a reply.
  * @remark if you are unsure of which reply wrapper to use,
  *    RAM_FAIL_TRAP() is a good default.
  * @remark if an unanticipated reply is encountered, this macro will cause the
@@ -177,7 +188,7 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
 #else
 #define RAM_FAIL_TRAP(Reply) \
          RAM_FAIL_TRAP2((Reply), \
-               RAMMETA_GENERATENAME(RAM_REPLY_TRAP_replycache))
+               RAM_META_GENNAME(RAM_REPLY_TRAP_replycache))
 #endif
 
 /**
@@ -205,6 +216,8 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  *    designates all replies returned by a function as unanticipated, with the
  *    exception of @c RAM_REPLY_OK. unlike RAM_FAIL_TRAP(),
  *    RAM_FAIL_PANIC() will terminate the process.
+ * @param Reply
+ *    an expression that evaluates to a reply.
  * @remark this macro expands to code that returns @c RAM_REPLY_INSANE to
  *    prevent unnecessary warnings from being generated. this means that
  *    the contextual function must have declared its return type as
@@ -214,7 +227,7 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
 #  define RAM_FAIL_PANIC(Reply) ((void)(Reply))
 #else
 #define RAM_FAIL_PANIC(Reply) \
-         RAMMETA_IFTHEN(RAM_REPLY_OK != (Reply), \
+         RAM_META_IFTHEN(RAM_REPLY_OK != (Reply), \
                ram_fail_panic("omgwtfbbq!"); RAM_FAIL_UNREACHABLE(); )
 #endif
 
@@ -222,7 +235,8 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  * @brief terminate the process due to an irrecoverable failure.
  * @details ram_fail_panic() prints a message to @b stderr and terminates
  *    the process by calling @c abort().
- * @param why_arg a message for the user explaining why the process stopped.
+ * @param why_arg
+ *    a message for the user explaining why the process stopped.
  * @remarks ram_fail_panic() does not return. follow up with
  *    RAM_FAIL_UNREACHABLE() afterwards to ensure that you don't generate
  *    unnecessary warnings in a function that returns a ram_reply_t.
@@ -233,8 +247,8 @@ void ram_fail_panic(const char *why_arg);
  * @brief change the reporting callback.
  * @details call ram_fail_setreporter() to change the unanticipated reply
  *    reporting callback.
- * @param reporter_arg the address of the reporting callback. if @c NULL,
- *    the default reporter will be restored.
+ * @param reporter_arg
+ *    the address of the reporting callback. if @c NULL, the default reporter will be restored.
  * @see ram_fail_reporter_t
  */
 void ram_fail_setreporter(ram_fail_reporter_t reporter_arg);
@@ -245,14 +259,17 @@ void ram_fail_setreporter(ram_fail_reporter_t reporter_arg);
  * @details ram_fail_report() will invoke the unanticipated reply reporting
  *    callback, either as specified by ram_fail_setreporter() or a default
  *    implementation.
- * @param reply_arg an unanticipated reply to report.
- * @param expr_arg a string representation of the expression that produced
- *    the unanticipated reply.
- * @param funcn_arg the name of the function that received the unanticipated
- *    reply.
- * @param filen_arg the name of the source file where the expression can be
- *    found.
- * @param lineno_arg the line number where the expression can be found.
+ * @param reply_arg
+ *    an unanticipated reply to report.
+ * @param expr_arg
+ *    a string representation of the expression that produced the
+ *    unanticipated reply.
+ * @param funcn_arg
+ *    the name of the function that received the unanticipated reply.
+ * @param filen_arg
+ *    the name of the source file where the expression can be found.
+ * @param lineno_arg
+ *    the line number where the expression can be found.
  * @todo currently, @e funcn_arg isn't actually being used anywhere.
  */
 void ram_fail_report(ram_reply_t reply_arg, const char *expr_arg,
@@ -264,11 +281,13 @@ void ram_fail_report(ram_reply_t reply_arg, const char *expr_arg,
  *    that is not RAM_REPLY_OK in a series of calls with a common reply_arg
  *    argument. this is useful because usually, in a series of operations,
  *    the first failure is the one that is interesting.
- * @param reply_arg the address of the reply accumulator. the reply must
- *    be initialized to RAM_REPLY_OK. if it ceases to remain this value in
- *    the course of a series of calls to ram_fail_accumulate(), then it will
+ * @param reply_arg
+ *    the address of the reply accumulator. the reply must be initialized
+ *    to @c RAM_REPLY_OK. if it ceases to remain this value in the course
+ *    of a series of calls to ram_fail_accumulate(), then it will
  *    retain it's value.
- * @param newreply_arg a new reply for the accumulator.
+ * @param newreply_arg
+ *    a new reply for the accumulator.
  * @remarks it's always better to return from a function if an unanticipated
  *    reply is encountered. sometimes, this isn't possible and
  *    ram_fail_accumulate() is intended for use in those situations.
