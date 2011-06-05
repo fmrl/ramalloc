@@ -233,7 +233,8 @@ void ram_fail_panic(const char *why_arg);
  * @brief change the reporting callback.
  * @details call ram_fail_setreporter() to change the unanticipated reply
  *    reporting callback.
- * @param reporter_arg the address of the reporting callback.
+ * @param reporter_arg the address of the reporting callback. if @c NULL,
+ *    the default reporter will be restored.
  * @see ram_fail_reporter_t
  */
 void ram_fail_setreporter(ram_fail_reporter_t reporter_arg);

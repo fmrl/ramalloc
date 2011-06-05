@@ -35,10 +35,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static void ramfail_defaultreporter(ram_reply_t code_arg, const char *expr_arg, 
-   const char *funcn_arg, const char *filen_arg, int lineno_arg);
+static void ram_fail_defaultreporter(ram_reply_t code_arg,
+      const char *expr_arg, const char *funcn_arg, const char *filen_arg,
+      int lineno_arg);
 
-static ram_fail_reporter_t ramfail_reporter = &ramfail_defaultreporter;
+static ram_fail_reporter_t ram_fail_thereporter = &ram_fail_defaultreporter;
 
 void ram_fail_panic(const char *why_arg)
 {
@@ -53,19 +54,20 @@ void ram_fail_panic(const char *why_arg)
 
 void ram_fail_setreporter(ram_fail_reporter_t reporter_arg)
 {
-   ramfail_reporter = reporter_arg;
-}
-
-void ram_fail_report(ram_reply_t code_arg, const char *expr_arg, const char *funcn_arg, 
-   const char *filen_arg, int lineno_arg)
-{
-   if (NULL == ramfail_reporter)
-      return;
+   if (NULL == reporter_arg)
+      ram_fail_thereporter = &ram_fail_defaultreporter;
    else
-      ramfail_reporter(code_arg, expr_arg, funcn_arg, filen_arg, lineno_arg);
+      ram_fail_thereporter = reporter_arg;
 }
 
-void ramfail_defaultreporter(ram_reply_t reply_arg, const char *expr_arg,
+void ram_fail_report(ram_reply_t code_arg, const char *expr_arg,
+      const char *funcn_arg, const char *filen_arg, int lineno_arg)
+{
+   ram_fail_thereporter(code_arg, expr_arg, funcn_arg, filen_arg,
+         lineno_arg);
+}
+
+void ram_fail_defaultreporter(ram_reply_t reply_arg, const char *expr_arg,
    const char *funcn_arg, const char *filen_arg, int lineno_arg)
 {
    int n = -1;
