@@ -37,7 +37,8 @@
 #include <ramalloc/para.h>
 #include <ramalloc/mem.h>
 
-ram_reply_t ramalloc_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg)
+ram_reply_t ramalloc_initialize(ramalloc_malloc_t supmalloc_arg,
+      ramalloc_free_t supfree_arg)
 {
    RAM_FAIL_TRAP(ramsys_initialize());
    RAM_FAIL_TRAP(rammem_initialize(supmalloc_arg, supfree_arg));

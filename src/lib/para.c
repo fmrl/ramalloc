@@ -42,12 +42,12 @@ typedef struct rampara_tls
    ramlazy_pool_t ramparat_lazypool;
 } rampara_tls_t;
 
-static ram_reply_t rampara_mkpool2(rampara_pool_t *parapool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg);
+static ram_reply_t rampara_mkpool2(rampara_pool_t *parapool_arg, rampg_appetite_t appetite_arg, size_t disposalratio_arg);
 static ram_reply_t rampara_mktls(rampara_tls_t **newtls_arg, rampara_pool_t *parapool_arg);
 static ram_reply_t rampara_rcltls(rampara_tls_t **tls_arg, rampara_pool_t *parapool_arg);
 static ram_reply_t rampara_querytls(rampara_tls_t **tls_arg, size_t *size_arg, void *ptr_arg);
 
-ram_reply_t rampara_mkpool(rampara_pool_t *parapool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg)
+ram_reply_t rampara_mkpool(rampara_pool_t *parapool_arg, rampg_appetite_t appetite_arg, size_t disposalratio_arg)
 {
    ram_reply_t e = RAM_REPLY_INSANE;
 
@@ -63,7 +63,7 @@ ram_reply_t rampara_mkpool(rampara_pool_t *parapool_arg, ramopt_appetite_t appet
    }
 }
 
-ram_reply_t rampara_mkpool2(rampara_pool_t *parapool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg)
+ram_reply_t rampara_mkpool2(rampara_pool_t *parapool_arg, rampg_appetite_t appetite_arg, size_t disposalratio_arg)
 {
    assert(parapool_arg != NULL);
    RAM_FAIL_NOTZERO(disposalratio_arg);

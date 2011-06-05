@@ -35,11 +35,13 @@
 #define RAMMEM_H_IS_INCLUDED
 
 #include <ramalloc/fail.h>
-#include <ramalloc/opt.h>
+#include <ramalloc/want.h>
 #include <ramalloc/stdint.h>
 
+typedef void * (*rammem_malloc_t)(size_t);
+typedef void (*rammem_free_t)(void *);
 
-ram_reply_t rammem_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg);
+ram_reply_t rammem_initialize(rammem_malloc_t supmalloc_arg, rammem_free_t supfree_arg);
 
 void * rammem_supmalloc(size_t size_arg);
 void rammem_supfree(void *ptr_arg);

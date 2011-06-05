@@ -35,7 +35,7 @@
 #define RAMMUX_H_IS_INCLUDED
 
 #include <ramalloc/algn.h>
-#include <ramalloc/opt.h>
+#include <ramalloc/want.h>
 
 #define RAMMUX_MAXPOOLCOUNT 128
 
@@ -44,11 +44,11 @@ typedef struct rammux_pool
    ramalgn_tag_t rammuxp_tag;
    size_t rammuxp_step;
    ramalgn_pool_t rammuxp_apools[RAMMUX_MAXPOOLCOUNT];
-   ramopt_appetite_t rammuxp_appetite;
+   rampg_appetite_t rammuxp_appetite;
    int8_t rammuxp_initflags[RAMMUX_MAXPOOLCOUNT];
 } rammux_pool_t;
 
-ram_reply_t rammux_mkpool(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg);
+ram_reply_t rammux_mkpool(rammux_pool_t *mpool_arg, rampg_appetite_t appetite_arg);
 ram_reply_t rammux_acquire(void **newptr_arg, rammux_pool_t *mpool_arg, size_t size_arg);
 #define rammux_release ramalgn_release
 ram_reply_t rammux_query(rammux_pool_t **mpool_arg, size_t *size_arg, void *ptr_arg);

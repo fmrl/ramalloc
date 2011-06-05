@@ -36,10 +36,10 @@
 
 #include <ramalloc/vec.h>
 #include <ramalloc/fail.h>
-#include <ramalloc/opt.h>
+#include <ramalloc/want.h>
 #include <ramalloc/stdint.h>
 
-#if RAMOPT_COMPACT
+#if RAM_WANT_COMPACT
    typedef int16_t ramslot_index_t;
 #  define RAMSLOT_MAXCAPACITY ((size_t)INT16_MAX)
    typedef uint16_t ramslot_size_t;

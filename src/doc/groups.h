@@ -32,6 +32,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 /**
+ * @defgroup config compile-time configuration
  * @defgroup test module and regression tests
  * @defgroup fail failure management
  * @defgroup general general purpose tools

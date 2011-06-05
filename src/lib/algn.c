@@ -35,7 +35,7 @@
 
 #include <ramalloc/algn.h>
 #include <ramalloc/foot.h>
-#include <ramalloc/opt.h>
+#include <ramalloc/want.h>
 #include <ramalloc/sys.h>
 #include <ramalloc/cast.h>
 #include <assert.h>
@@ -58,7 +58,7 @@ typedef struct ramalgn_globals
    int ramalgng_initflag;
 } ramalgn_globals_t;
 
-static ram_reply_t ramalgn_mkpool2(ramalgn_pool_t *pool_arg, ramopt_appetite_t appetite_arg, 
+static ram_reply_t ramalgn_mkpool2(ramalgn_pool_t *pool_arg, rampg_appetite_t appetite_arg, 
    size_t granularity_arg, const ramalgn_tag_t *tag_arg);
 static ram_reply_t ramalgn_findnode(ramalgn_node_t **node_arg, char *ptr_arg);
 static ram_reply_t ramalgn_mknode(ramslot_node_t **node_arg, void **slots_arg, ramslot_pool_t *pool_arg);
@@ -85,7 +85,7 @@ ram_reply_t ramalgn_initialize()
    return RAM_REPLY_OK;
 }
 
-ram_reply_t ramalgn_mkpool(ramalgn_pool_t *pool_arg, ramopt_appetite_t appetite_arg, size_t granularity_arg, const ramalgn_tag_t *tag_arg)
+ram_reply_t ramalgn_mkpool(ramalgn_pool_t *pool_arg, rampg_appetite_t appetite_arg, size_t granularity_arg, const ramalgn_tag_t *tag_arg)
 {
    ram_reply_t e = RAM_REPLY_INSANE;
 
@@ -100,7 +100,7 @@ ram_reply_t ramalgn_mkpool(ramalgn_pool_t *pool_arg, ramopt_appetite_t appetite_
    return e;
 }
 
-ram_reply_t ramalgn_mkpool2(ramalgn_pool_t *pool_arg, ramopt_appetite_t appetite_arg, 
+ram_reply_t ramalgn_mkpool2(ramalgn_pool_t *pool_arg, rampg_appetite_t appetite_arg, 
    size_t granularity_arg, const ramalgn_tag_t *tag_arg)
 {
    size_t capacity = 0;
@@ -113,7 +113,7 @@ ram_reply_t ramalgn_mkpool2(ramalgn_pool_t *pool_arg, ramopt_appetite_t appetite
    capacity = ramalgn_theglobals.ramalgng_footerspec.footer_offset / granularity_arg;
    /* if the capacity doesn't meet certain requirements, then i must inform the caller. */
    /* TODO: why is the slot capacity limit tested here and not in ramslot_mkpool()? */
-   if (RAMOPT_MINDENSITY > capacity || RAMSLOT_MAXCAPACITY < capacity)
+   if (RAM_WANT_MINPAGECAPACITY > capacity || RAMSLOT_MAXCAPACITY < capacity)
       return RAM_REPLY_RANGEFAIL;
    RAM_FAIL_TRAP(ramslot_mkpool(&pool_arg->ramalgnp_slotpool, granularity_arg, 
       capacity, &ramalgn_mknode, &ramalgn_rmnode, NULL));

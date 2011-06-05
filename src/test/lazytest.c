@@ -277,7 +277,7 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
    for (i = 0; i < extra_arg->e_poolcount; ++i)
    {
       RAM_FAIL_TRAP(ramlazy_mkpool(&extra_arg->e_pools[i],
-            RAMOPT_DEFAULTAPPETITE, RECLAIM_RATIO));
+            RAM_WANT_DEFAULTAPPETITE, RECLAIM_RATIO));
    }
 
    RAM_FAIL_TRAP(ramtest_test(&testparams));

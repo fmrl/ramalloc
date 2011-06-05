@@ -37,6 +37,7 @@ project(ramalloc)
 include(CTest)
 
 include(cmake/splint.cmake)
+include(cmake/cache.cmake)
 
 # CPack integration
 # -----------------
@@ -62,28 +63,21 @@ else(UNIX)
 endif(UNIX)
 include(CPack)
 
-# the following code sets a default for cache variables (such as 
-# CMAKE_C_FLAGS) that can be changed by the user.
-if(NOT RAMALLOC_IS_CONFIGURED)
-	# CMake doesn't enable any warnings by default.
-	if(CMAKE_COMPILER_IS_GNUCC)
-		# -Wmissing-braces and -Wmissing-field-initializers appears
-		# to interfere with C89-defined behavior.
-		set(CMAKE_C_FLAGS "-Wall -Wextra -Wno-missing-braces -Wno-missing-field-initializers")
-	elseif(MSVC)
-		# C4127 pops up every time a "do {} while (0)" is used.
-		# C4200 is a good warning but i feel zero-indexed arrays are necessary
-		# in this particular library.
-		# C4131 warns about old-style declarators, used by getopt().
-		set(CMAKE_C_FLAGS "/W4 /wd4127 /wd4200 /wd4131")
-	endif()
-	# save defaults to cache.
-	set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS}" CACHE STRING
-	   "contains options always passed to the C compiler." FORCE)
-	# there's no longer any need to generate defaults.
-	set(RAMALLOC_IS_CONFIGURED 1 CACHE INTERNAL
-	   "indicates that ramalloc has been configured at least once.")
-endif(NOT RAMALLOC_IS_CONFIGURED)
+# CMake doesn't enable any warnings by default.
+if(CMAKE_COMPILER_IS_GNUCC)
+	# -Wmissing-braces and -Wmissing-field-initializers appears
+	# to interfere with C89-defined behavior.
+	set(DEFAULT_CFLAGS "-Wall -Wextra -Wno-missing-braces -Wno-missing-field-initializers")
+elseif(MSVC)
+	# C4127 pops up every time a "do {} while (0)" is used.
+	# C4200 is a good warning but i feel zero-indexed arrays are necessary
+	# in this particular library.
+	# C4131 warns about old-style declarators, used by getopt().
+	set(DEFAULT_CFLAGS "/W4 /wd4127 /wd4200 /wd4131")
+else()
+	message(WARNING "i don't know how to configure CMAKE_C_FLAGS for this compiler.")
+endif()
+set_default_cflags(${DEFAULT_CFLAGS} ${DEFAULT_CFLAGS})
 
 # currently, threads are required to compile ramalloc.
 #
@@ -107,18 +101,62 @@ install(FILES dep/pstdint/pstdint.h DESTINATION include)
 # TODO: i should probably make this a separate library.
 if(WIN32)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/freebsd/include)
-	install(FILES dep/freebsd/include/getopt.h DESTINATION include)
+	install(FILES dep/freebsd/include/getwant.h DESTINATION include)
 	set(RAMALLOC_WINDOWS_GETOPT_SOURCES 
-		dep/freebsd/include/getopt.h
+		dep/freebsd/include/getwant.h
 		dep/freebsd/src/getopt.c
 		dep/freebsd/src/getopt_long.c
 		)
 endif(WIN32)
 
 # ramalloc's headers.
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ramalloc 
+include_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}/include
+	${CMAKE_CURRENT_BINARY_DIR}/include
+	)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ramalloc
+	DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ramalloc 
 	DESTINATION include)
+
+# set up cache variable defaults for ramalloc compile-time options.
+option(WANT_FEEDBACK
+	"enabled (or disables) compile-time option feedback."
+	NO)
+mark_as_advanced(WANT_FEEDBACK)
+optional_cache_string(WANT_DEBUG 
+	"enables (or disables) debugging features (YES, NO, or DEFAULT).")
+optional_cache_string(WANT_MARK_FREED 
+	"specifies a byte to mark unused memory with (a hexidecimal number or DEFAULT).")
+mark_as_advanced(WANT_MARK_FREED)
+optional_cache_string(WANT_ZEROED_MEMORY 
+	"enables (or disables) the zeroing of newly allocated memory (YES, NO, or DEFAULT).")
+optional_cache_string(WANT_COMPACT 
+	"enables (or disables) compact mode, which is not yet tested (YES, NO, or DEFAULT).")
+mark_as_advanced(WANT_COMPACT)
+optional_cache_string(WANT_COMPACT 
+	"enables (or disables) compact mode, which is not yet tested (YES, NO, or DEFAULT).")
+optional_cache_string(WANT_MINIMUM_PAGE_CAPACITY 
+	"specifies a minimum page capacity (a number >1 or DEFAULT).")
+mark_as_advanced(WANT_MINIMUM_PAGE_CAPACITY)
+optional_cache_string(WANT_DEFAULT_RECLAIM_GOAL 
+	"specifies a default reclaimation goal (a number >=1 or DEFAULT).")
+mark_as_advanced(WANT_DEFAULT_RECLAIM_GOAL)
+optional_cache_string(WANT_DEFAULT_APPETITE 
+	"specifies a default appetite (RAMOPT_FRUGAL, RAMOPT_GREEDY, or DEFAULT).")
+mark_as_advanced(WANT_DEFAULT_APPETITE)
+option(WANT_NPTL_DEADLOCK 
+	"enables (or disables) the demonstration of a deadlock in NPTL."
+	NO)
+option(WANT_NO_UNUSED_ARGS 
+	"enables (or disables) help finding incorrect unused argument annotations." 
+	NO)
+mark_as_advanced(WANT_NO_UNUSED_ARGS)
+option(WANT_OVERCONFIDENT 
+	"enables (or disables) overconfident mode (unsupported)." 
+	NO)
+mark_as_advanced(WANT_OVERCONFIDENT)
+configure_file(src/lib/config.h.in 
+	${CMAKE_CURRENT_BINARY_DIR}/include/ramalloc/config.h @ONLY)
 
 set(RAMALLOC_HEADERS
 	include/ramalloc/algn.h
@@ -135,7 +173,7 @@ set(RAMALLOC_HEADERS
 	include/ramalloc/misc.h
 	include/ramalloc/mtx.h
 	include/ramalloc/mux.h
-	include/ramalloc/opt.h
+	include/ramalloc/want.h
 	include/ramalloc/para.h
 	include/ramalloc/pg.h
 	include/ramalloc/ramalloc.h
@@ -295,3 +333,4 @@ endif(UNIX)
 # -------------
 include(cmake/doxygen.cmake)
 add_doxygen(ramalloc src/doc/groups.h ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
+

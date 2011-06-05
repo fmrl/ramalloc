@@ -38,7 +38,7 @@ rampara_pool_t ramdefault_thepool;
 
 ram_reply_t ramdefault_initialize()
 {
-   RAM_FAIL_TRAP(rampara_mkpool(&ramdefault_thepool, RAMOPT_DEFAULTAPPETITE, RAMOPT_DEFAULTRECLAIMGOAL));
+   RAM_FAIL_TRAP(rampara_mkpool(&ramdefault_thepool, RAM_WANT_DEFAULTAPPETITE, RAM_WANT_DEFAULTRECLAIMGOAL));
 
    return RAM_REPLY_OK;
 }

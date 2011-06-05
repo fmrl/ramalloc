@@ -170,7 +170,7 @@ ram_reply_t ramuix_mkthread(ramuix_thread_t *thread_arg,
    RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL,
          0 == pthread_create(&thread, NULL, &ramuix_startroutine, &sr));
    RAM_FAIL_PANIC(rambarrier_wait(&sr.ramuixsr_barrier));
-#if !RAMOPT_BARRIERDEADLOCK
+#if !RAM_WANT_NPTLDEADLOCK
    /* there appears to be a race condition in pthread_barrier_wait().
     * if the following line is removed, i deadlock rather reliably after
     * hitting pthread_barrier_wait() 2-3 times. i shouldn't need to destroy
@@ -178,7 +178,7 @@ ram_reply_t ramuix_mkthread(ramuix_thread_t *thread_arg,
     * resource leak. i produced the deadlock using Ubuntu Linux 10.10
     * on a Dell Mini 9 with 512M or memory and 4G of swap. */
    RAM_FAIL_PANIC(rambarrier_rmbarrier(&sr.ramuixsr_barrier));
-#endif /* !RAMOPT_BARRIERDEADLOCK */
+#endif /* !RAM_WANT_NPTLDEADLOCK */
 
    *thread_arg = thread;
    return RAM_REPLY_OK;

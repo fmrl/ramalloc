@@ -269,7 +269,7 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
    testparams.ramtestp_check = &check;
 
    RAM_FAIL_TRAP(rampg_mkpool(&extra_arg->e_thepool,
-         RAMOPT_DEFAULTAPPETITE));
+         RAM_WANT_DEFAULTAPPETITE));
 
    RAM_FAIL_TRAP(ramtest_test(&testparams));
 

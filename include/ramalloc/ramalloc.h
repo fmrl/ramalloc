@@ -35,11 +35,16 @@
 #define RAMALLOC_H_IS_INCLUDED
 
 #include <ramalloc/fail.h>
-#include <ramalloc/opt.h>
+#include <ramalloc/want.h>
 #include <ramalloc/default.h>
 #include <ramalloc/compat.h>
+#include <ramalloc/mem.h>
 
-ram_reply_t ramalloc_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg);
+typedef rammem_malloc_t ramalloc_malloc_t;
+typedef rammem_free_t ramalloc_free_t;
+
+ram_reply_t ramalloc_initialize(ramalloc_malloc_t supmalloc_arg,
+      ramalloc_free_t supfree_arg);
 
 #define ramalloc_acquire ramdefault_acquire
 #define ramalloc_discard ramdefault_discard

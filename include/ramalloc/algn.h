@@ -50,7 +50,7 @@ typedef struct ramalgn_pool
 } ramalgn_pool_t;
 
 ram_reply_t ramalgn_initialize();
-ram_reply_t ramalgn_mkpool(ramalgn_pool_t *pool_arg, ramopt_appetite_t appetite_arg, 
+ram_reply_t ramalgn_mkpool(ramalgn_pool_t *pool_arg, rampg_appetite_t appetite_arg, 
    size_t granularity_arg, const ramalgn_tag_t *tag_arg);
 ram_reply_t ramalgn_acquire(void **newptr_arg, ramalgn_pool_t *pool_arg);
 ram_reply_t ramalgn_release(void *ptr_arg);

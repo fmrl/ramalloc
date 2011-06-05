@@ -31,15 +31,22 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMANNOTATE_H_IS_INCLUDED
-#define RAMANNOTATE_H_IS_INCLUDED
+#ifndef RAMALLOC_COMPILER_H_IS_INCLUDED
+#define RAMALLOC_COMPILER_H_IS_INCLUDED
 
-#include <ramalloc/want.h>
+#include <ramalloc/sys/detect.h>
 
-#if RAM_WANT_NOUNUSEDARGS
-#  define RAMANNOTATE_UNUSEDARG(ArgName) do {} while(0)
+#ifdef RAMSYS_MSVC
+#  include <ramalloc/sys/msvc.h>
+#elif defined(RAMSYS_GCC)
+#  include <ramalloc/sys/gcc.h>
 #else
-#  define RAMANNOTATE_UNUSEDARG(ArgName) (void)(ArgName)
+#  error <ramalloc/sys/detect.h> has not detected a compiler that i recognize.
 #endif
 
-#endif /* RAMANNOTATE_H_IS_INCLUDED */
+#if defined(RAMSYS_SPLINT)
+#  include <ramalloc/sys/splint.h>
+#endif
+
+#endif /* RAMALLOC_COMPILER_H_IS_INCLUDED */
+

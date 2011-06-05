@@ -51,7 +51,7 @@ int main()
    RAM_FAIL_EXPECT(1, RAM_REPLY_OK == malloctest(0));
    RAM_FAIL_EXPECT(2, RAM_REPLY_OK == malloctest(SMALL_SIZE));
    RAM_FAIL_EXPECT(3, RAM_REPLY_OK == malloctest(LARGE_SIZE));
-   RAM_FAIL_EXPECT(3, RAM_REPLY_OK == malloctest((pgsz / (RAMOPT_MINDENSITY - 1))));
+   RAM_FAIL_EXPECT(3, RAM_REPLY_OK == malloctest((pgsz / (RAM_WANT_MINPAGECAPACITY - 1))));
    RAM_FAIL_EXPECT(4, RAM_REPLY_OK == calloctest(2, SMALL_SIZE));
    RAM_FAIL_EXPECT(5, RAM_REPLY_OK == calloctest(2, LARGE_SIZE));
 

@@ -299,7 +299,7 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
    RAM_FAIL_TRAP(ramsig_init(&extra_arg->e_sig, "TEST"));
    tag.ramalgnt_values[0] = extra_arg->e_sig.ramsigs_n;
    RAM_FAIL_TRAP(ramalgn_mkpool(&extra_arg->e_thepool,
-         RAMOPT_DEFAULTAPPETITE, testparams.ramtestp_minsize, &tag));
+         RAM_WANT_DEFAULTAPPETITE, testparams.ramtestp_minsize, &tag));
 
    RAM_FAIL_TRAP(ramtest_test(&testparams));
 

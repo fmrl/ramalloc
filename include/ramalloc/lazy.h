@@ -45,7 +45,7 @@ typedef struct ramlazy_pool
    size_t ramlazyp_disposalratio;
 } ramlazy_pool_t;
 
-ram_reply_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg);
+ram_reply_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, rampg_appetite_t appetite_arg, size_t disposalratio_arg);
 ram_reply_t ramlazy_rmpool(ramlazy_pool_t *lpool_arg);
 ram_reply_t ramlazy_acquire(void **newptr_arg, ramlazy_pool_t *lpool_arg, size_t size_arg);
 ram_reply_t ramlazy_release(void *ptr_arg);

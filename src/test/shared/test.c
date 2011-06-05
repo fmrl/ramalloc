@@ -293,7 +293,7 @@ ram_reply_t ramtest_describe(FILE *out_arg,
       fprintf(out_arg, "the random number generator will use a randomly "
             "selected seed.\n");
    }
-#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#if RAM_WANT_OVERCONFIDENT
    fprintf(out_arg,
          "warning: this is an overconfident build, so the results cannot "
          "be trusted. rebuild with RAMOPT_UNSUPPORTED_OVERCONFIDENT "

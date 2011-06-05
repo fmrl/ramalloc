@@ -41,7 +41,7 @@
 #ifndef RAMALLOC_FAIL_H_IS_INCLUDED
 #define RAMALLOC_FAIL_H_IS_INCLUDED
 
-#include <ramalloc/opt.h>
+#include <ramalloc/want.h>
 #include <ramalloc/meta.h>
 #include <ramalloc/annotate.h>
 #include <ramalloc/reply.h>
@@ -85,7 +85,7 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  *    function to immediately return a reply to the caller. this means that
  *    the contextual function must have declared its return type as
  *    ram_reply_t for this macro to function properly.
- * @remark if RAMOPT_UNSUPPORTED_OVERCONFIDENT expands to @e true, then this
+ * @remark if RAM_WANT_OVERCONFIDENT expands to @e true, then this
  *    macro does nothing.
  * @see ram_reply_t
  */
@@ -110,11 +110,11 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  *    function to immediately return a reply to the caller. this means that
  *    the contextual function must have declared its return type as
  *    ram_reply_t for this macro to function properly.
- * @remark if RAMOPT_UNSUPPORTED_OVERCONFIDENT expands to @e true, then this
+ * @remark if RAM_WANT_OVERCONFIDENT expands to @e true, then this
  *    macro has no effect.
  * @see ram_reply_t
  */
-#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#if RAM_WANT_OVERCONFIDENT
 #  define RAM_FAIL_NOTZERO(Value) RAMANNOTATE_UNUSEDARG(Value)
 #else
 #  define RAM_FAIL_NOTZERO(Value) \
@@ -132,11 +132,11 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  *    function to immediately return a reply to the caller. this means that
  *    the contextual function must have declared its return type as
  *    ram_reply_t for this macro to function properly.
- * @remark if RAMOPT_UNSUPPORTED_OVERCONFIDENT expands to @e true, then this
+ * @remark if RAM_WANT_OVERCONFIDENT expands to @e true, then this
  *    macro has no effect.
  * @see ram_reply_t
  */
-#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#if RAM_WANT_OVERCONFIDENT
 #  define RAM_FAIL_NOTNULL(Value) RAMANNOTATE_UNUSEDARG(Value)
 #else
 #  define RAM_FAIL_NOTNULL(Value) \
@@ -153,7 +153,7 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  *    @e Reply.
  * @see RAM_FAIL_TRAP().
  */
-#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#if RAM_WANT_OVERCONFIDENT
 #  define RAM_FAIL_TRAP2(Reply, ReplyCache) ((void)(Reply))
 #else
 #  define RAM_FAIL_TRAP2(Reply, ReplyCache) \
@@ -180,12 +180,12 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  *    function to return that reply to the caller. this means that the
  *    contextual function must have declared its return type as ram_reply_t
  *    for this macro to function properly.
- * @remark if RAMOPT_UNSUPPORTED_OVERCONFIDENT expands to @e true, then this
+ * @remark if RAM_WANT_OVERCONFIDENT expands to @e true, then this
  *    macro simply evaluates @e Reply.
  * @see ram_reply_t
  * @see reply.h
  */
-#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#if RAM_WANT_OVERCONFIDENT
 #  define RAM_FAIL_TRAP(Reply) (Reply)
 #else
 #define RAM_FAIL_TRAP(Reply) \
@@ -225,7 +225,7 @@ typedef void (*ram_fail_reporter_t)(ram_reply_t code_arg,
  *    the contextual function must have declared its return type as
  *    ram_reply_t for this macro to function properly.
  */
-#if RAMOPT_UNSUPPORTED_OVERCONFIDENT
+#if RAM_WANT_OVERCONFIDENT
 #  define RAM_FAIL_PANIC(Reply) ((void)(Reply))
 #else
 #define RAM_FAIL_PANIC(Reply) \

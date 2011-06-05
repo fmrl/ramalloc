@@ -38,8 +38,8 @@
 
 typedef struct rammem_globals
 {
-   ramopt_malloc_t rammemg_supmalloc;
-   ramopt_free_t rammemg_supfree;
+   rammem_malloc_t rammemg_supmalloc;
+   rammem_free_t rammemg_supfree;
    size_t rammemg_mmapgran;
    size_t rammemg_pagesize;
    uintptr_t rammemg_pagemask;
@@ -49,8 +49,8 @@ typedef struct rammem_globals
 static rammem_globals_t rammem_theglobals;
 
 
-ram_reply_t rammem_initialize(ramopt_malloc_t supmalloc_arg,
-      ramopt_free_t supfree_arg)
+ram_reply_t rammem_initialize(rammem_malloc_t supmalloc_arg,
+      rammem_free_t supfree_arg)
 {
    /* i don't support redundant calls to this function yet. */
    if (rammem_theglobals.rammemg_initflag)

@@ -40,7 +40,7 @@
 #include <assert.h>
 #include <memory.h>
 
-#if RAMOPT_COMPACT
+#if RAM_WANT_COMPACT
 typedef uint8_t rampg_index_t;
 #else
 typedef size_t rampg_index_t;
@@ -89,7 +89,7 @@ typedef struct rampg_globals
    int rampgg_initflag;
 } rampg_globals_t;
 
-static ram_reply_t rampg_mkpool2(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg);
+static ram_reply_t rampg_mkpool2(rampg_pool_t *pool_arg, rampg_appetite_t appetite_arg);
 static ram_reply_t rampg_findvnode(rampg_vnode_t **node_arg, char *ptr_arg);
 static ram_reply_t rampg_mkvnode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg);
 static ram_reply_t rampg_initvnode(rampg_vnode_t *node_arg);
@@ -133,7 +133,7 @@ ram_reply_t rampg_initialize()
    return RAM_REPLY_OK;
 }
 
-ram_reply_t rampg_mkpool(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg)
+ram_reply_t rampg_mkpool(rampg_pool_t *pool_arg, rampg_appetite_t appetite_arg)
 {
    ram_reply_t e = RAM_REPLY_INSANE;
 
@@ -148,7 +148,7 @@ ram_reply_t rampg_mkpool(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg)
    return e;
 }
 
-ram_reply_t rampg_mkpool2(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg)
+ram_reply_t rampg_mkpool2(rampg_pool_t *pool_arg, rampg_appetite_t appetite_arg)
 {
    size_t snodecapacity = 0;
    size_t mmapgran = 0;
@@ -218,7 +218,7 @@ ram_reply_t rampg_acquire(void **ptr_arg, rampg_pool_t *pool_arg)
    RAM_FAIL_PANIC(ramvec_acquire(&vnode->rampgvn_vnode, RAMPG_ISFULL(vnode)));
 
    /* i zero-out the memory, if that behavior is desired. */
-#if RAMOPT_ZEROMEM
+#if RAM_WANT_ZEROMEM
    memset(page, 0, rampg_theglobals.rampgg_granularity);
 #endif
 
@@ -253,10 +253,10 @@ ram_reply_t rampg_release(void *ptr_arg)
       assert(RAMOPT_GREEDY == pool->rampgp_appetite);
       RAM_FAIL_TRAP(ramsys_reset(ptr_arg));
 
-#if RAMOPT_MARKFREED
+#if RAM_WANT_MARKFREED
       /* it's helpful to see signature bytes for destroyed memory when
        * debugging. */
-      memset(ptr_arg, RAMOPT_MARKFREED,
+      memset(ptr_arg, RAM_WANT_MARKFREED,
             rampg_theglobals.rampgg_granularity);
 #endif
 

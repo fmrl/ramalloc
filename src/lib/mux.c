@@ -36,10 +36,10 @@
 
 static ramsig_signature_t rammux_thesignature = { RAMSIG_MKUINT32('M', 'U', 'X', 'P') };
 
-static ram_reply_t rammux_mkpool2(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg);
+static ram_reply_t rammux_mkpool2(rammux_pool_t *mpool_arg, rampg_appetite_t appetite_arg);
 static ram_reply_t rammux_getalgnpool(ramalgn_pool_t **apool_arg, size_t size_arg, rammux_pool_t *mpool_arg);
 
-ram_reply_t rammux_mkpool(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg)
+ram_reply_t rammux_mkpool(rammux_pool_t *mpool_arg, rampg_appetite_t appetite_arg)
 {
    ram_reply_t e = RAM_REPLY_INSANE;
 
@@ -55,7 +55,7 @@ ram_reply_t rammux_mkpool(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_a
    }
 }
 
-ram_reply_t rammux_mkpool2(rammux_pool_t *mpool_arg, ramopt_appetite_t appetite_arg)
+ram_reply_t rammux_mkpool2(rammux_pool_t *mpool_arg, rampg_appetite_t appetite_arg)
 {
    assert(mpool_arg != NULL);
 

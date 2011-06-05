@@ -40,10 +40,10 @@ typedef struct ramlazy_chktrashnode
    const ramlazy_pool_t *ramlazyctn_lazypool;
 } ramlazy_chktrashnode_t;
 
-static ram_reply_t ramlazy_mkpool2(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg);
+static ram_reply_t ramlazy_mkpool2(ramlazy_pool_t *lpool_arg, rampg_appetite_t appetite_arg, size_t disposalratio_arg);
 static ram_reply_t ramlazy_chktrashnode(void *ptr_arg, void *context_arg);
 
-ram_reply_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg)
+ram_reply_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, rampg_appetite_t appetite_arg, size_t disposalratio_arg)
 {
    ram_reply_t e = RAM_REPLY_INSANE;
 
@@ -59,7 +59,7 @@ ram_reply_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite
    }
 }
 
-ram_reply_t ramlazy_mkpool2(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg)
+ram_reply_t ramlazy_mkpool2(ramlazy_pool_t *lpool_arg, rampg_appetite_t appetite_arg, size_t disposalratio_arg)
 {
    assert(lpool_arg != NULL);
    RAM_FAIL_NOTZERO(disposalratio_arg);
@@ -116,8 +116,8 @@ ram_reply_t ramlazy_release(void *ptr_arg)
    RAM_FAIL_NOTNULL(ptr_arg);
 
    RAM_FAIL_TRAP(ramlazy_query(&lpool, &sz, ptr_arg));
-#if RAMOPT_MARKFREED
-   memset(ptr_arg, RAMOPT_MARKFREED, sz);
+#if RAM_WANT_MARKFREED
+   memset(ptr_arg, RAM_WANT_MARKFREED, sz);
 #endif
    /* i push the pointer onto the trash stack; it will be freed on it's home
     * thread with less synchronization and contention than i could manage from 

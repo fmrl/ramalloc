@@ -36,21 +36,41 @@
 
 #include <ramalloc/vec.h>
 #include <ramalloc/fail.h>
-#include <ramalloc/opt.h>
+#include <ramalloc/want.h>
 #include <ramalloc/sig.h>
 #include <ramalloc/slot.h>
-#include <ramalloc/ramalloc.h>
+
+/**
+ * @brief page appetites.
+ * @details a <b>page appetite</b> specifies a strategy for returning
+ *    unused memory the virtual memory subsystem.
+ * @remark due to differences in the virtual memory subsystems on Windows
+ *    and POSIX-compliant systems, appetites currently only affect the
+ *    use of virtual memory on Windows systems. POSIX-compliant systems
+ *    always behave as if @e RAMOPT_FRUGAL was specified.
+ * @remark the choice of appetite will affect the degree of reluctance that
+ *    @e ramalloc has regarding returning memory to the host system but
+ *    @e ramalloc @b never withholds unused memory indefinitely.
+ */
+typedef enum rampg_appetites
+{
+   /** return unused memory to the host system at the first opportunity. */
+   RAMOPT_FRUGAL,
+   /** return unused memory in quantities matching the system's allocation
+    * granularity (Windows only). */
+   RAMOPT_GREEDY,
+} rampg_appetite_t;
 
 typedef struct rampg_pool
 {
    ramvec_pool_t rampgp_vpool;
    ramslot_pool_t rampgp_slotpool;
-   ramopt_appetite_t rampgp_appetite;
+   rampg_appetite_t rampgp_appetite;
    ramsig_signature_t rampgp_slotsig;
 } rampg_pool_t;
 
 ram_reply_t rampg_initialize();
-ram_reply_t rampg_mkpool(rampg_pool_t *pool_arg, ramopt_appetite_t appetite_arg);
+ram_reply_t rampg_mkpool(rampg_pool_t *pool_arg, rampg_appetite_t appetite_arg);
 ram_reply_t rampg_acquire(void **newptr_arg, rampg_pool_t *pool_arg);
 ram_reply_t rampg_release(void *ptr_arg);
 ram_reply_t rampg_chkpool(const rampg_pool_t *pool_arg);

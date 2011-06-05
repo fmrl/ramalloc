@@ -136,7 +136,7 @@ ram_reply_t ramslot_acquire(void **ptr_arg, ramslot_pool_t *pool_arg)
    RAM_FAIL_PANIC(ramvec_acquire(&node->ramslotn_vnode, RAMSLOT_ISFULL(node)));
 
    /* i zero-out the memory, if that behavior is desired. */
-#if RAMOPT_ZEROMEM
+#if RAM_WANT_ZEROMEM
    memset(p, 0, pool_arg->ramslotp_granularity);
 #endif
 
@@ -164,9 +164,9 @@ ram_reply_t ramslot_release(void *ptr_arg, ramslot_node_t *node_arg)
 
    /* at this point, if something goes wrong, the node might be inconsistent and
     * there's no longer any hope for recovery. */
-#if RAMOPT_MARKFREED
+#if RAM_WANT_MARKFREED
    /* it's helpful to see signature bytes for destroyed memory when debugging. */
-   memset(ptr_arg, RAMOPT_MARKFREED, pool->ramslotp_granularity);
+   memset(ptr_arg, RAM_WANT_MARKFREED, pool->ramslotp_granularity);
 #endif
 
    /* now that i know the index that's associated with 'ptr_arg', i push
