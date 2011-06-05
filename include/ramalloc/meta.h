@@ -32,6 +32,8 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 /**
+ * @addtogroup general
+ * @{
  * @file
  * @brief metaprogramming tools for C.
  */
@@ -121,5 +123,8 @@
  */
 #define RAM_META_NOP() do { } while (0)
 
-
 #endif /* RAM_META_H_IS_INCLUDED */
+
+/**
+ * @}
+ */

@@ -32,8 +32,10 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 /**
+ * @addtogroup fail
+ * @{
  * @file
- * @brief failure management module.
+ * @brief failure management.
  */
 
 #ifndef RAMALLOC_FAIL_H_IS_INCLUDED
@@ -297,3 +299,7 @@ ram_reply_t ram_fail_accumulate(ram_reply_t *reply_arg,
       ram_reply_t newreply_arg);
 
 #endif /* RAMALLOC_FAIL_H_IS_INCLUDED */
+
+/**
+ * @}
+ */

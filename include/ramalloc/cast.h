@@ -38,6 +38,8 @@
 #include <stddef.h>
 
 /**
+ * @addtogroup general
+ * @{
  * @file
  * @brief type casting module.
  */
@@ -210,7 +212,8 @@ ram_reply_t ram_cast_ulongtouchar(unsigned char *to_arg,
 ram_reply_t ram_cast_longtochar(char *to_arg, long from_arg);
 
 /**
- * @brief perform a regression test on the @e cast module.
+ * @ingroup test
+ * @brief test the @e cast module.
  * @details use ram_cast_longtochar() to convert a @b long to a @b char.
  *    if the value cannot be preserved, this function notifies the caller.
  * @return @c RAM_REPLY_OK - the test was successful.
@@ -224,3 +227,7 @@ ram_reply_t ram_cast_longtochar(char *to_arg, long from_arg);
 ram_reply_t ram_cast_test();
 
 #endif /* RAMALLOC_CAST_H_IS_INCLUDED */
+
+/**
+ * @}
+ */

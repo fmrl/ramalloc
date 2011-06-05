@@ -32,7 +32,9 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 /**
- * @file reply.h
+ * @addtogroup fail
+ * @{
+ * @file
  * @brief reply definition header.
  * @par overview
  *    @b replies are an attempt to provide a thorough, yet easy-to-use error
@@ -144,3 +146,7 @@ typedef enum ram_reply
 } ram_reply_t;
 
 #endif /* RAMALLOC_REPLY_H_IS_INCLUDED */
+
+/**
+ * @}
+ */

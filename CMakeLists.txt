@@ -322,4 +322,4 @@ endif(UNIX)
 # documentation
 # -------------
 include(cmake/doxygen.cmake)
-add_doxygen(ramalloc ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
+add_doxygen(ramalloc src/doc/groups.h ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
