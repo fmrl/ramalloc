@@ -193,54 +193,48 @@ install(TARGETS ramalloc DESTINATION lib)
 # tests
 # -----
 
-set(RAMALLOC_LIBRARIES ramalloc ${CMAKE_THREAD_LIBS_INIT})
-set(RAMALLOC_SHARED_TEST_SOURCES
+set(TEST_RAMALLOC_SOURCES
 	src/test/shared/parseargs.c
 	src/test/shared/test.c
 	)
-set(RAMALLOC_SHARED_TEST_HEADERS
+set(TEST_RAMALLOC_HEADERS
 	src/test/shared/parseargs.h
 	src/test/shared/test.h
 	)
-
-set(CASTTEST_SOURCES
-	src/test/casttest.c
+add_library(testramalloc 
+	${TEST_RAMALLOC_SOURCES} 
+	${TEST_RAMALLOC_HEADERS}
+	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
+add_splint(testramalloc 
+	${TEST_SOURCES} 
+	${TEST_HEADERS}
+	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
+	)
+
+set(RAMALLOC_LIBRARIES ramalloc testramalloc ${CMAKE_THREAD_LIBS_INIT})
+
+set(CASTTEST_SOURCES src/test/casttest.c)
 add_executable(casttest ${CASTTEST_SOURCES})
 add_splint(casttest ${CASTTEST_SOURCES})
 target_link_libraries(casttest ${RAMALLOC_LIBRARIES})
 add_test(casttest ${EXECUTABLE_OUTPUT_PATH}/casttest)
 
-set(SLOTTEST_SOURCES 
-	src/test/slottest.c
-	${RAMALLOC_SHARED_TEST_SOURCES}
-	${RAMALLOC_SHARED_TEST_HEADERS}
-	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
-	)
+set(SLOTTEST_SOURCES src/test/slottest.c)
 add_executable(slottest ${SLOTTEST_SOURCES})
 add_splint(slottest ${SLOTTEST_SOURCES})
 target_link_libraries(slottest ${RAMALLOC_LIBRARIES})
 add_test(slottest ${EXECUTABLE_OUTPUT_PATH}/slottest
 	--rng-seed=1564740528)
 
-set(PGTEST_SOURCES 
-	src/test/pgtest.c
-	${RAMALLOC_SHARED_TEST_SOURCES}
-	${RAMALLOC_SHARED_TEST_HEADERS}
-	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
-	)
+set(PGTEST_SOURCES src/test/pgtest.c)
 add_executable(pgtest ${PGTEST_SOURCES})
 add_splint(pgtest ${PGTEST_SOURCES})
 target_link_libraries(pgtest ${RAMALLOC_LIBRARIES})
 add_test(pgtest ${EXECUTABLE_OUTPUT_PATH}/pgtest
 	--allocations=10240 --rng-seed=1342375263)
 
-set(ALGNTEST_SOURCES 
-	src/test/algntest.c
-	${RAMALLOC_SHARED_TEST_SOURCES}
-	${RAMALLOC_SHARED_TEST_HEADERS}
-	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
-	)
+set(ALGNTEST_SOURCES src/test/algntest.c)
 add_executable(algntest ${ALGNTEST_SOURCES})
 add_splint(algntest ${ALGNTEST_SOURCES})
 target_link_libraries(algntest ${RAMALLOC_LIBRARIES})
@@ -251,24 +245,14 @@ add_test(algntest-128 ${EXECUTABLE_OUTPUT_PATH}/algntest
 	--smallest=128 --largest=128
 	--rng-seed=2694545209)
 
-set(MUXTEST_SOURCES 
-	src/test/muxtest.c
-	${RAMALLOC_SHARED_TEST_SOURCES}
-	${RAMALLOC_SHARED_TEST_HEADERS}
-	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
-	)
+set(MUXTEST_SOURCES src/test/muxtest.c)
 add_executable(muxtest ${MUXTEST_SOURCES})
 add_splint(muxtest ${MUXTEST_SOURCES})
 target_link_libraries(muxtest ${RAMALLOC_LIBRARIES})
 add_test(muxtest ${EXECUTABLE_OUTPUT_PATH}/muxtest
 	--rng-seed=2596644741)
 
-set(LAZYTEST_SOURCES 
-	src/test/lazytest.c
-	${RAMALLOC_SHARED_TEST_SOURCES}
-	${RAMALLOC_SHARED_TEST_HEADERS}
-	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
-	)
+set(LAZYTEST_SOURCES src/test/lazytest.c)
 add_executable(lazytest ${LAZYTEST_SOURCES})
 add_splint(lazytest ${LAZYTEST_SOURCES})
 target_link_libraries(lazytest ${RAMALLOC_LIBRARIES})
@@ -276,12 +260,7 @@ add_test(lazytest-serial ${EXECUTABLE_OUTPUT_PATH}/lazytest --parallelize=1
 	--rng-seed=342795249)
 add_test(lazytest-parallel ${EXECUTABLE_OUTPUT_PATH}/lazytest)
 
-set(PARATEST_SOURCES
-	src/test/paratest.c
-	${RAMALLOC_SHARED_TEST_SOURCES}
-	${RAMALLOC_SHARED_TEST_HEADERS}
-	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
-	)
+set(PARATEST_SOURCES src/test/paratest.c)
 add_executable(paratest ${PARATEST_SOURCES})
 add_splint(paratest ${PARATEST_SOURCES})
 target_link_libraries(paratest ${RAMALLOC_LIBRARIES})
@@ -289,12 +268,7 @@ add_test(paratest-serial ${EXECUTABLE_OUTPUT_PATH}/paratest --parallelize=1
 	--rng-seed=2374434648)
 add_test(paratest-parallel ${EXECUTABLE_OUTPUT_PATH}/paratest)
 
-set(DEFAULTTEST_SOURCES
-	src/test/defaulttest.c
-	${RAMALLOC_SHARED_TEST_SOURCES}
-	${RAMALLOC_SHARED_TEST_HEADERS}
-	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
-	)
+set(DEFAULTTEST_SOURCES src/test/defaulttest.c)
 add_executable(defaulttest ${DEFAULTTEST_SOURCES})
 add_splint(defaulttest ${DEFAULTTEST_SOURCES})
 target_link_libraries(defaulttest ${RAMALLOC_LIBRARIES})
@@ -302,9 +276,7 @@ add_test(defaulttest-serial ${EXECUTABLE_OUTPUT_PATH}/defaulttest
 	--parallelize=1	--rng-seed=2828559559)
 add_test(defaulttest-parallel ${EXECUTABLE_OUTPUT_PATH}/defaulttest)
 
-set(COMPATTEST_SOURCES
-	src/test/compattest.c
-	)
+set(COMPATTEST_SOURCES src/test/compattest.c)
 add_executable(compattest ${COMPATTEST_SOURCES})
 add_splint(compattest ${COMPATTEST_SOURCES})
 target_link_libraries(compattest ${RAMALLOC_LIBRARIES})
