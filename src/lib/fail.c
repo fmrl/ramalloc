@@ -44,6 +44,9 @@ void ram_fail_panic(const char *why_arg)
 {
    if (!why_arg)
       why_arg = "*unspecified*";
+   /* there's really no point in checking the return code of fprintf().
+    * if it fails, i don't have a backup plan for informing the
+    * operator. */
    fprintf(stderr, "*** epic fail! %s\n", why_arg);
    abort();
 }
@@ -65,17 +68,24 @@ void ram_fail_report(ram_reply_t code_arg, const char *expr_arg, const char *fun
 void ramfail_defaultreporter(ram_reply_t reply_arg, const char *expr_arg,
    const char *funcn_arg, const char *filen_arg, int lineno_arg)
 {
+   int n = -1;
+
    /* to my knowledge, Windows doesn't support providing the function name,
     * so i need to tolerate a NULL value for funcn_arg. */
    if (NULL == funcn_arg)
    {
-      fprintf(stderr, "FAIL %d at %s, line %d: %s\n", reply_arg,
+
+      n = fprintf(stderr, "FAIL %d at %s, line %d: %s\n", reply_arg,
             filen_arg, lineno_arg, expr_arg);
+      if (n < 1)
+         ram_fail_panic("fprintf() failed.");
    }
    else
    {
-      fprintf(stderr, "FAIL %d in %s, at %s, line %d: %s\n", reply_arg,
+      n = fprintf(stderr, "FAIL %d in %s, at %s, line %d: %s\n", reply_arg,
             funcn_arg, filen_arg, lineno_arg, expr_arg);
+      if (n < 1)
+         ram_fail_panic("fprintf() failed.");
    }
 }
 
