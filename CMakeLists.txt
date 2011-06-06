@@ -63,7 +63,8 @@ else(UNIX)
 endif(UNIX)
 include(CPack)
 
-# CMake doesn't enable any warnings by default.
+# compiler configuration
+# ----------------------
 if(CMAKE_COMPILER_IS_GNUCC)
 	# -Wmissing-braces and -Wmissing-field-initializers appears
 	# to interfere with C89-defined behavior.
@@ -79,6 +80,8 @@ else()
 endif()
 set_default_cflags(${DEFAULT_CFLAGS} ${DEFAULT_CFLAGS})
 
+# threads
+# -------
 # currently, threads are required to compile ramalloc.
 #
 # TODO: if threads aren't available, it's still possible to produce
@@ -90,6 +93,8 @@ set_default_cflags(${DEFAULT_CFLAGS} ${DEFAULT_CFLAGS})
 #	from the build.
 find_package(Threads REQUIRED)
 
+# pstdint
+# -------
 # i use pstdint to emulate <stdint.h> when necessary (splint and Windows).
 # the latest version can be fetched from 
 # <http://www.azillionmonkeys.com/qed/pstdint.h>.
@@ -109,7 +114,9 @@ if(WIN32)
 		)
 endif(WIN32)
 
-# ramalloc's headers.
+# ramalloc
+# --------
+# setup include paths and configure where include files will be installed.
 include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${CMAKE_CURRENT_BINARY_DIR}/include
@@ -158,6 +165,7 @@ mark_as_advanced(WANT_OVERCONFIDENT)
 configure_file(src/lib/config.h.in 
 	${CMAKE_CURRENT_BINARY_DIR}/include/ramalloc/config.h @ONLY)
 
+# specify source files.
 set(RAMALLOC_HEADERS
 	include/ramalloc/algn.h
 	include/ramalloc/barrier.h
