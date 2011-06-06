@@ -35,6 +35,7 @@
 #include <ramalloc/mtx.h>
 #include <ramalloc/thread.h>
 #include <ramalloc/misc.h>
+#include <trio.h>
 #include <string.h>
 #include <stdio.h>
 #include <time.h>
@@ -264,45 +265,45 @@ ram_reply_t ramtest_describe(FILE *out_arg,
    RAM_FAIL_NOTNULL(params_arg);
 
    if (params_arg->ramtestp_dryrun)
-      fprintf(out_arg, "you have specified the following test:\n\n");
+      trio_fprintf(out_arg, "you have specified the following test:\n\n");
    else
-      fprintf(out_arg, "i will run the following test:\n\n");
-   fprintf(out_arg, "%u allocation(s) (and corresponding "
+      trio_fprintf(out_arg, "i will run the following test:\n\n");
+   trio_fprintf(out_arg, "%u allocation(s) (and corresponding "
          "deallocations).\n",
          params_arg->ramtestp_alloccount);
    if (1 == params_arg->ramtestp_threadcount)
-      fprintf(out_arg, "this test will not be parallelized.\n");
+      trio_fprintf(out_arg, "this test will not be parallelized.\n");
    else
    {
-      fprintf(out_arg, "%u parallel operation(s) allowed.\n",
+      trio_fprintf(out_arg, "%u parallel operation(s) allowed.\n",
             params_arg->ramtestp_threadcount);
    }
-   fprintf(out_arg, "%d%% of the allocations will be managed by malloc() "
+   trio_fprintf(out_arg, "%d%% of the allocations will be managed by malloc() "
          "and free().\n", params_arg->ramtestp_mallocchance);
-   fprintf(out_arg, "allocations will not be smaller than %u bytes.\n",
+   trio_fprintf(out_arg, "allocations will not be smaller than %u bytes.\n",
          params_arg->ramtestp_minsize);
-   fprintf(out_arg, "allocations will not be larger than %u bytes.\n",
+   trio_fprintf(out_arg, "allocations will not be larger than %u bytes.\n",
          params_arg->ramtestp_maxsize);
    if (params_arg->ramtestp_userngseed)
    {
-      fprintf(out_arg, "the random number generator will use seed %u.\n",
+      trio_fprintf(out_arg, "the random number generator will use seed %u.\n",
             params_arg->ramtestp_rngseed);
    }
    else
    {
-      fprintf(out_arg, "the random number generator will use a randomly "
+      trio_fprintf(out_arg, "the random number generator will use a randomly "
             "selected seed.\n");
    }
 #if RAM_WANT_OVERCONFIDENT
-   fprintf(out_arg,
+   trio_fprintf(out_arg,
          "warning: this is an overconfident build, so the results cannot "
          "be trusted. rebuild with RAMOPT_UNSUPPORTED_OVERCONFIDENT "
          "#define'd as 0 if you wish to have reliable results.\n");
 #endif
    if (params_arg->ramtestp_dryrun)
-      fprintf(out_arg, "\nto run this test, omit the --dry-run option.");
+      trio_fprintf(out_arg, "\nto run this test, omit the --dry-run option.");
    else
-      fprintf(out_arg, "-----\n");
+      trio_fprintf(out_arg, "-----\n");
 
    return RAM_REPLY_OK;
 }
