@@ -33,73 +33,44 @@
 # steps have to be split up to be compatible with submitting to the 
 # dashboard.
 
-find_package(CVS)
 include(ExternalProject)
 
 set(TRIO_LIBRARY_DOC "path to the trio library.")
+set(TRIO_BINDIR_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/trio-prefix)
 
-function(install_trio)
+find_library(TRIO_LIBRARY libtrio.a DOC ${TRIO_LIBRARY_DOC})
+if(NOT TRIO_LIBRARY OR TRIO_LIBRARY STREQUAL ${TRIO_BINDIR_PREFIX}/lib/libtrio.a)
 	if(NOT TRIO_IS_A_TARGET)
-		set(TRIO_COMMON_EXTERNALPROJECT_OPTIONS
-			CONFIGURE_COMMAND ${CMAKE_CURRENT_BINARY_DIR}/trio-prefix/src/trio/configure --prefix=${CMAKE_CURRENT_BINARY_DIR}/trio-prefix
-			TEST_BEFORE_INSTALL 1
-			)
-		if(CVS_FOUND)
-			set(TRIO_CVS_REPOSITORY 
-				":pserver:anonymous@ctrio.cvs.sourceforge.net:/cvsroot/ctrio"
-				CACHE STRING
-				"the CVSROOT of the trio repository."
-				) 
-			set(TRIO_CVS_USERNAME anonymous
-				CACHE STRING
-				"the CVS username to use when fetching trio."
-				) 
-			set(TRIO_CVS_MODULE trio 
-				CACHE STRING
-				"trio's CVS module name."
-				)
-			set(TRIO_CVS_TAG trio-1_14 
-				CACHE STRING
-				"the CVS tag to fetch."
-				)
-			ExternalProject_Add(trio
-				CVS_REPOSITORY ${TRIO_CVS_REPOSITORY}
-				CVS_USERNAME ${TRIO_CVS_USERNAME}
-				CVS_MODULE ${TRIO_CVS_MODULE}
-				CVS_TAG ${TRIO_CVS_TAG}
-				${TRIO_COMMON_EXTERNALPROJECT_OPTIONS}
-				)	
-		else()
-			set(TRIO_DOWNLOAD_URL "http://ncu.dl.sourceforge.net/project/ctrio/trio/1.14/trio-1.14.tar.gz" 
-				CACHE STRING 
-				"a URL describing where trio can be fetched; only necessary if CVS is unavilable.")
-			set(TRIO_MD5SUM 0278513e365675ca62bacb6f257b5045
-				CACHE STRING 
-			"the MD5 sum of the file at TRIO_DOWNLOAD_URL; only necessary if CVS is unavailable.")
-			# TODO: i can't seem to find an example of how URL_MD5 is supposed 
-			# to be used, and the naive approach doesn't.
-			ExternalProject_Add(trio
-				URL ${TRIO_DOWNLOAD_URL}
-				#URL_MD5 ${TRIO_MD5SUM}
-				${TRIO_COMMON_EXTERNALPROJECT_OPTIONS}
-				)	
-		endif()
+		set(TRIO_DOWNLOAD_URL "http://ncu.dl.sourceforge.net/project/ctrio/trio/1.14/trio-1.14.tar.gz" 
+			CACHE STRING 
+			"a URL describing where trio can be fetched; only necessary if CVS is unavilable.")
+		set(TRIO_MD5SUM 0278513e365675ca62bacb6f257b5045
+			CACHE STRING 
+		"the MD5 sum of the file at TRIO_DOWNLOAD_URL; only necessary if CVS is unavailable.")
+		# TODO: i can't seem to find an example of how URL_MD5 is supposed 
+		# to be used, and the naive approach doesn't.
+		ExternalProject_Add(trio
+			PREFIX ${TRIO_BINDIR_PREFIX}
+			URL ${TRIO_DOWNLOAD_URL}
+			#URL_MD5 ${TRIO_MD5SUM}
+			CONFIGURE_COMMAND ${TRIO_BINDIR_PREFIX}/src/trio/configure --prefix=${TRIO_BINDIR_PREFIX}
+			TEST_BEFORE_INSTALL 1				)	
 		set(TRIO_LIBRARY 
-			${CMAKE_CURRENT_BINARY_DIR}/trio-prefix/lib/libtrio.a 
+			${TRIO_BINDIR_PREFIX}/lib/libtrio.a 
 			CACHE FILEPATH ${TRIO_LIBRARY_DOC} FORCE
 			)
-		set(TRIO_IS_A_TARGET YES PARENT_SCOPE)
-		include_directories(${CMAKE_CURRENT_BINARY_DIR}/trio-prefix/include)
+		include_directories(${TRIO_BINDIR_PREFIX}/include)
+		set(TRIO_IS_A_TARGET YES)
 	endif()
-endfunction()
+endif()
 
-function(target_link_trio TARGET)
-	find_library(TRIO_LIBRARY libtrio.a DOC ${TRIO_LIBRARY_DOC})
-	if(NOT TRIO_LIBRARY OR TRIO_LIBRARY STREQUAL ${CMAKE_CURRENT_BINARY_DIR}/trio-prefix/lib/libtrio.a)
-		install_trio()
+function(add_dependency_on_trio TARGET)
+	if(TRIO_LIBRARY STREQUAL ${TRIO_BINDIR_PREFIX}/lib/libtrio.a)
 		add_dependencies(${TARGET} trio)
 	endif()
-	target_link_libraries(${TARGET} ${TRIO_LIBRARY} m)
-	set(TRIO_IS_A_TARGET ${TRIO_IS_A_TARGET} PARENT_SCOPE)	
+	get_target_property(Type ${TARGET} TYPE)
+	if(Type STREQUAL EXECUTABLE OR Type STREQUAL SHARED_LIBRARY)
+		target_link_libraries(${TARGET} ${TRIO_LIBRARY} m)
+	endif()
 endfunction()
 
