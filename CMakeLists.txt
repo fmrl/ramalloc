@@ -165,6 +165,7 @@ set(RAMALLOC_HEADERS
 	include/ramalloc/compat.h
 	include/ramalloc/default.h
 	include/ramalloc/fail.h
+	include/ramalloc/facade.h
 	include/ramalloc/foot.h
 	include/ramalloc/lazy.h
 	include/ramalloc/list.h

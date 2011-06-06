@@ -33,7 +33,10 @@
 
 /**
  * @defgroup config compile-time configuration
- * @defgroup test module and regression tests
+ * @defgroup init library initialization
+ * @defgroup facade convenience façade
+ * @defgroup default the default allocator
+ * @defgroup test diagnostics
  * @defgroup fail failure management
  * @defgroup general general purpose tools
  * @defgroup port dependency and platform abstraction

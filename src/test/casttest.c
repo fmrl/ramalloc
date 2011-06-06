@@ -38,7 +38,7 @@ int main()
 {
    ram_reply_t reply = RAM_REPLY_INSANE;
 
-   reply = ramalloc_initialize(NULL, NULL);
+   reply = ram_initialize(NULL, NULL);
    RAM_FAIL_EXPECT(-1, RAM_REPLY_OK == reply);
    reply = ram_cast_test();
    RAM_FAIL_EXPECT(-2, RAM_REPLY_OK == reply);

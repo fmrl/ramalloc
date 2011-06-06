@@ -93,7 +93,7 @@ ram_reply_t main2(int argc, char *argv[])
    ramtest_params_t testparams;
    ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAM_FAIL_TRAP(ramalloc_initialize(NULL, NULL));
+   RAM_FAIL_TRAP(ram_initialize(NULL, NULL));
 
    RAM_FAIL_TRAP(initdefaults(&testparams));
    e = parseargs(&testparams, argc, argv);

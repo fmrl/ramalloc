@@ -46,7 +46,7 @@ int main()
 {
    size_t pgsz = 0;
 
-   RAM_FAIL_EXPECT(-1, RAM_REPLY_OK == ramalloc_initialize(NULL, NULL));
+   RAM_FAIL_EXPECT(-1, RAM_REPLY_OK == ram_initialize(NULL, NULL));
    RAM_FAIL_EXPECT(-2, RAM_REPLY_OK == rammem_pagesize(&pgsz));
    RAM_FAIL_EXPECT(1, RAM_REPLY_OK == malloctest(0));
    RAM_FAIL_EXPECT(2, RAM_REPLY_OK == malloctest(SMALL_SIZE));

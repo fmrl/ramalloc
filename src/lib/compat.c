@@ -46,7 +46,7 @@ void * ramcompat_malloc(size_t size_arg)
       ram_reply_t e = RAM_REPLY_INSANE;
       void *p = NULL;
 
-      e = ramdefault_acquire(&p, size_arg);
+      e = ram_default_acquire(&p, size_arg);
       switch (e)
       {
       default:
@@ -72,7 +72,7 @@ void ramcompat_free(void *ptr_arg)
       ram_reply_t e = RAM_REPLY_INSANE;
       size_t sz = 0;
 
-      e = ramdefault_query(&sz, ptr_arg);
+      e = ram_default_query(&sz, ptr_arg);
       switch (e)
       {
       default:
@@ -80,7 +80,7 @@ void ramcompat_free(void *ptr_arg)
          ram_fail_panic("i got an unexpected eror from ramdefault_query().");
          return;
       case RAM_REPLY_OK:
-         e = ramdefault_discard(ptr_arg);
+         e = ram_default_discard(ptr_arg);
          if (RAM_REPLY_OK != e)
             ram_fail_panic("i got an unexpected eror from ramdefault_discard().");
          return;

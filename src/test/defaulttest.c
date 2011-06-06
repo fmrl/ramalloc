@@ -94,7 +94,7 @@ ram_reply_t main2(int argc, char *argv[])
    ramtest_params_t testparams;
    ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAM_FAIL_TRAP(ramalloc_initialize(NULL, NULL));
+   RAM_FAIL_TRAP(ram_initialize(NULL, NULL));
 
    RAM_FAIL_TRAP(initdefaults(&testparams));
    e = parseargs(&testparams, argc, argv);
@@ -149,7 +149,7 @@ ram_reply_t acquire(ramtest_allocdesc_t *desc_arg,
    RAMANNOTATE_UNUSEDARG(extra_arg);
    RAMANNOTATE_UNUSEDARG(threadidx_arg);
 
-   RAM_FAIL_TRAP(ramdefault_acquire(&p, size_arg));
+   RAM_FAIL_TRAP(ram_default_acquire(&p, size_arg));
    desc_arg->ramtestad_ptr = (char *)p;
    /* the default module doesn't use explicit pool instances. i only need
     * to note whether i'm using the pool or not. i shall use the value of
@@ -164,7 +164,7 @@ ram_reply_t release(ramtest_allocdesc_t *desc_arg)
 {
    RAM_FAIL_NOTNULL(desc_arg);
 
-   RAM_FAIL_TRAP(ramdefault_discard(desc_arg->ramtestad_ptr));
+   RAM_FAIL_TRAP(ram_default_discard(desc_arg->ramtestad_ptr));
 
    return RAM_REPLY_OK;
 }
@@ -178,7 +178,7 @@ ram_reply_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
    *pool_arg = NULL;
    RAM_FAIL_NOTNULL(extra_arg);
 
-   e = ramdefault_query(size_arg, ptr_arg);
+   e = ram_default_query(size_arg, ptr_arg);
    switch (e)
    {
    default:
@@ -197,7 +197,7 @@ ram_reply_t flush(void *extra_arg, size_t threadidx_arg)
    RAMANNOTATE_UNUSEDARG(extra_arg);
    RAMANNOTATE_UNUSEDARG(threadidx_arg);
 
-   RAM_FAIL_TRAP(ramdefault_flush());
+   RAM_FAIL_TRAP(ram_default_flush());
    return RAM_REPLY_OK;
 }
 
@@ -206,7 +206,7 @@ ram_reply_t check(void *extra_arg, size_t threadidx_arg)
    RAMANNOTATE_UNUSEDARG(extra_arg);
    RAMANNOTATE_UNUSEDARG(threadidx_arg);
 
-   RAM_FAIL_TRAP(ramdefault_check());
+   RAM_FAIL_TRAP(ram_default_check());
    return RAM_REPLY_OK;
 }
 

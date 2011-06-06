@@ -289,11 +289,17 @@ void ram_fail_report(ram_reply_t reply_arg, const char *expr_arg,
  *    of a series of calls to ram_fail_accumulate(), then it will
  *    retain it's value.
  * @param newreply_arg
- *    a new reply for the accumulator.
- * @remarks it's always better to return from a function if an unanticipated
+ *    a new reply for the accumulator. this pointer cannot be @c NULL.
+ * @return @c RAM_REPLY_OK - the operation was successful.
+ * @return @c RAM_REPLY_DISALLOWED (unanticipated) - an argument contained
+ *    a disallowed value.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
+ * @remark it's always better to return from a function if an unanticipated
  *    reply is encountered. sometimes, this isn't possible and
  *    ram_fail_accumulate() is intended for use in those situations.
- * @return a reply as described in reply.h.
  */
 ram_reply_t ram_fail_accumulate(ram_reply_t *reply_arg,
       ram_reply_t newreply_arg);

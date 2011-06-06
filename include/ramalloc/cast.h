@@ -72,8 +72,10 @@
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
- * @remark this function returns a @e reply as described in reply.h. use a
- *    reply wrapper from fail.h to trap unexpected replies.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
  */
 ram_reply_t ram_cast_ulongtochar(char *to_arg, unsigned long from_arg);
 
@@ -88,8 +90,10 @@ ram_reply_t ram_cast_ulongtochar(char *to_arg, unsigned long from_arg);
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
- * @remark this function returns a @e reply as described in reply.h. use a
- *    reply wrapper from fail.h to trap unexpected replies.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
  */
 ram_reply_t ram_cast_sizetoint(int *to_arg, size_t from_arg);
 
@@ -104,8 +108,10 @@ ram_reply_t ram_cast_sizetoint(int *to_arg, size_t from_arg);
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
- * @remark this function returns a @e reply as described in reply.h. use a
- *    reply wrapper from fail.h to trap unexpected replies.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
  */
 ram_reply_t ram_cast_sizetolong(long *to_arg, size_t from_arg);
 
@@ -121,8 +127,10 @@ ram_reply_t ram_cast_sizetolong(long *to_arg, size_t from_arg);
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
- * @remark this function returns a @e reply as described in reply.h. use a
- *    reply wrapper from fail.h to trap unexpected replies.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
  */
 ram_reply_t ram_cast_ulongtolong(long *to_arg, unsigned long from_arg);
 
@@ -137,8 +145,10 @@ ram_reply_t ram_cast_ulongtolong(long *to_arg, unsigned long from_arg);
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
- * @remark this function returns a @e reply as described in reply.h. use a
- *    reply wrapper from fail.h to trap unexpected replies.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
  */
 ram_reply_t ram_cast_longtosize(size_t *to_arg, long from_arg);
 
@@ -154,8 +164,10 @@ ram_reply_t ram_cast_longtosize(size_t *to_arg, long from_arg);
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
- * @remark this function returns a @e reply as described in reply.h. use a
- *    reply wrapper from fail.h to trap unexpected replies.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
  */
 ram_reply_t ram_cast_sizetouint(unsigned int *to_arg, size_t from_arg);
 
@@ -171,8 +183,10 @@ ram_reply_t ram_cast_sizetouint(unsigned int *to_arg, size_t from_arg);
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
- * @remark this function returns a @e reply as described in reply.h. use a
- *    reply wrapper from fail.h to trap unexpected replies.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
  */
 ram_reply_t ram_cast_ulongtouint(unsigned int *to_arg,
       unsigned long from_arg);
@@ -189,8 +203,10 @@ ram_reply_t ram_cast_ulongtouint(unsigned int *to_arg,
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
- * @remark this function returns a @e reply as described in reply.h. use a
- *    reply wrapper from fail.h to trap unexpected replies.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
  */
 ram_reply_t ram_cast_ulongtouchar(unsigned char *to_arg,
       unsigned long from_arg);
@@ -206,8 +222,10 @@ ram_reply_t ram_cast_ulongtouchar(unsigned char *to_arg,
  * @return @c RAM_REPLY_OK - the operation was successful.
  * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
  *    could not be preserved.
- * @remark this function returns a @e reply as described in reply.h. use a
- *    reply wrapper from fail.h to trap unexpected replies.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
  */
 ram_reply_t ram_cast_longtochar(char *to_arg, long from_arg);
 
@@ -218,11 +236,13 @@ ram_reply_t ram_cast_longtochar(char *to_arg, long from_arg);
  *    if the value cannot be preserved, this function notifies the caller.
  * @return @c RAM_REPLY_OK - the test was successful.
  * @return @c RAM_REPLY_INSANE - the test failed.
- * @remark this function returns a @e reply as described in reply.h. use a
- *    reply wrapper from fail.h to trap unexpected replies.
- * @remark this function is intended to use by regression test code. please
- *    make sure that your linker is configured to strip unused code if you
- *    wish to conserve space in the final executable.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
+ * @remark this function is intended to be used by regression test code.
+ *    please ensure that your linker is configured to strip unused code
+ *    if you wish to conserve space in the final executable.
  */
 ram_reply_t ram_cast_test();
 
