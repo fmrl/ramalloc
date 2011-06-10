@@ -3,8 +3,4 @@
 # right now, i prefer to use the {0} syntax to initialize structs, so i'm 
 # going to disable warnings that complain about this.
 -fullinitblock
-# i'd like to handle the size_t printf format field errors at a later time,
-# because that's a portability issue and will require either an ugly
-# solution with a minimum amount of effort, or a nice solution with a lot
-# of effort.
-+matchanyintegral
+
