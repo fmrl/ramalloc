@@ -74,10 +74,11 @@ static ram_reply_t check(void *extra_arg, size_t threadidx_arg);
 int main(int argc, char *argv[])
 {
    ram_reply_t e = RAM_REPLY_INSANE;
+   size_t unused = 0;
 
    e = main2(argc, argv);
    if (RAM_REPLY_OK != e)
-      fprintf(stderr, "fail (%d).", e);
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr, "fail (%d).", e));
    if (RAM_REPLY_INPUTFAIL == e)
    {
       usage(e, argc, argv);
@@ -240,6 +241,7 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
       extra_t *extra_arg)
 {
    ramtest_params_t testparams = {0};
+   size_t unused = 0;
 
    testparams = *params_arg;
    /* i am responsible for policing the minimum and maximum allocation
@@ -247,16 +249,18 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
    if (testparams.ramtestp_minsize < sizeof(void *) ||
          testparams.ramtestp_maxsize < sizeof(void *))
    {
-      fprintf(stderr, "you cannot specify a size smaller than %u bytes.\n",
-            sizeof(void *));
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+            "you cannot specify a size smaller than %u bytes.\n",
+            sizeof(void *)));
       return RAM_REPLY_INPUTFAIL;
    }
+   /* TODO: shouldn't this test be moved into the framework? */
    if (testparams.ramtestp_minsize > testparams.ramtestp_maxsize)
    {
-      fprintf(stderr,
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
             "please specify a minimum size (%u bytes) that is smaller than "
             "or equal to the maximum (%u bytes).\n",
-            testparams.ramtestp_minsize, testparams.ramtestp_maxsize);
+            testparams.ramtestp_minsize, testparams.ramtestp_maxsize));
       return RAM_REPLY_INPUTFAIL;
    }
    /* TODO: how do i determine the maximum allocation size ahead of time? */

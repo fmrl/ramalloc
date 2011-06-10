@@ -69,10 +69,11 @@ static ram_reply_t check(void *extra_arg, size_t threadidx_arg);
 int main(int argc, char *argv[])
 {
    ram_reply_t e = RAM_REPLY_INSANE;
+   size_t unused = 0;
 
    e = main2(argc, argv);
    if (RAM_REPLY_OK != e)
-      fprintf(stderr, "fail (%d).", e);
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr, "fail (%d).", e));
    if (RAM_REPLY_INPUTFAIL == e)
    {
       usage(e, argc, argv);
@@ -230,6 +231,7 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
 {
    ramtest_params_t testparams = {0};
    size_t sz = 0;
+   size_t unused = 0;
 
    testparams = *params_arg;
 
@@ -237,26 +239,26 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
    if (sz != testparams.ramtestp_maxsize ||
          sz != testparams.ramtestp_minsize)
    {
-      fprintf(stderr,
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
             "warning: this test doesn't support customized sizes. i will "
             "use the predetermined size (%u bytes) for all "
-            "allocations.\n", sz);
+            "allocations.\n", sz));
       testparams.ramtestp_maxsize = sz;
       testparams.ramtestp_minsize = sz;
    }
    /* the pgpool doesn't support multi-threaded access. */
    if (testparams.ramtestp_threadcount > 1)
    {
-      fprintf(stderr,
-            "the --parallelize option is not supported in this test.\n");
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+            "the --parallelize option is not supported in this test.\n"));
       return RAM_REPLY_INPUTFAIL;
    }
    /* the pgpool is unable to detect whether it allocated a given
     * object. */
    if (testparams.ramtestp_mallocchance != 0)
    {
-      fprintf(stderr,
-            "the --mallocchance option is not supported in this test.\n");
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+            "the --mallocchance option is not supported in this test.\n"));
       return RAM_REPLY_INPUTFAIL;
    }
 
