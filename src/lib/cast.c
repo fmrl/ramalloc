@@ -142,6 +142,15 @@ ram_reply_t ram_cast_longtosize(size_t *to_arg, long from_arg)
    return RAM_REPLY_OK;
 }
 
+ram_reply_t ram_cast_inttosize(size_t *to_arg, int from_arg)
+{
+   RAM_FAIL_NOTNULL(to_arg);
+
+   RAM_CAST_INTTOUINT(to_arg, size_t, SIZE_MAX, from_arg);
+
+   return RAM_REPLY_OK;
+}
+
 ram_reply_t ramcast_longtouchar(unsigned char *to_arg, long from_arg)
 {
    RAM_FAIL_NOTNULL(to_arg);

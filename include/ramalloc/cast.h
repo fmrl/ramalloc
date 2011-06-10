@@ -153,6 +153,24 @@ ram_reply_t ram_cast_ulongtolong(long *to_arg, unsigned long from_arg);
 ram_reply_t ram_cast_longtosize(size_t *to_arg, long from_arg);
 
 /**
+ * @brief convert a @b int to a @c size_t.
+ * @details use ram_cast_inttosize() to convert a @b int to a @c size_t.
+ *    if the value cannot be preserved, this function notifies the caller.
+ * @param to_arg
+ *    address of destination value.
+ * @param from_arg
+ *    the source value (or the value to be converted).
+ * @return @c RAM_REPLY_OK - the operation was successful.
+ * @return @c RAM_REPLY_RANGEFAIL - the conversion failed because value
+ *    could not be preserved.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
+ */
+ram_reply_t ram_cast_inttosize(size_t *to_arg, int from_arg);
+
+/**
  * @brief convert a @c size_t to an @b unsigned @b int.
  * @details use ram_cast_sizetouint() to convert a @c size_t to an
  *    @b unsigned @b int. if the value cannot be preserved, this function
