@@ -33,39 +33,61 @@
 # steps have to be split up to be compatible with submitting to the 
 # dashboard.
 
-include(ExternalProject)
+find_package(Doxygen)
 
+
+option(TRIO_DOWNLOAD 
+	"indicates that i should download and build trio, if i can't find it."
+	NO)
+option(TRIO_RUN_TESTS 
+	"indicates whether i should run tests on trio after building." 
+	YES)
+	
+set(TRIO_DOWNLOAD_URL "http://ncu.dl.sourceforge.net/project/ctrio/trio/1.14/trio-1.14.tar.gz" 
+	CACHE STRING 
+	"a URL describing where trio can be fetched; only necessary if CVS is unavilable.")
+set(TRIO_MD5SUM 0278513e365675ca62bacb6f257b5045
+	CACHE STRING
+	"the MD5 sum of the file at TRIO_DOWNLOAD_URL; only necessary if CVS is unavailable.")
+
+set(TRIO_LIBRARY_NAME libtrio.a)
 set(TRIO_LIBRARY_DOC "path to the trio library.")
 set(TRIO_BINDIR_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/trio-prefix)
 
-find_library(TRIO_LIBRARY libtrio.a DOC ${TRIO_LIBRARY_DOC})
-if(NOT TRIO_LIBRARY OR TRIO_LIBRARY STREQUAL ${TRIO_BINDIR_PREFIX}/lib/libtrio.a)
-	if(NOT TRIO_IS_A_TARGET)
-		set(TRIO_DOWNLOAD_URL "http://ncu.dl.sourceforge.net/project/ctrio/trio/1.14/trio-1.14.tar.gz" 
-			CACHE STRING 
-			"a URL describing where trio can be fetched; only necessary if CVS is unavilable.")
-		set(TRIO_MD5SUM 0278513e365675ca62bacb6f257b5045
-			CACHE STRING 
-		"the MD5 sum of the file at TRIO_DOWNLOAD_URL; only necessary if CVS is unavailable.")
-		# TODO: i can't seem to find an example of how URL_MD5 is supposed 
-		# to be used, and the naive approach doesn't.
+find_library(TRIO_LIBRARY ${TRIO_LIBRARY_NAME} DOC ${TRIO_LIBRARY_DOC})
+if(NOT TRIO_LIBRARY AND NOT TRIO_DOWNLOAD)
+	message(WARNING "i couldn't find trio on your system. set TRIO_DOWNLOAD=1 if you would like me to download and install it for you.")
+elseif(TRIO_LIBRARY STREQUAL ${TRIO_BINDIR_PREFIX}/lib/${TRIO_LIBRARY_NAME}
+		OR NOT TRIO_LIBRARY)
+	if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
+		include(ExternalProject)
 		ExternalProject_Add(trio
 			PREFIX ${TRIO_BINDIR_PREFIX}
 			URL ${TRIO_DOWNLOAD_URL}
+			# TODO: i can't seem to find an example of how URL_MD5 is supposed 
+			# to be used, and the naive approach doesn't.
 			#URL_MD5 ${TRIO_MD5SUM}
 			CONFIGURE_COMMAND ${TRIO_BINDIR_PREFIX}/src/trio/configure --prefix=${TRIO_BINDIR_PREFIX}
-			TEST_BEFORE_INSTALL 1				)	
+			TEST_BEFORE_INSTALL ${TRIO_RUN_TESTS}	
+			)
 		set(TRIO_LIBRARY 
-			${TRIO_BINDIR_PREFIX}/lib/libtrio.a 
+			${TRIO_BINDIR_PREFIX}/lib/${TRIO_LIBRARY_NAME} 
 			CACHE FILEPATH ${TRIO_LIBRARY_DOC} FORCE
 			)
-		include_directories(${TRIO_BINDIR_PREFIX}/include)
 		set(TRIO_IS_A_TARGET YES)
 	endif()
 endif()
 
+get_filename_component(TRIO_PREFIX ${TRIO_LIBRARY} PATH)
+get_filename_component(TRIO_PREFIX ${TRIO_PREFIX}/.. ABSOLUTE)
+
+include_directories(${TRIO_PREFIX}/include)
+
 function(add_dependency_on_trio TARGET)
-	if(TRIO_LIBRARY STREQUAL ${TRIO_BINDIR_PREFIX}/lib/libtrio.a)
+	set(TRIO_LIBRARIES 
+		${TRIO_LIBRARY}
+		)
+	if(TRIO_LIBRARY STREQUAL ${TRIO_PREFIX}/lib/${TRIO_LIBRARY_NAME})
 		add_dependencies(${TARGET} trio)
 	endif()
 	get_target_property(Type ${TARGET} TYPE)
