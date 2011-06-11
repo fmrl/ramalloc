@@ -121,8 +121,9 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${CMAKE_CURRENT_BINARY_DIR}/include
 	)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ramalloc
-	DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ramalloc 
+install(DIRECTORY 
+		${CMAKE_CURRENT_SOURCE_DIR}/include/ramalloc
+		${CMAKE_CURRENT_BINARY_DIR}/include/ramalloc 
 	DESTINATION include)
 
 # set up cache variable defaults for ramalloc compile-time options.
