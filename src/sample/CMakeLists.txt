@@ -38,5 +38,4 @@ include(cmake/ramalloc.cmake)
 
 add_executable(sample src/main.c)
 add_dependency_on_ramalloc(sample)
-target_link_libraries(sample ${SAMPLE_LIBRARIES})
 
