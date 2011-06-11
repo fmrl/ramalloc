@@ -388,7 +388,7 @@ ram_reply_t parsethreadcount(size_t *threadcount_arg)
       if (n > toomany)
       {
          RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
-               "you cannot specify more than %u parallel operations.\n",
+               "you cannot specify more than %zu parallel operations.\n",
                toomany));
          return RAM_REPLY_INPUTFAIL;
       }

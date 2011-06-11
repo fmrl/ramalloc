@@ -3,4 +3,8 @@
 # right now, i prefer to use the {0} syntax to initialize structs, so i'm 
 # going to disable warnings that complain about this.
 -fullinitblock
+# splint doesn't appear to recognize the z format length modifier.
+-formatcode
+# suppress things annotated with "t".
++tmpcomments
 

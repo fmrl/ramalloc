@@ -267,7 +267,7 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
    {
       RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
             "warning: this test doesn't support customized sizes. i will "
-            "use the predetermined size (%u bytes) for all "
+            "use the predetermined size (%zu bytes) for all "
             "allocations.\n", ALLOCATION_SIZE));
       testparams.ramtestp_maxsize = ALLOCATION_SIZE;
       testparams.ramtestp_minsize = ALLOCATION_SIZE;

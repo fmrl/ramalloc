@@ -95,7 +95,7 @@ static ram_reply_t ram_cast_testinttoint();
             \
             if (Tmp <= ((intmax_t)(ToMax))) \
             { \
-               *(To) = ((size_t)(From)); \
+               *(To) = ((ToType)(From)); \
                return RAM_REPLY_OK; \
             } \
          } \

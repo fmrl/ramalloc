@@ -263,7 +263,7 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
          testparams.ramtestp_maxsize < sizeof(void *))
    {
       RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
-            "you cannot specify a size smaller than %u bytes.\n",
+            "you cannot specify a size smaller than %zu bytes.\n",
             sizeof(void *)));
       return RAM_REPLY_INPUTFAIL;
    }
@@ -271,8 +271,8 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
    if (testparams.ramtestp_minsize > testparams.ramtestp_maxsize)
    {
       RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
-            "please specify a minimum size (%u bytes) that is smaller than "
-            "or equal to the maximum (%u bytes).\n",
+            "please specify a minimum size (%zu bytes) that is smaller than "
+            "or equal to the maximum (%zu bytes).\n",
             testparams.ramtestp_minsize, testparams.ramtestp_maxsize));
       return RAM_REPLY_INPUTFAIL;
    }
@@ -287,7 +287,7 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
    {
       RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
             "warning: this test doesn't support a range of sizes. i will "
-            "use the smallest size specified (%u bytes) for all "
+            "use the smallest size specified (%zu bytes) for all "
             "allocations.\n", testparams.ramtestp_minsize));
       testparams.ramtestp_maxsize = testparams.ramtestp_minsize;
    }
