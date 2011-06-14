@@ -48,9 +48,12 @@ option(RAMALLOC_WANT_DOCS
 	${DOXYGEN_FOUND})
 
 if(RAMALLOC_DOWNLOAD)
-	find_package(Git REQUIRED)
+	find_package(Git)
 endif()
 
+set(RAMALLOC_URL IGNORE
+	CACHE STRING
+	"a URL describing where to download an installation archive from. set to IGNORE if you wish to fetch with git.")
 set(RAMALLOC_GIT_REPOSITORY "git://github.com/fmrl/ramalloc.git" 
 	CACHE STRING 
 	"a URL describing where the ramalloc git repository is located.")
@@ -66,15 +69,28 @@ set(RAMALLOC_BINDIR_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/ramalloc-prefix)
 find_library(RAMALLOC_LIBRARY libramalloc.a DOC ${RAMALLOC_STATIC_LIBRARY_DOC})
 
 if(NOT RAMALLOC_LIBRARY AND NOT RAMALLOC_DOWNLOAD)
-	message(WARNING "i couldn't find ramalloc on your system. set RAMALLOC_DOWNLOAD=1 if you would like me to download and install it for you.")
+	message(SEND_ERROR "i couldn't find ramalloc on your system. set RAMALLOC_DOWNLOAD=1 if you would like me to download and install it for you.")
 elseif(RAMALLOC_LIBRARY STREQUAL ${RAMALLOC_BINDIR_PREFIX}/lib/${RAMALLOC_STATIC_LIBRARY_NAME}
 		OR NOT RAMALLOC_LIBRARY)
 	if(NOT RAMALLOC_IS_A_TARGET AND RAMALLOC_DOWNLOAD)
+		if(RAMALLOC_URL)
+			set(download_args 
+				URL ${RAMALLOC_URL}
+				)
+		elseif(GIT_FOUND)
+			set(download_args 
+				GIT_TAG ${RAMALLOC_GIT_TAG}
+				GIT_REPOSITORY ${RAMALLOC_GIT_REPOSITORY}
+				)
+		else()
+			message(SEND_ERROR 
+				"if you want me to download ramalloc, you must either install git or provide the URL of an installation archive.")
+		endif() 
+
 		include(ExternalProject)
 		ExternalProject_Add(ramalloc
 			PREFIX ${RAMALLOC_BINDIR_PREFIX}
-			GIT_TAG ${RAMALLOC_GIT_TAG}
-			GIT_REPOSITORY ${RAMALLOC_GIT_REPOSITORY}
+			${download_args}
 			CMAKE_ARGS 
 				-DCMAKE_INSTALL_PREFIX:path=${RAMALLOC_BINDIR_PREFIX}
 				-DTRIO_DOWNLOAD:bool=YES
