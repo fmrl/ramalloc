@@ -377,3 +377,6 @@ else()
 		DESTINATION doc
 		)
 endif()
+
+include(cmake/sample.cmake)
+add_sample(ramalloc ${CMAKE_CURRENT_SOURCE_DIR}/src/sample)

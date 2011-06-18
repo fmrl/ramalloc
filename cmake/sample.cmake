@@ -29,13 +29,23 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 
-# i use CMake 2.8, so that's what i know works. it might work
-# with earlier versions, however (especially 2.6).
-cmake_minimum_required(VERSION 2.8)
-project(sample)
+# functions
+# ---------
 
-include(cmake/ramalloc.cmake)
+function(add_sample TARGET SAMPLE_SOURCE_DIR)
+	set(sample_target sample)
+	set(sample_binary_dir ${CMAKE_CURRENT_BINARY_DIR}/sample)
+	set(staging_dir ${sample_binary_dir}/${${TARGET}-prefix})
+	file(MAKE_DIRECTORY ${sample_binary_dir})
+	add_custom_target(
+		${sample_target}
+		COMMAND 
+			${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR} --target install -- DESTDIR=${staging_dir} 
+			&& ${CMAKE_COMMAND} ${SAMPLE_SOURCE_DIR} -DCMAKE_LIBRARY_PATH:path=${staging_dir}/${CMAKE_INSTALL_PREFIX}/lib
+			&& ${CMAKE_COMMAND} --build ${sample_binary_dir}
+		WORKING_DIRECTORY ${sample_binary_dir}
+		)
+	add_dependencies(${sample_target} ${TARGET})
+	add_test(${sample_target} ${sample_binary_dir}/sample)
+endfunction()
 
-add_executable(sample src/main.c)
-add_dependency_on_ramalloc(sample)
-add_test(sample ${EXECUTABLE_OUTPUT_PATH}/sample)
