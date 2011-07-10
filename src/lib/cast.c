@@ -51,7 +51,7 @@ static ram_reply_t ram_cast_testinttoint();
       if ((FromType)Tmp == (From)) \
       { \
          *(To) = Tmp; \
-         return RAM_REPLY_OK; \
+         break; \
       } \
       else \
       { \
@@ -72,7 +72,7 @@ static ram_reply_t ram_cast_testinttoint();
       if (Tmp <= ((uintmax_t)(ToMax))) \
       { \
          *(To) = ((ToType)(From)); \
-         return RAM_REPLY_OK; \
+         break; \
       } \
       else \
       { \
@@ -95,8 +95,8 @@ static ram_reply_t ram_cast_testinttoint();
             \
             if (Tmp <= ((intmax_t)(ToMax))) \
             { \
-               *(To) = ((size_t)(From)); \
-               return RAM_REPLY_OK; \
+               *(To) = ((ToType)(From)); \
+               break; \
             } \
          } \
          \
