@@ -106,9 +106,9 @@ install(FILES dep/pstdint/pstdint.h DESTINATION include)
 # TODO: i should probably make this a separate library.
 if(WIN32)
 	include_directories(${CMAKE_CURRENT_SOURCE_DIR}/dep/freebsd/include)
-	install(FILES dep/freebsd/include/getwant.h DESTINATION include)
+	install(FILES dep/freebsd/include/getopt.h DESTINATION include)
 	set(RAMALLOC_WINDOWS_GETOPT_SOURCES 
-		dep/freebsd/include/getwant.h
+		dep/freebsd/include/getopt.h
 		dep/freebsd/src/getopt.c
 		dep/freebsd/src/getopt_long.c
 		)
