@@ -121,8 +121,9 @@ include_directories(
 	${CMAKE_CURRENT_SOURCE_DIR}/include
 	${CMAKE_CURRENT_BINARY_DIR}/include
 	)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/include/ramalloc
-	DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/include/ramalloc 
+install(DIRECTORY 
+		${CMAKE_CURRENT_SOURCE_DIR}/include/ramalloc
+		${CMAKE_CURRENT_BINARY_DIR}/include/ramalloc 
 	DESTINATION include)
 
 # set up cache variable defaults for ramalloc compile-time options.
@@ -359,5 +360,23 @@ endif(UNIX)
 # documentation
 # -------------
 include(cmake/doxygen.cmake)
-add_doxygen(ramalloc src/doc/groups.h ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
+add_doxygen(ramalloc ramalloc 
+	src/doc/groups.h ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
+# TODO: i don't yet how to force the generation of documentation
+# if "package" is the target.
+#add_dependencies(package doxygen)
+# TODO: i can't use ${DOXYGEN_OUTPUT_DIRECTORY} because there's quotes in
+# it. i'll have to refactor doxygen.cmake to offer versions without quotes
+# and versions with quotes to substitute into Doxyfile.
+if(UNIX)
+	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doxygen/html
+		DESTINATION share/doc/ramalloc
+		)
+else()
+	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doxygen/html
+		DESTINATION doc
+		)
+endif()
 
+include(cmake/sample.cmake)
+add_sample(ramalloc ${CMAKE_CURRENT_SOURCE_DIR}/src/sample)

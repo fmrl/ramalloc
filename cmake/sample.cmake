@@ -29,62 +29,23 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 
-find_package(Doxygen)
+# functions
+# ---------
 
-option(WANT_DOCS 
-	"if YES, i'll automatically generate documentation (requires doxygen)." 
-	${DOXYGEN_FOUND})
-option(WANT_INTERNAL_DOCS 
-	"if YES, doxygen will generate internal documentation (INTERNAL_DOCS)." 
-	NO)
-
-# TODO: all of these should be cache variables.
-set(DOXYGEN_CONFIG ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
-set(DOXYGEN_FLAGS ${DOXYGEN_CONFIG})
-set(DOXYGEN_CONFIG_TEMPLATE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Doxyfile.in)
-
-# TODO: all of these should be cache variables.
-set(DOXYGEN_OUTPUT_DIRECTORY "\"${CMAKE_CURRENT_BINARY_DIR}/doxygen\"")
-set(DOXYGEN_GENERATE_HTML YES)
-set(DOXYGEN_GENERATE_LATEX NO)
-set(DOXYGEN_FULL_PATH_NAMES NO)
-set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
-set(DOXYGEN_SOURCE_BROWSER NO)
-set(DOXYGEN_INLINE_SOURCES YES)
-set(DOXYGEN_WARN_NO_PARAMDOC YES)
-set(DOXYGEN_SORT_MEMBER_DOCS YES)
-set(DOXYGEN_SORT_BRIEF_DOCS YES)
-set(DOXYGEN_HTML_FOOTER ${CMAKE_CURRENT_SOURCE_DIR}/src/doc/footer.html.in)
-if(WANT_INTERNAL_DOCS)
-	set(DOXYGEN_INTERNAL_DOCS YES)
-else()
-	set(DOXYGEN_INTERNAL_DOCS NO)
-endif()
-
-# TODO: project name should probably have a keyword.
-function(add_doxygen TARGET DOXYGEN_PROJECT_NAME)
-
-	if (NOT DOXYGEN_FOUND)
-		message(WARNING 
-			"i will be unable to generate documentation because doxygen could not be found.")
-		return()
-	endif()
-
-	foreach(i ${ARGN})
-		set(DOXYGEN_INPUT 
-			"${DOXYGEN_INPUT} \"${CMAKE_CURRENT_SOURCE_DIR}/${i}\""
-			)
-	endforeach()
-	configure_file(${DOXYGEN_CONFIG_TEMPLATE} ${DOXYGEN_CONFIG})
+function(add_sample TARGET SAMPLE_SOURCE_DIR)
+	set(sample_target sample)
+	set(sample_binary_dir ${CMAKE_CURRENT_BINARY_DIR}/sample)
+	set(staging_dir ${sample_binary_dir}/${${TARGET}-prefix})
+	file(MAKE_DIRECTORY ${sample_binary_dir})
 	add_custom_target(
-		doxygen
-		COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_FLAGS}
-		DEPENDS ${ARGN} ${DOXYGEN_CONFIG}
+		${sample_target}
+		COMMAND 
+			${CMAKE_COMMAND} --build ${CMAKE_CURRENT_BINARY_DIR} --target install -- DESTDIR=${staging_dir} 
+			&& ${CMAKE_COMMAND} ${SAMPLE_SOURCE_DIR} -DCMAKE_LIBRARY_PATH:path=${staging_dir}/${CMAKE_INSTALL_PREFIX}/lib
+			&& ${CMAKE_COMMAND} --build ${sample_binary_dir}
+		WORKING_DIRECTORY ${sample_binary_dir}
 		)
-	if(WANT_DOCS)
-		add_dependencies(${TARGET} doxygen)
-	endif()
-
+	add_dependencies(${sample_target} ${TARGET})
+	add_test(${sample_target} ${sample_binary_dir}/sample)
 endfunction()
-
 
