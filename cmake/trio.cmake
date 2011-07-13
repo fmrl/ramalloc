@@ -79,9 +79,7 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 		ExternalProject_Add(trio
 			PREFIX ${TRIO_DEFAULT_PREFIX}
 			URL ${TRIO_DOWNLOAD_URL}
-			# TODO: i can't seem to find an example of how URL_MD5 is supposed 
-			# to be used, and the naive approach doesn't work.
-			#URL_MD5 ${TRIO_MD5SUM}
+			URL_MD5 ${TRIO_MD5SUM}
 			CONFIGURE_COMMAND ${TRIO_DEFAULT_PREFIX}/src/trio/configure --prefix=${TRIO_DEFAULT_PREFIX}
 			TEST_BEFORE_INSTALL ${TRIO_RUN_TESTS}	
 			)
@@ -97,9 +95,7 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 		ExternalProject_Add(trio
 			PREFIX ${TRIO_DEFAULT_PREFIX}
 			URL ${TRIO_DOWNLOAD_URL}
-			# TODO: i can't seem to find an example of how URL_MD5 is supposed 
-			# to be used, and the naive approach doesn't work.
-			#URL_MD5 ${TRIO_MD5SUM}
+			URL_MD5 ${TRIO_MD5SUM}
 			# BUG: trio's regression tests appear to fail.
 			#TEST_BEFORE_INSTALL ${TRIO_RUN_TESTS}
 			# WORKAROUND: the following option needs to be last, as CMake
