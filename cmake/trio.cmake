@@ -96,7 +96,10 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 			PREFIX ${TRIO_DEFAULT_PREFIX}
 			URL ${TRIO_DOWNLOAD_URL}
 			URL_MD5 ${TRIO_MD5SUM}
-			# BUG: trio's regression tests appear to fail.
+			# BUG: trio's regression tests appear to fail on Windows. it's
+			# related to a specifier that i don't use (%m), so i'm not going
+			# worry too much about it. when i'm aware that a fix has been 
+			# released, i'll reenable tests.
 			#TEST_BEFORE_INSTALL ${TRIO_RUN_TESTS}
 			# WORKAROUND: the following option needs to be last, as CMake
 			# appears to confuse arguments that follow for part of the
