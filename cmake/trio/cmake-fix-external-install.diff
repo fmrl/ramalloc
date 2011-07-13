@@ -1,0 +1,27 @@
+--- C:\Program Files\CMake 2.8\share\cmake-2.8\Modules\ExternalProject.cmake.orig	2011-07-12 07:29:24.000000000 -0400
++++ C:\Program Files\CMake 2.8\share\cmake-2.8\Modules\ExternalProject.cmake	2011-07-12 07:54:04.000000000 -0400
+@@ -1290,19 +1290,18 @@
+       set(cmd "${CMAKE_COMMAND}")
+     endif()
+ 
+     get_property(cmake_args TARGET ${name} PROPERTY _EP_CMAKE_ARGS)
+     list(APPEND cmd ${cmake_args})
+ 
+-    # If there are any CMAKE_CACHE_ARGS, write an initial cache and use it
++    # Write an initial cache and use it. If there are any CMAKE_CACHE_ARGS, include them in the cache.
+     get_property(cmake_cache_args TARGET ${name} PROPERTY _EP_CMAKE_CACHE_ARGS)
+-    if(cmake_cache_args)
+-      set(_ep_cache_args_script "${tmp_dir}/${name}-cache.cmake")
+-      _ep_write_initial_cache(${name} "${_ep_cache_args_script}" "${cmake_cache_args}")
+-      list(APPEND cmd "-C${_ep_cache_args_script}")
+-    endif()
++    set(_ep_cache_args_script "${tmp_dir}/${name}-cache.cmake")
++    get_property(install_dir TARGET ${name} PROPERTY _EP_INSTALL_DIR)
++    _ep_write_initial_cache(${name} "${_ep_cache_args_script}" "-DCMAKE_INSTALL_PREFIX:path=${install_dir}" "${cmake_cache_args}" )
++    list(APPEND cmd "-C${_ep_cache_args_script}")
+ 
+     get_target_property(cmake_generator ${name} _EP_CMAKE_GENERATOR)
+     if(cmake_generator)
+       list(APPEND cmd "-G${cmake_generator}" "${source_dir}")
+     else()
+       if(CMAKE_EXTRA_GENERATOR)

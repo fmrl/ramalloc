@@ -33,8 +33,7 @@
 # steps have to be split up to be compatible with submitting to the 
 # dashboard.
 
-find_package(Doxygen)
-
+include(ExternalProject)
 
 option(TRIO_DOWNLOAD 
 	"indicates that i should download and build trio, if i can't find it."
@@ -45,54 +44,123 @@ option(TRIO_RUN_TESTS
 	
 set(TRIO_DOWNLOAD_URL "http://ncu.dl.sourceforge.net/project/ctrio/trio/1.14/trio-1.14.tar.gz" 
 	CACHE STRING 
-	"a URL describing where trio can be fetched; only necessary if CVS is unavilable.")
+	"a URL describing where trio can be fetched.")
 set(TRIO_MD5SUM 0278513e365675ca62bacb6f257b5045
 	CACHE STRING
-	"the MD5 sum of the file at TRIO_DOWNLOAD_URL; only necessary if CVS is unavailable.")
+	"the MD5 sum of the file at TRIO_DOWNLOAD_URL.")
 
-set(TRIO_LIBRARY_NAME libtrio.a)
-set(TRIO_LIBRARY_DOC "path to the trio library.")
-set(TRIO_BINDIR_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/trio-prefix)
+set(TRIO_LIBRARY_DOC "path(s) to the trio library.")
+set(TRIO_DEFAULT_PREFIX ${CMAKE_CURRENT_BINARY_DIR}/trio-prefix)
 
-find_library(TRIO_LIBRARY ${TRIO_LIBRARY_NAME} DOC ${TRIO_LIBRARY_DOC})
-if(NOT TRIO_LIBRARY AND NOT TRIO_DOWNLOAD)
-	message(WARNING "i couldn't find trio on your system. set TRIO_DOWNLOAD=1 if you would like me to download and install it for you.")
-elseif(TRIO_LIBRARY STREQUAL ${TRIO_BINDIR_PREFIX}/lib/${TRIO_LIBRARY_NAME}
-		OR NOT TRIO_LIBRARY)
-	if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
-		include(ExternalProject)
-		ExternalProject_Add(trio
-			PREFIX ${TRIO_BINDIR_PREFIX}
-			URL ${TRIO_DOWNLOAD_URL}
-			# TODO: i can't seem to find an example of how URL_MD5 is supposed 
-			# to be used, and the naive approach doesn't.
-			#URL_MD5 ${TRIO_MD5SUM}
-			CONFIGURE_COMMAND ${TRIO_BINDIR_PREFIX}/src/trio/configure --prefix=${TRIO_BINDIR_PREFIX}
-			TEST_BEFORE_INSTALL ${TRIO_RUN_TESTS}	
-			)
-		set(TRIO_LIBRARY 
-			${TRIO_BINDIR_PREFIX}/lib/${TRIO_LIBRARY_NAME} 
-			CACHE FILEPATH ${TRIO_LIBRARY_DOC} FORCE
-			)
-		set(TRIO_IS_A_TARGET YES)
-	endif()
+if(WIN32)
+	set(TRIO_LIBRARY_NAME trio.lib)
+else()
+	set(TRIO_LIBRARY_NAME libtrio.a)
 endif()
 
-get_filename_component(TRIO_PREFIX ${TRIO_LIBRARY} PATH)
-get_filename_component(TRIO_PREFIX ${TRIO_PREFIX}/.. ABSOLUTE)
+if(${CMAKE_BUILD_TYPE})
+	find_library(TRIO_LIBRARY ${TRIO_LIBRARY_NAME} DOC ${TRIO_LIBRARY_DOC})
+	if(NOT TRIO_LIBRARY AND NOT TRIO_DOWNLOAD)
+		message(FATAL_ERROR "i couldn't find trio on your system. please put the path to libtrio.a in TRIO_LIBRARY. or, if you prefer, you can set TRIO_DOWNLOAD to 1 if you would like me to download and build it for you.")
+	endif()
+else()
+	# there's no official binary distribution for Windows. given the need to
+	# support multi-configuration builds and without any convention for 
+	# discovering where libraries for each configuration can be found, i'm
+	# not going to try to find the library. feel free to set TRIO_LIBRARY
+	# if you know where it is.
+	if(NOT TRIO_LIBRARY AND NOT TRIO_DOWNLOAD)
+		message(FATAL_ERROR "i don't know where trio is on your system. please put the path to trio.lib in TRIO_LIBRARY. or, if you prefer, you can set TRIO_DOWNLOAD to 1 if you would like me to download and build it for you.")
+	endif()
+endif()
+	
+if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
+	if(UNIX)
+		ExternalProject_Add(trio
+			PREFIX ${TRIO_DEFAULT_PREFIX}
+			URL ${TRIO_DOWNLOAD_URL}
+			# TODO: i can't seem to find an example of how URL_MD5 is supposed 
+			# to be used, and the naive approach doesn't work.
+			#URL_MD5 ${TRIO_MD5SUM}
+			CONFIGURE_COMMAND ${TRIO_DEFAULT_PREFIX}/src/trio/configure --prefix=${TRIO_DEFAULT_PREFIX}
+			TEST_BEFORE_INSTALL ${TRIO_RUN_TESTS}	
+			)
+	elseif(WIN32)
+		# trio doesn't provide any capability to build on Windows 
+		# out-of-the-box, so i use the patch stage to add a CMakeLists.txt
+		# file into the project before building.
+		# TODO: there's a bug in CMake <=3.8.5 that prevents ExternalProject_Add()
+		# from installing trio into ${TRIO_DEFAULT_PREFIX}. i need to add
+		# a version check here once i know which release fixes it.
+		file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/trio/CMakeLists.txt" src)
+		file(TO_NATIVE_PATH "${TRIO_DEFAULT_PREFIX}/src/trio/" dest)
+		ExternalProject_Add(trio
+			PREFIX ${TRIO_DEFAULT_PREFIX}
+			URL ${TRIO_DOWNLOAD_URL}
+			# TODO: i can't seem to find an example of how URL_MD5 is supposed 
+			# to be used, and the naive approach doesn't work.
+			#URL_MD5 ${TRIO_MD5SUM}
+			# BUG: trio's regression tests appear to fail.
+			#TEST_BEFORE_INSTALL ${TRIO_RUN_TESTS}
+			# WORKAROUND: the following option needs to be last, as CMake
+			# appears to confuse arguments that follow for part of the
+			# command.
+			PATCH_COMMAND copy "${src}" "${dest}"
+			)
+	else()
+		message(FATAL_ERROR "i don't know how to compile an external project on this platform.")
+	endif()
+	if(${CMAKE_BUILD_TYPE})
+		set(TRIO_LIBRARY 
+			${TRIO_DEFAULT_PREFIX}/lib/${TRIO_LIBRARY_NAME} 
+			CACHE FILEPATH ${TRIO_LIBRARY_DOC} FORCE
+			)
+	else()
+		foreach(i ${CMAKE_CONFIGURATION_TYPES})
+			# WORKAROUND: target_link_libraries() doesn't recognize configuration
+			# names. instead, it recognizes keywords which cover categories
+			# of configurations. i elected to use Debug for *debug* and
+			# RelWithDebugInfo for everything else. unfortunately, this is 
+			# going to cause ExternalProject.cmake to compile unnecessary
+			# versions of trio for other configurations.
+			if(i STREQUAL Debug)
+				list(APPEND trio_libs debug)
+				list(APPEND trio_libs "${TRIO_DEFAULT_PREFIX}/lib/${i}/${TRIO_LIBRARY_NAME}")
+			elseif(i STREQUAL RelWithDebugInfo)
+				list(APPEND trio_libs general)
+				list(APPEND trio_libs "${TRIO_DEFAULT_PREFIX}/lib/${i}/${TRIO_LIBRARY_NAME}")
+			endif()
+		endforeach()
+		set(TRIO_LIBRARY 
+			${trio_libs} 
+			CACHE STRING ${TRIO_LIBRARY_DOC} FORCE
+			)
+	endif()
+	set(TRIO_IS_A_TARGET YES)
+endif()
 
-include_directories(${TRIO_PREFIX}/include)
+get_filename_component(TRIO_PREFIX "${TRIO_LIBRARY}" PATH)
+if(${CMAKE_BUILD_TYPE})
+	get_filename_component(TRIO_PREFIX "${TRIO_PREFIX}/.." ABSOLUTE)
+else()
+	get_filename_component(TRIO_PREFIX "${TRIO_PREFIX}/../.." ABSOLUTE)
+endif()
+
+include_directories("${TRIO_PREFIX}/include")
 
 function(add_dependency_on_trio TARGET)
 	set(TRIO_LIBRARIES 
 		${TRIO_LIBRARY}
 		)
-	if(TRIO_LIBRARY STREQUAL ${TRIO_PREFIX}/lib/${TRIO_LIBRARY_NAME})
+	if(TRIO_IS_A_TARGET)
 		add_dependencies(${TARGET} trio)
 	endif()
 	get_target_property(Type ${TARGET} TYPE)
 	if(Type STREQUAL EXECUTABLE OR Type STREQUAL SHARED_LIBRARY)
-		target_link_libraries(${TARGET} ${TRIO_LIBRARY} m)
+		if(UNIX)
+			set(dependencies m)
+		endif()
+		target_link_libraries(${TARGET} ${TRIO_LIBRARY} ${dependencies})
 	endif()
 endfunction()
 

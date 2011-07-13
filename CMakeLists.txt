@@ -34,6 +34,7 @@
 cmake_minimum_required(VERSION 2.8)
 project(ramalloc)
 
+# CTest needs to be included in order to support add_test() commands.
 include(CTest)
 
 include(cmake/splint.cmake)
