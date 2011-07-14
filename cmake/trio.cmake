@@ -58,19 +58,28 @@ else()
 	set(TRIO_LIBRARY_NAME libtrio.a)
 endif()
 
-if(${CMAKE_BUILD_TYPE})
-	find_library(TRIO_LIBRARY ${TRIO_LIBRARY_NAME} DOC ${TRIO_LIBRARY_DOC})
-	if(NOT TRIO_LIBRARY AND NOT TRIO_DOWNLOAD)
-		message(FATAL_ERROR "i couldn't find trio on your system. please put the path to libtrio.a in TRIO_LIBRARY. or, if you prefer, you can set TRIO_DOWNLOAD to 1 if you would like me to download and build it for you.")
-	endif()
-else()
+if(${CMAKE_CONFIGURATION_TYPES})
 	# there's no official binary distribution for Windows. given the need to
 	# support multi-configuration builds and without any convention for 
 	# discovering where libraries for each configuration can be found, i'm
 	# not going to try to find the library. feel free to set TRIO_LIBRARY
 	# if you know where it is.
+
+	# i can't make the following message an error that stops configuration.
+	# if i did, it would prevent other options from being added to the
+	# cache and would force the user to hit the configuration button more
+	# than is really necessary.
 	if(NOT TRIO_LIBRARY AND NOT TRIO_DOWNLOAD)
-		message(FATAL_ERROR "i don't know where trio is on your system. please put the path to trio.lib in TRIO_LIBRARY. or, if you prefer, you can set TRIO_DOWNLOAD to 1 if you would like me to download and build it for you.")
+		message(WARNING "i don't know where trio is on your system. please put the path to trio.lib in TRIO_LIBRARY. or, if you prefer, you can set TRIO_DOWNLOAD to 1 if you would like me to download and build it for you.")
+	endif()
+else()
+	find_library(TRIO_LIBRARY ${TRIO_LIBRARY_NAME} DOC ${TRIO_LIBRARY_DOC})
+	# i can't make the following message an error that stops configuration.
+	# if i did, it would prevent other options from being added to the
+	# cache and would force the user to hit the configuration button more
+	# than is really necessary.
+	if(NOT TRIO_LIBRARY AND NOT TRIO_DOWNLOAD)
+		message(WARNING "i couldn't find trio on your system. please put the path to libtrio.a in TRIO_LIBRARY. or, if you prefer, you can set TRIO_DOWNLOAD to 1 if you would like me to download and build it for you.")
 	endif()
 endif()
 	
@@ -109,12 +118,7 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 	else()
 		message(FATAL_ERROR "i don't know how to compile an external project on this platform.")
 	endif()
-	if(${CMAKE_BUILD_TYPE})
-		set(TRIO_LIBRARY 
-			${TRIO_DEFAULT_PREFIX}/lib/${TRIO_LIBRARY_NAME} 
-			CACHE FILEPATH ${TRIO_LIBRARY_DOC} FORCE
-			)
-	else()
+	if(${CMAKE_CONFIGURATION_TYPES})
 		foreach(i ${CMAKE_CONFIGURATION_TYPES})
 			# WORKAROUND: target_link_libraries() doesn't recognize configuration
 			# names. instead, it recognizes keywords which cover categories
@@ -134,15 +138,21 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 			${trio_libs} 
 			CACHE STRING ${TRIO_LIBRARY_DOC} FORCE
 			)
+	else()
+		set(TRIO_LIBRARY 
+			${TRIO_DEFAULT_PREFIX}/lib/${TRIO_LIBRARY_NAME} 
+			CACHE FILEPATH ${TRIO_LIBRARY_DOC} FORCE
+			)
 	endif()
 	set(TRIO_IS_A_TARGET YES)
 endif()
 
 get_filename_component(TRIO_PREFIX "${TRIO_LIBRARY}" PATH)
-if(${CMAKE_BUILD_TYPE})
-	get_filename_component(TRIO_PREFIX "${TRIO_PREFIX}/.." ABSOLUTE)
-else()
+# TODO: i want to cannonize this test into a function.
+if(${CMAKE_CONFIGURATION_TYPES})
 	get_filename_component(TRIO_PREFIX "${TRIO_PREFIX}/../.." ABSOLUTE)
+else()
+	get_filename_component(TRIO_PREFIX "${TRIO_PREFIX}/.." ABSOLUTE)
 endif()
 
 include_directories("${TRIO_PREFIX}/include")

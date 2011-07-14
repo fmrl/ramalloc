@@ -62,12 +62,12 @@ install(
 # the *lib* directory. otherwise, i need to install the library into the
 # appropriate subdirectory to ensure that they are all available after a
 # batch build.
-if(${CMAKE_BUILD_TYPE})
-	install(TARGETS trio DESTINATION lib)
-else()
+if(${CMAKE_CONFIGURATION_TYPES})
 	foreach(i ${CMAKE_CONFIGURATION_TYPES})
 		install(TARGETS trio DESTINATION lib/${i} CONFIGURATIONS ${i})
 	endforeach()
+else()
+	install(TARGETS trio DESTINATION lib)
 endif()
 
 add_executable(regression regression.c)
