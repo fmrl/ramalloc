@@ -174,8 +174,8 @@ set(RAMALLOC_HEADERS
 	include/ramalloc/cast.h
 	include/ramalloc/compat.h
 	include/ramalloc/default.h
-	include/ramalloc/fail.h
 	include/ramalloc/facade.h
+	include/ramalloc/fail.h
 	include/ramalloc/foot.h
 	include/ramalloc/lazy.h
 	include/ramalloc/list.h
@@ -184,7 +184,6 @@ set(RAMALLOC_HEADERS
 	include/ramalloc/misc.h
 	include/ramalloc/mtx.h
 	include/ramalloc/mux.h
-	include/ramalloc/want.h
 	include/ramalloc/para.h
 	include/ramalloc/pg.h
 	include/ramalloc/ramalloc.h
@@ -195,7 +194,9 @@ set(RAMALLOC_HEADERS
 	include/ramalloc/stdint.h
 	include/ramalloc/sys.h
 	include/ramalloc/sys/detect.h
+	include/ramalloc/sys/gcc.h
 	include/ramalloc/sys/linux.h
+	include/ramalloc/sys/msvc.h
 	include/ramalloc/sys/posix.h
 	include/ramalloc/sys/pthreads.h
 	include/ramalloc/sys/types.h
@@ -204,6 +205,7 @@ set(RAMALLOC_HEADERS
 	include/ramalloc/tls.h
 	include/ramalloc/tra.h
 	include/ramalloc/vec.h
+	include/ramalloc/want.h
 	)
 set(RAMALLOC_SOURCES
 	src/lib/algn.c
