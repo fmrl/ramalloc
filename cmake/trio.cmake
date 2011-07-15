@@ -58,7 +58,7 @@ else()
 	set(TRIO_LIBRARY_NAME libtrio.a)
 endif()
 
-if(${CMAKE_CONFIGURATION_TYPES})
+if("${CMAKE_CONFIGURATION_TYPES}")
 	# there's no official binary distribution for Windows. given the need to
 	# support multi-configuration builds and without any convention for 
 	# discovering where libraries for each configuration can be found, i'm
@@ -118,7 +118,7 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 	else()
 		message(FATAL_ERROR "i don't know how to compile an external project on this platform.")
 	endif()
-	if(${CMAKE_CONFIGURATION_TYPES})
+	if("${CMAKE_CONFIGURATION_TYPES}")
 		foreach(i ${CMAKE_CONFIGURATION_TYPES})
 			# WORKAROUND: target_link_libraries() doesn't recognize configuration
 			# names. instead, it recognizes keywords which cover categories
@@ -149,7 +149,7 @@ endif()
 
 get_filename_component(TRIO_PREFIX "${TRIO_LIBRARY}" PATH)
 # TODO: i want to cannonize this test into a function.
-if(${CMAKE_CONFIGURATION_TYPES})
+if("${CMAKE_CONFIGURATION_TYPES}")
 	get_filename_component(TRIO_PREFIX "${TRIO_PREFIX}/../.." ABSOLUTE)
 else()
 	get_filename_component(TRIO_PREFIX "${TRIO_PREFIX}/.." ABSOLUTE)
