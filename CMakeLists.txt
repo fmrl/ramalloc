@@ -239,7 +239,18 @@ set(RAMALLOC_SOURCES
 
 add_library(ramalloc ${RAMALLOC_SOURCES} ${RAMALLOC_HEADERS})
 add_splint(ramalloc ${RAMALLOC_SOURCES} ${RAMALLOC_HEADERS})
-install(TARGETS ramalloc DESTINATION lib)
+# TODO: i'd like to cannonize this code.
+if(WIN32)
+	if("${CMAKE_CONFIGURATION_TYPES}")
+		foreach(i ${CMAKE_CONFIGURATION_TYPES})
+			install(TARGETS ramalloc DESTINATION lib/${i} CONFIGURATIONS ${i})
+		endforeach()
+	else()
+		install(TARGETS ramalloc DESTINATION lib/${CMAKE_BUILD_TYPE})
+	endif()
+else()
+	install(TARGETS ramalloc DESTINATION lib)
+endif()
 
 # trio
 # ----
@@ -381,5 +392,7 @@ else()
 		)
 endif()
 
-include(cmake/sample.cmake)
-add_sample(ramalloc ${CMAKE_CURRENT_SOURCE_DIR}/src/sample)
+# TODO: the sample project doesn't work in Windows and may need a new approach.
+# i'm going to disable it for the moment.
+#include(cmake/sample.cmake)
+#add_sample(ramalloc ${CMAKE_CURRENT_SOURCE_DIR}/src/sample)

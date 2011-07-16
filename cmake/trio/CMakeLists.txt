@@ -62,10 +62,15 @@ install(
 # the *lib* directory. otherwise, i need to install the library into the
 # appropriate subdirectory to ensure that they are all available after a
 # batch build.
-if(${CMAKE_CONFIGURATION_TYPES})
-	foreach(i ${CMAKE_CONFIGURATION_TYPES})
-		install(TARGETS trio DESTINATION lib/${i} CONFIGURATIONS ${i})
-	endforeach()
+# TODO: i'd like to cannonize this code.
+if(WIN32)
+	if("${CMAKE_CONFIGURATION_TYPES}")
+		foreach(i ${CMAKE_CONFIGURATION_TYPES})
+			install(TARGETS trio DESTINATION lib/${i} CONFIGURATIONS ${i})
+		endforeach()
+	else()
+		install(TARGETS trio DESTINATION lib/${CMAKE_BUILD_TYPE})
+	endif()
 else()
 	install(TARGETS trio DESTINATION lib)
 endif()
