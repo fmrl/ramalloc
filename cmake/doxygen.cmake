@@ -65,9 +65,11 @@ endif()
 function(add_doxygen TARGET DOXYGEN_PROJECT_NAME)
 
 	if (NOT DOXYGEN_FOUND)
-		message(WARNING 
-			"i will be unable to generate documentation because doxygen could not be found.")
-		return()
+		if (WANT_DOCS)
+			message(SEND_ERROR 
+				"i will be unable to generate documentation because doxygen could not be found.")
+			return()
+		endif()
 	endif()
 
 	foreach(i ${ARGN})
