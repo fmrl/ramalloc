@@ -1,0 +1,4 @@
+todo list for ramalloc
+----------------------
+
+- the trio.cmake script doesn't properly support multi-configuration builds.
