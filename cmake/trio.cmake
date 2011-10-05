@@ -110,6 +110,10 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 			# worry too much about it. when i'm aware that a fix has been 
 			# released, i'll reenable tests.
 			#TEST_BEFORE_INSTALL ${TRIO_RUN_TESTS}
+			# the PREFIX keyword argument doesn't propigate to the external
+			# project's CMake configuration, so i specify it here explicitly.
+			# see <http://public.kitware.com/Bug/view.php?id=12357>.
+			CMAKE_ARGS -DCMAKE_INSTALL_PREFIX:PATH=${TRIO_DEFAULT_PREFIX}
 			# WORKAROUND: the following option needs to be last, as CMake
 			# appears to confuse arguments that follow for part of the
 			# command.
