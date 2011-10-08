@@ -64,7 +64,7 @@ install(
 # batch build.
 # TODO: i'd like to cannonize this code.
 if(WIN32)
-	if("${CMAKE_CONFIGURATION_TYPES}")
+	if(DEFINED CMAKE_CONFIGURATION_TYPES)
 		foreach(i ${CMAKE_CONFIGURATION_TYPES})
 			install(TARGETS trio DESTINATION lib/${i} CONFIGURATIONS ${i})
 		endforeach()
