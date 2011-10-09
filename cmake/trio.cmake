@@ -121,6 +121,7 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 	else()
 		message(FATAL_ERROR "i don't know how to compile an external project on this platform.")
 	endif()
+        ADD_LIBRARY(libtrio STATIC IMPORTED)
 	if(IS_MULTI_CONFIG_BUILD)
 		foreach(i ${CMAKE_CONFIGURATION_TYPES})
 			# WORKAROUND: target_link_libraries() doesn't recognize configuration
@@ -129,14 +130,21 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 			# RelWithDebugInfo for everything else. unfortunately, this is 
 			# going to cause ExternalProject.cmake to compile unnecessary
 			# versions of trio for other configurations.
-			if(i STREQUAL Debug)
-				list(APPEND trio_libs debug)
-				list(APPEND trio_libs "${TRIO_DEFAULT_PREFIX}/lib/${i}/${TRIO_LIBRARY_NAME}")
-			elseif(i STREQUAL RelWithDebInfo)
-				list(APPEND trio_libs optimized)
-				list(APPEND trio_libs "${TRIO_DEFAULT_PREFIX}/lib/${i}/${TRIO_LIBRARY_NAME}")
-			endif()
+			# if(i STREQUAL Debug)
+			# 	list(APPEND trio_libs debug)
+			# 	list(APPEND trio_libs "${TRIO_DEFAULT_PREFIX}/lib/${i}/${TRIO_LIBRARY_NAME}")
+			# elseif(i STREQUAL RelWithDebInfo)
+			# 	list(APPEND trio_libs optimized)
+			# 	list(APPEND trio_libs "${TRIO_DEFAULT_PREFIX}/lib/${i}/${TRIO_LIBRARY_NAME}")
+			# endif()
+                        STRING(TOUPPER "${i}" j)
+                        SET_TARGET_PROPERTIES(
+                            libtrio
+                            PROPERTIES
+                            IMPORTED_LOCATION_${j} "${TRIO_DEFAULT_PREFIX}/lib/${i}/${TRIO_LIBRARY_NAME}"
+                        )
 		endforeach()
+                LIST(APPEND trio_libs libtrio)
 		set(TRIO_LIBRARY 
 			${trio_libs} 
 			CACHE STRING ${TRIO_LIBRARY_DOC} FORCE
@@ -158,7 +166,7 @@ else()
 	get_filename_component(TRIO_PREFIX "${TRIO_PREFIX}/.." ABSOLUTE)
 endif()
 
-include_directories("${TRIO_PREFIX}/include")
+include_directories("${TRIO_DEFAULT_PREFIX}/include")
 
 function(add_dependency_on_trio TARGET)
 	set(TRIO_LIBRARIES 
