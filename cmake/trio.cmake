@@ -34,6 +34,7 @@
 # dashboard.
 
 include(ExternalProject)
+include(cmake/detect.cmake)
 
 option(TRIO_DOWNLOAD 
 	"indicates that i should download and build trio, if i can't find it."
@@ -58,7 +59,8 @@ else()
 	set(TRIO_LIBRARY_NAME libtrio.a)
 endif()
 
-if(DEFINED CMAKE_CONFIGURATION_TYPES)
+detect_multi_configuration_build(IS_MULTI_CONFIG_BUILD)
+if(IS_MULTI_CONFIG_BUILD)
 	# there's no official binary distribution for Windows. given the need to
 	# support multi-configuration builds and without any convention for 
 	# discovering where libraries for each configuration can be found, i'm
@@ -96,9 +98,6 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 		# trio doesn't provide any capability to build on Windows 
 		# out-of-the-box, so i use the patch stage to add a CMakeLists.txt
 		# file into the project before building.
-		# TODO: there's a bug in CMake <=3.8.5 that prevents ExternalProject_Add()
-		# from installing trio into ${TRIO_DEFAULT_PREFIX}. i need to add
-		# a version check here once i know which release fixes it.
 		file(TO_NATIVE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/trio/CMakeLists.txt" src)
 		file(TO_NATIVE_PATH "${TRIO_DEFAULT_PREFIX}/src/trio/" dest)
 		ExternalProject_Add(trio
@@ -122,7 +121,7 @@ if(NOT TRIO_IS_A_TARGET AND TRIO_DOWNLOAD)
 	else()
 		message(FATAL_ERROR "i don't know how to compile an external project on this platform.")
 	endif()
-	if(DEFINED CMAKE_CONFIGURATION_TYPES)
+	if(IS_MULTI_CONFIG_BUILD)
 		foreach(i ${CMAKE_CONFIGURATION_TYPES})
 			# WORKAROUND: target_link_libraries() doesn't recognize configuration
 			# names. instead, it recognizes keywords which cover categories
@@ -153,7 +152,7 @@ endif()
 
 get_filename_component(TRIO_PREFIX "${TRIO_LIBRARY}" PATH)
 # TODO: i want to cannonize this test into a function.
-if(DEFINED CMAKE_CONFIGURATION_TYPES)
+if(IS_MULTI_CONFIG_BUILD)
 	get_filename_component(TRIO_PREFIX "${TRIO_PREFIX}/../.." ABSOLUTE)
 else()
 	get_filename_component(TRIO_PREFIX "${TRIO_PREFIX}/.." ABSOLUTE)
