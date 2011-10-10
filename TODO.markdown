@@ -3,5 +3,5 @@ todo list for ramalloc
 
 - finish api refactor.
 - finish documentation.
-- the trio.cmake script doesn't properly support multi-configuration builds.
-- consider caching a copy of trio in the repository.
+- patch trio's regression tests to work on windows.
+- refactor build to put CMakeList.txt files into src/lib and src/test. this might correct the order in which the tests are run.

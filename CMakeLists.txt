@@ -258,7 +258,8 @@ endif()
 # ----
 # the tests need a portable implementation of fprintf(), so they depend
 # on trio.
-include(cmake/trio.cmake)
+add_subdirectory(dep/trio)
+include_directories(${TRIO_INCLUDE_DIRS})
 
 # tests
 # -----
@@ -276,46 +277,37 @@ add_library(testramalloc
 	${TEST_RAMALLOC_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
-add_dependency_on_trio(testramalloc)
+target_link_libraries(testramalloc ramalloc trio ${CMAKE_THREAD_LIBS_INIT})
 add_splint(testramalloc
 	${TEST_RAMALLOC_SOURCES}
 	${TEST_RAMALLOC_HEADERS}
 	${RAMALLOC_WINDOWS_GETOPT_SOURCES}
 	)
 
-set(TEST_LIB_DEPENDENCIES
-	ramalloc
-	${CMAKE_THREAD_LIBS_INIT}
-	testramalloc
-	)
-
 set(CASTTEST_SOURCES src/test/casttest.c)
 add_executable(casttest ${CASTTEST_SOURCES})
 add_splint(casttest ${CASTTEST_SOURCES})
-target_link_libraries(casttest ${TEST_LIB_DEPENDENCIES})
+target_link_libraries(casttest testramalloc)
 add_test(casttest ${EXECUTABLE_OUTPUT_PATH}/casttest)
 
 set(SLOTTEST_SOURCES src/test/slottest.c)
 add_executable(slottest ${SLOTTEST_SOURCES})
 add_splint(slottest ${SLOTTEST_SOURCES})
-target_link_libraries(slottest ${TEST_LIB_DEPENDENCIES})
-add_dependency_on_trio(slottest)
+target_link_libraries(slottest testramalloc)
 add_test(slottest ${EXECUTABLE_OUTPUT_PATH}/slottest
 	--rng-seed=1564740528)
 
 set(PGTEST_SOURCES src/test/pgtest.c)
 add_executable(pgtest ${PGTEST_SOURCES})
 add_splint(pgtest ${PGTEST_SOURCES})
-target_link_libraries(pgtest ${TEST_LIB_DEPENDENCIES})
-add_dependency_on_trio(pgtest)
+target_link_libraries(pgtest testramalloc)
 add_test(pgtest ${EXECUTABLE_OUTPUT_PATH}/pgtest
 	--allocations=10240 --rng-seed=1342375263)
 
 set(ALGNTEST_SOURCES src/test/algntest.c)
 add_executable(algntest ${ALGNTEST_SOURCES})
 add_splint(algntest ${ALGNTEST_SOURCES})
-target_link_libraries(algntest ${TEST_LIB_DEPENDENCIES})
-add_dependency_on_trio(algntest)
+target_link_libraries(algntest testramalloc)
 add_test(algntest-8 ${EXECUTABLE_OUTPUT_PATH}/algntest
 	--smallest=8 --largest=8
 	--rng-seed=2426525316)
@@ -326,16 +318,14 @@ add_test(algntest-128 ${EXECUTABLE_OUTPUT_PATH}/algntest
 set(MUXTEST_SOURCES src/test/muxtest.c)
 add_executable(muxtest ${MUXTEST_SOURCES})
 add_splint(muxtest ${MUXTEST_SOURCES})
-target_link_libraries(muxtest ${TEST_LIB_DEPENDENCIES})
-add_dependency_on_trio(muxtest)
+target_link_libraries(muxtest testramalloc)
 add_test(muxtest ${EXECUTABLE_OUTPUT_PATH}/muxtest
 	--rng-seed=2596644741)
 
 set(LAZYTEST_SOURCES src/test/lazytest.c)
 add_executable(lazytest ${LAZYTEST_SOURCES})
 add_splint(lazytest ${LAZYTEST_SOURCES})
-target_link_libraries(lazytest ${TEST_LIB_DEPENDENCIES})
-add_dependency_on_trio(lazytest)
+target_link_libraries(lazytest testramalloc)
 add_test(lazytest-serial ${EXECUTABLE_OUTPUT_PATH}/lazytest --parallelize=1
 	--rng-seed=342795249)
 add_test(lazytest-parallel ${EXECUTABLE_OUTPUT_PATH}/lazytest)
@@ -343,8 +333,7 @@ add_test(lazytest-parallel ${EXECUTABLE_OUTPUT_PATH}/lazytest)
 set(PARATEST_SOURCES src/test/paratest.c)
 add_executable(paratest ${PARATEST_SOURCES})
 add_splint(paratest ${PARATEST_SOURCES})
-target_link_libraries(paratest ${TEST_LIB_DEPENDENCIES})
-add_dependency_on_trio(paratest)
+target_link_libraries(paratest testramalloc)
 add_test(paratest-serial ${EXECUTABLE_OUTPUT_PATH}/paratest --parallelize=1
 	--rng-seed=2374434648)
 add_test(paratest-parallel ${EXECUTABLE_OUTPUT_PATH}/paratest)
@@ -352,8 +341,7 @@ add_test(paratest-parallel ${EXECUTABLE_OUTPUT_PATH}/paratest)
 set(DEFAULTTEST_SOURCES src/test/defaulttest.c)
 add_executable(defaulttest ${DEFAULTTEST_SOURCES})
 add_splint(defaulttest ${DEFAULTTEST_SOURCES})
-target_link_libraries(defaulttest ${TEST_LIB_DEPENDENCIES})
-add_dependency_on_trio(defaulttest)
+target_link_libraries(defaulttest testramalloc)
 add_test(defaulttest-serial ${EXECUTABLE_OUTPUT_PATH}/defaulttest
 	--parallelize=1	--rng-seed=2828559559)
 add_test(defaulttest-parallel ${EXECUTABLE_OUTPUT_PATH}/defaulttest)
@@ -361,7 +349,7 @@ add_test(defaulttest-parallel ${EXECUTABLE_OUTPUT_PATH}/defaulttest)
 set(COMPATTEST_SOURCES src/test/compattest.c)
 add_executable(compattest ${COMPATTEST_SOURCES})
 add_splint(compattest ${COMPATTEST_SOURCES})
-target_link_libraries(compattest ${TEST_LIB_DEPENDENCIES})
+target_link_libraries(compattest testramalloc)
 add_test(compattest ${EXECUTABLE_OUTPUT_PATH}/compattest)
 
 # install the README and LICENSE files.
