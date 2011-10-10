@@ -100,7 +100,7 @@ known issues
 
 -----
 
-**README.md for ramalloc** by [michael lowell roberts][6]. 
+**README.markdown for ramalloc** by [michael lowell roberts][6]. 
 copyright &copy; 2011, michael lowell roberts. 
 all rights reserved. 
 licensed under the [*New BSD License*][4].
