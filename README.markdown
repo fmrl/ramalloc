@@ -100,9 +100,9 @@ known issues
 
 -----
 
-**README.markdown for ramalloc** by [michael lowell roberts][6]. 
-copyright &copy; 2011, michael lowell roberts. 
-all rights reserved. 
+**README.markdown for ramalloc** by [michael lowell roberts][6].  
+copyright &copy; 2011, michael lowell roberts.  
+all rights reserved.  
 licensed under the [*New BSD License*][4].
 
 [1]: http://en.wikipedia.org/wiki/Istaria:_Chronicles_of_the_Gifted
