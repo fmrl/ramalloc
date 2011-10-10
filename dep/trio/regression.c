@@ -779,8 +779,14 @@ VerifyFormatting(TRIO_NOARGS)
 		    "%m");
 #  endif
 # else
+  /* [mlr] i've disabled the following test because it [does not work
+   * correctly in windows][1].
+   * [1]: http://sourceforge.net/mailarchive/forum.php?thread_name=CAJmqJLrqLOGOMgyx2U6%2B5nQcOZ3tdQf%2BH74vFZpZFwekKyt48A%40mail.gmail.com&forum_name=ctrio-talk
+   */
+#  if !defined(TRIO_PLATFORM_WIN32)
   nerrors += Verify(__FILE__, __LINE__, "Interrupted system call",
 		    "%m");
+#  endif
 # endif
 #endif
   
