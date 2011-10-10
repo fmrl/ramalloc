@@ -381,8 +381,3 @@ else()
 		DESTINATION doc
 		)
 endif()
-
-# TODO: the sample project doesn't work in Windows and may need a new approach.
-# i'm going to disable it for the moment.
-#include(cmake/sample.cmake)
-#add_sample(ramalloc ${CMAKE_CURRENT_SOURCE_DIR}/src/sample)
