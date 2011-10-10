@@ -156,7 +156,7 @@ void * ramuix_startroutine(void *sr_arg)
 ram_reply_t ramuix_mkthread(ramuix_thread_t *thread_arg,
       ramsys_threadmain_t main_arg, void *arg_arg)
 {
-   pthread_t thread = -1;
+   pthread_t thread;
    ramuix_startroutine_t sr = {0};
 
    RAM_FAIL_NOTNULL(thread_arg);

@@ -36,6 +36,8 @@
 
 #include <ramalloc/fail.h>
 #include <ramalloc/stdint.h>
+#include <ramalloc/compiler.h>
+#include <stdio.h>
 
 typedef struct ramtest_allocdesc
 {
@@ -85,5 +87,11 @@ ram_reply_t ramtest_test(const ramtest_params_t *params_arg);
 
 ram_reply_t ramtest_defaultthreadcount(size_t *count_arg);
 ram_reply_t ramtest_maxthreadcount(size_t *count_arg);
+
+/*@printflike@*/
+RAMSYS_PRINTFDECL(
+      ram_reply_t ramtest_fprintf(size_t *count_arg, FILE *file_arg,
+            const char *fmt_arg, ...),
+      3, 4);
 
 #endif /* RAMTEST_H_IS_INCLUDED */

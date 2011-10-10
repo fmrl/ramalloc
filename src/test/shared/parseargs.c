@@ -274,8 +274,11 @@ ram_reply_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
 
   if (optind < argc_arg)
   {
-     fprintf(stderr, "i don't understand what you mean by \"%s\".\n",
-           argv_arg[optind]);
+     size_t unused = 0;
+
+     RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+           "i don't understand what you mean by \"%s\".\n",
+           argv_arg[optind]));
      return RAM_REPLY_INPUTFAIL;
   }
 
@@ -283,10 +286,12 @@ ram_reply_t parseargs2(ramtest_params_t *params_arg, int argc_arg,
   if (params_arg->ramtestp_userngseed &&
         params_arg->ramtestp_threadcount > 1)
   {
-     fprintf(stderr,
+     size_t unused = 0;
+
+     RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
            "it's meaningless to specify is seed value for a parallelized "
            "test. either specify --parallelized=1 or omit the --rng-seed "
-           "option.\n");
+           "option.\n"));
      return RAM_REPLY_INPUTFAIL;
   }
 
@@ -348,9 +353,14 @@ ram_reply_t parsealloccount(size_t *alloccount_arg)
       *alloccount_arg = n;
       return RAM_REPLY_OK;
    case RAM_REPLY_CRTFAIL:
-      fprintf(stderr, "you must specify a numeric argument for the "
-            "--allocations (or -a) argument.\n");
+   {
+      size_t unused = 0;
+
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+            "you must specify a numeric argument for the --allocations "
+            "(or -a) argument.\n"));
       return RAM_REPLY_INPUTFAIL;
+   }
    }
 }
 
@@ -359,6 +369,7 @@ ram_reply_t parsethreadcount(size_t *threadcount_arg)
    unsigned long n = 0;
    ram_reply_t e = RAM_REPLY_INSANE;
    size_t cpucount = 0, toomany = 0;
+   size_t unused = 0;
 
    RAM_FAIL_NOTNULL(threadcount_arg);
    *threadcount_arg = 0;
@@ -376,16 +387,16 @@ ram_reply_t parsethreadcount(size_t *threadcount_arg)
    case RAM_REPLY_OK:
       if (n > toomany)
       {
-         fprintf(stderr, "you cannot specify more than %u parallel "
-               "operations.\n", toomany);
+         RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+               "you cannot specify more than %zu parallel operations.\n",
+               toomany));
          return RAM_REPLY_INPUTFAIL;
       }
       else if (n < 1)
       {
-         fprintf(stderr, "you cannot specify fewer than 1 parallel "
-               "operations.\n");
+         RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+               "you cannot specify fewer than 1 parallel operations.\n"));
          return RAM_REPLY_INPUTFAIL;
-
       }
       else
       {
@@ -393,8 +404,9 @@ ram_reply_t parsethreadcount(size_t *threadcount_arg)
          return RAM_REPLY_OK;
       }
    case RAM_REPLY_CRTFAIL:
-      fprintf(stderr, "you must specify a numeric argument for the "
-            "--parallel (or -p) argument.\n");
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+            "you must specify a numeric argument for the --parallel (or "
+            "-p) argument.\n"));
       return RAM_REPLY_INPUTFAIL;
    }
 }
@@ -403,6 +415,7 @@ ram_reply_t parsemallocchance(int *mallocchance_arg)
 {
    long n = 0;
    ram_reply_t e = RAM_REPLY_INSANE;
+   size_t unused = 0;
 
    RAM_FAIL_NOTNULL(mallocchance_arg);
    *mallocchance_arg = 0;
@@ -415,15 +428,16 @@ ram_reply_t parsemallocchance(int *mallocchance_arg)
    case RAM_REPLY_OK:
       if (n >= 100)
       {
-         fprintf(stderr,
+         RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
                "you cannot specify that 100%% or more allocations "
-               "be performed with malloc().");
+               "be performed with malloc()."));
          return RAM_REPLY_INPUTFAIL;
       }
       else if (n < 0)
       {
-         fprintf(stderr, "please specify a valid percentage argument for "
-               "the --malloc (or -m) option.");
+         RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+               "please specify a valid percentage argument for "
+               "the --malloc (or -m) option."));
          return RAM_REPLY_INPUTFAIL;
       }
       else
@@ -434,9 +448,9 @@ ram_reply_t parsemallocchance(int *mallocchance_arg)
          return RAM_REPLY_OK;
       }
    case RAM_REPLY_CRTFAIL:
-      fprintf(stderr,
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
             "you must specify a numeric argument representing a percentage "
-            "for the --malloc (or -m) argument.\n");
+            "for the --malloc (or -m) argument.\n"));
       return RAM_REPLY_INPUTFAIL;
    }
 }
@@ -445,6 +459,7 @@ ram_reply_t parseminsize(size_t *minsize_arg)
 {
    unsigned long n = 0;
    ram_reply_t e = RAM_REPLY_INSANE;
+   size_t unused = 0;
 
    RAM_FAIL_NOTNULL(minsize_arg);
    *minsize_arg = 0;
@@ -463,9 +478,9 @@ ram_reply_t parseminsize(size_t *minsize_arg)
       *minsize_arg = n;
       return RAM_REPLY_OK;
    case RAM_REPLY_CRTFAIL:
-      fprintf(stderr,
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
             "you must specify a numeric argument for the lower bound of "
-            "the allocation size for the --smallest (or -s) argument.\n");
+            "the allocation size for the --smallest (or -s) argument.\n"));
       return RAM_REPLY_INPUTFAIL;
    }
 }
@@ -474,6 +489,7 @@ ram_reply_t parsemaxsize(size_t *maxsize_arg)
 {
    unsigned long n = 0;
    ram_reply_t e = RAM_REPLY_INSANE;
+   size_t unused = 0;
 
    RAM_FAIL_NOTNULL(maxsize_arg);
    *maxsize_arg = 0;
@@ -489,9 +505,9 @@ ram_reply_t parsemaxsize(size_t *maxsize_arg)
       *maxsize_arg = n;
       return RAM_REPLY_OK;
    case RAM_REPLY_CRTFAIL:
-      fprintf(stderr,
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
             "you must specify a numeric argument for the upper bound of "
-            "the allocation size for the --largest (or -l) argument.\n");
+            "the allocation size for the --largest (or -l) argument.\n"));
       return RAM_REPLY_INPUTFAIL;
    }
 }
@@ -500,6 +516,7 @@ ram_reply_t parserngseed(unsigned int *rngseed_arg)
 {
    unsigned long n = 0;
    ram_reply_t e = RAM_REPLY_INSANE;
+   size_t unused = 0;
 
    RAM_FAIL_NOTNULL(rngseed_arg);
    *rngseed_arg = 0;
@@ -514,9 +531,9 @@ ram_reply_t parserngseed(unsigned int *rngseed_arg)
        * the individual tests. */
       return ram_cast_ulongtouint(rngseed_arg, n);
    case RAM_REPLY_CRTFAIL:
-      fprintf(stderr,
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
             "you must specify a numeric argument for the --rng-seed (or "
-            "-S) argument.\n");
+            "-S) argument.\n"));
       return RAM_REPLY_INPUTFAIL;
    }
 }

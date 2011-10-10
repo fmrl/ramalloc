@@ -29,6 +29,11 @@
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
 # SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
 
+find_package(Doxygen)
+
+option(WANT_DOCS 
+	"if YES, i'll automatically generate documentation (requires doxygen)." 
+	${DOXYGEN_FOUND})
 option(WANT_INTERNAL_DOCS 
 	"if YES, doxygen will generate internal documentation (INTERNAL_DOCS)." 
 	NO)
@@ -56,14 +61,15 @@ else()
 	set(DOXYGEN_INTERNAL_DOCS NO)
 endif()
 
-find_package(Doxygen)
-
-function(add_doxygen DOXYGEN_PROJECT_NAME)
+# TODO: project name should probably have a keyword.
+function(add_doxygen TARGET DOXYGEN_PROJECT_NAME)
 
 	if (NOT DOXYGEN_FOUND)
-		message(WARNING 
-			"i will be unable to generate documentation because doxygen could not be found.")
-		return()
+		if (WANT_DOCS)
+			message(SEND_ERROR 
+				"i will be unable to generate documentation because doxygen could not be found.")
+			return()
+		endif()
 	endif()
 
 	foreach(i ${ARGN})
@@ -77,6 +83,9 @@ function(add_doxygen DOXYGEN_PROJECT_NAME)
 		COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_FLAGS}
 		DEPENDS ${ARGN} ${DOXYGEN_CONFIG}
 		)
+	if(WANT_DOCS)
+		add_dependencies(${TARGET} doxygen)
+	endif()
 
 endfunction()
 

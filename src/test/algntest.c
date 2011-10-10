@@ -73,10 +73,11 @@ static ram_reply_t check(void *extra_arg, size_t threadidx_arg);
 int main(int argc, char *argv[])
 {
    ram_reply_t e = RAM_REPLY_INSANE;
+   size_t unused = 0;
 
    e = main2(argc, argv);
    if (RAM_REPLY_OK != e)
-      fprintf(stderr, "fail (%d).", e);
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr, "fail (%d).", e));
    if (RAM_REPLY_INPUTFAIL == e)
    {
       usage(e, argc, argv);
@@ -253,6 +254,7 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
 {
    ramtest_params_t testparams = {0};
    ramalgn_tag_t tag = {0};
+   size_t unused = 0;
 
    testparams = *params_arg;
    /* i am responsible for policing the minimum and maximum allocation
@@ -260,32 +262,33 @@ ram_reply_t runtest2(const ramtest_params_t *params_arg,
    if (testparams.ramtestp_minsize < sizeof(void *) ||
          testparams.ramtestp_maxsize < sizeof(void *))
    {
-      fprintf(stderr, "you cannot specify a size smaller than %u bytes.\n",
-            sizeof(void *));
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+            "you cannot specify a size smaller than %zu bytes.\n",
+            sizeof(void *)));
       return RAM_REPLY_INPUTFAIL;
    }
    /* TODO: shouldn't this test be moved into the framework? */
    if (testparams.ramtestp_minsize > testparams.ramtestp_maxsize)
    {
-      fprintf(stderr,
-            "please specify a minimum size (%u bytes) that is smaller than "
-            "or equal to the maximum (%u bytes).\n",
-            testparams.ramtestp_minsize, testparams.ramtestp_maxsize);
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+            "please specify a minimum size (%zu bytes) that is smaller than "
+            "or equal to the maximum (%zu bytes).\n",
+            testparams.ramtestp_minsize, testparams.ramtestp_maxsize));
       return RAM_REPLY_INPUTFAIL;
    }
    /* the algnpool doesn't support multi-threaded access. */
    if (testparams.ramtestp_threadcount > 1)
    {
-      fprintf(stderr,
-            "the --parallelize option is not supported in this test.\n");
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+            "the --parallelize option is not supported in this test.\n"));
       return RAM_REPLY_INPUTFAIL;
    }
    if (testparams.ramtestp_minsize < testparams.ramtestp_maxsize)
    {
-      fprintf(stderr,
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
             "warning: this test doesn't support a range of sizes. i will "
-            "use the smallest size specified (%u bytes) for all "
-            "allocations.\n", testparams.ramtestp_minsize);
+            "use the smallest size specified (%zu bytes) for all "
+            "allocations.\n", testparams.ramtestp_minsize));
       testparams.ramtestp_maxsize = testparams.ramtestp_minsize;
    }
    /* TODO: how do i determine the maximum allocation size ahead of time? */

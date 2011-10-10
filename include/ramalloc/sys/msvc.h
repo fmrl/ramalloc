@@ -37,8 +37,11 @@
 #define RAMMSVC_ALIGNOF(Type) (__alignof(Type))
 #define RAMMSVC_PRAGMA(Args) __pragma(#Args)
 #define RAMMSVC_MESSAGE(Message) RAMMSVC_PRAGMA(message (#Message))
+#define RAMMSVC_PRINTFDECL(Decl, FmtStrOrdinal, VarArgsOrdinal) Decl
 
 #define RAMSYS_ALIGNOF(Type) RAMMSVC_ALIGNOF(Type)
 #define RAMSYS_MESSAGE(Message) RAMMSVC_MESSAGE(Message)
+#define RAMSYS_PRINTFDECL(Decl, FmtStrOrdinal, VarArgsOrdinal) \
+   RAMMSVC_PRINTFDECL(Decl, FmtStrOrdinal, VarArgsOrdinal)
 
 #endif /* RAMALLOC_MSVC_H_IS_INCLUDED */
