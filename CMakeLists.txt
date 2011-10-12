@@ -50,9 +50,9 @@ set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "a parallelized, amortized-constant time a
 set(CPACK_PACKAGE_DESCRIPTION "ramalloc is a parallelized, amortized-constant time allocator for objects smaller than a hardware page. it exhibits deterministic performance characteristics, which is necessary for soft real-time applications. it also reduces memory fragmentation, which is important for long-running processes. ramalloc is designed for game and interpreter development but should be useful for other applications as well. ramalloc is also parallelized; there is no global resource that requires serialized access.")
 set(CPACK_PACKAGE_VENDOR "fmrl")
 set(CPACK_PACKAGE_DESCRIPTION_FILE
-	"${CMAKE_CURRENT_SOURCE_DIR}/README.md")
+	"${CMAKE_CURRENT_SOURCE_DIR}/README.markdown")
 set(CPACK_RESOURCE_FILE_LICENSE
-	"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+	"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.markdown")
 # TODO: the following should probably be set in a variable and perhaps in
 # a separate file.
 set(CPACK_PACKAGE_VERSION_MAJOR "0")
@@ -354,11 +354,11 @@ add_test(compattest ${EXECUTABLE_OUTPUT_PATH}/compattest)
 
 # install the README and LICENSE files.
 if(UNIX)
-	install(FILES LICENSE README.md	ROFLME.md
+	install(FILES LICENSE.markdown README.markdown	ROFLME.markdown
 		DESTINATION share/ramalloc
 		)
 else(UNIX)
-	install(FILES LICENSE README.md ROFLME.md DESTINATION .)
+	install(FILES LICENSE.markdown README.markdown DESTINATION .)
 endif(UNIX)
 
 # documentation
