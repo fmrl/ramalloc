@@ -42,56 +42,56 @@
 
 #include <ramalloc/mtx.h>
 
-static ramfail_status_t
+static ram_reply_t
    ramlin_waitonbarrier2(ramlin_barrier_t *barrier_arg);
 
-ramfail_status_t ramlin_mkbarrier(ramlin_barrier_t *barrier_arg,
+ram_reply_t ramlin_mkbarrier(ramlin_barrier_t *barrier_arg,
       size_t capacity_arg)
 {
-   RAMFAIL_DISALLOWNULL(barrier_arg);
-   RAMFAIL_DISALLOWZ(capacity_arg);
+   RAM_FAIL_NOTNULL(barrier_arg);
+   RAM_FAIL_NOTZERO(capacity_arg);
 
    barrier_arg->ramlinb_capacity = capacity_arg;
    barrier_arg->ramlinb_vacancy = capacity_arg;
    barrier_arg->ramlinb_cycle = 0;
-   RAMFAIL_RETURN(ramuix_mkmutex(&barrier_arg->ramlinb_mutex));
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
+   RAM_FAIL_TRAP(ramuix_mkmutex(&barrier_arg->ramlinb_mutex));
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL,
          0 == pthread_cond_init(&barrier_arg->ramlinb_cond, NULL));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlin_rmbarrier(ramlin_barrier_t *barrier_arg)
+ram_reply_t ramlin_rmbarrier(ramlin_barrier_t *barrier_arg)
 {
-   RAMFAIL_DISALLOWNULL(barrier_arg);
+   RAM_FAIL_NOTNULL(barrier_arg);
    /* i don't allow destruction of the barrier while it's in use. */
-   RAMFAIL_CONFIRM(RAMFAIL_UNSUPPORTED,
+   RAM_FAIL_EXPECT(RAM_REPLY_UNSUPPORTED,
          barrier_arg->ramlinb_vacancy == barrier_arg->ramlinb_capacity);
 
-   RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
+   RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL,
          0 == pthread_cond_destroy(&barrier_arg->ramlinb_cond));
-   RAMFAIL_RETURN(rammtx_rmmutex(&barrier_arg->ramlinb_mutex));
+   RAM_FAIL_TRAP(rammtx_rmmutex(&barrier_arg->ramlinb_mutex));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlin_waitonbarrier(ramlin_barrier_t *barrier_arg)
+ram_reply_t ramlin_waitonbarrier(ramlin_barrier_t *barrier_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(barrier_arg);
+   RAM_FAIL_NOTNULL(barrier_arg);
 
-   RAMFAIL_RETURN(rammtx_wait(&barrier_arg->ramlinb_mutex));
+   RAM_FAIL_TRAP(rammtx_wait(&barrier_arg->ramlinb_mutex));
    e = ramlin_waitonbarrier2(barrier_arg);
    /* there's no point in continuing if i fail to release the mutex. */
    /* TODO: ..._quitmutex() looks like it might be a candidate to succeed-
     * or-die. */
-   RAMFAIL_EPICFAIL(rammtx_quit(&barrier_arg->ramlinb_mutex));
+   RAM_FAIL_PANIC(rammtx_quit(&barrier_arg->ramlinb_mutex));
 
    return e;
 }
 
-ramfail_status_t ramlin_waitonbarrier2(ramlin_barrier_t *barrier_arg)
+ram_reply_t ramlin_waitonbarrier2(ramlin_barrier_t *barrier_arg)
 {
    uintptr_t cycle = 0;
 
@@ -108,10 +108,10 @@ ramfail_status_t ramlin_waitonbarrier2(ramlin_barrier_t *barrier_arg)
       /* this is my opportunity to reset the vacancy counter without
        * the possibility of introducing a race condition. */
       barrier_arg->ramlinb_vacancy = barrier_arg->ramlinb_capacity;
-      RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
+      RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL,
             0 == pthread_cond_broadcast(&barrier_arg->ramlinb_cond));
 
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
    else
    {
@@ -120,12 +120,12 @@ ramfail_status_t ramlin_waitonbarrier2(ramlin_barrier_t *barrier_arg)
        * has reached the barrier. */
       while (cycle == barrier_arg->ramlinb_cycle)
       {
-         RAMFAIL_CONFIRM(RAMFAIL_PLATFORM,
+         RAM_FAIL_EXPECT(RAM_REPLY_APIFAIL,
                0 == pthread_cond_wait(&barrier_arg->ramlinb_cond,
                      &barrier_arg->ramlinb_mutex));
       }
 
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
 }
 

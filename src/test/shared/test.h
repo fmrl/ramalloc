@@ -36,6 +36,8 @@
 
 #include <ramalloc/fail.h>
 #include <ramalloc/stdint.h>
+#include <ramalloc/compiler.h>
+#include <stdio.h>
 
 typedef struct ramtest_allocdesc
 {
@@ -44,15 +46,15 @@ typedef struct ramtest_allocdesc
    void *ramtestad_pool;
 } ramtest_allocdesc_t;
 
-typedef ramfail_status_t (*ramtest_acquire_t)(ramtest_allocdesc_t *desc_arg,
+typedef ram_reply_t (*ramtest_acquire_t)(ramtest_allocdesc_t *desc_arg,
       size_t size_arg, void *extra_arg, size_t threadidx_arg);
-typedef ramfail_status_t
+typedef ram_reply_t
       (*ramtest_release_t)(ramtest_allocdesc_t *desc_arg);
-typedef ramfail_status_t (*ramtest_query_t)(void **pool_arg,
+typedef ram_reply_t (*ramtest_query_t)(void **pool_arg,
       size_t *size_arg, void *ptr_arg, void *extra_arg);
-typedef ramfail_status_t (*ramtest_flush_t)(void *extra_arg,
+typedef ram_reply_t (*ramtest_flush_t)(void *extra_arg,
       size_t threadidx_arg);
-typedef ramfail_status_t (*ramtest_check_t)(void *extra_arg,
+typedef ram_reply_t (*ramtest_check_t)(void *extra_arg,
       size_t threadidx_arg);
 
 typedef struct ramtest_params
@@ -74,16 +76,22 @@ typedef struct ramtest_params
    int ramtestp_nofill;
 } ramtest_params_t;
 
-ramfail_status_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
+ram_reply_t ramtest_randuint32(uint32_t *result_arg, uint32_t n0_arg,
       uint32_t n1_arg);
-ramfail_status_t ramtest_randint32(int32_t *result_arg, int32_t n0_arg,
+ram_reply_t ramtest_randint32(int32_t *result_arg, int32_t n0_arg,
       int32_t n1_arg);
-ramfail_status_t ramtest_shuffle(void *array_arg, size_t size_arg,
+ram_reply_t ramtest_shuffle(void *array_arg, size_t size_arg,
       size_t count_arg);
 
-ramfail_status_t ramtest_test(const ramtest_params_t *params_arg);
+ram_reply_t ramtest_test(const ramtest_params_t *params_arg);
 
-ramfail_status_t ramtest_defaultthreadcount(size_t *count_arg);
-ramfail_status_t ramtest_maxthreadcount(size_t *count_arg);
+ram_reply_t ramtest_defaultthreadcount(size_t *count_arg);
+ram_reply_t ramtest_maxthreadcount(size_t *count_arg);
+
+/*@printflike@*/
+RAMSYS_PRINTFDECL(
+      ram_reply_t ramtest_fprintf(size_t *count_arg, FILE *file_arg,
+            const char *fmt_arg, ...),
+      3, 4);
 
 #endif /* RAMTEST_H_IS_INCLUDED */

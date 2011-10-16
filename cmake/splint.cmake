@@ -63,7 +63,7 @@ set(SPLINT_FLAGS -f ${CMAKE_CURRENT_SOURCE_DIR}/splintrc)
 if(WIN32)
 	set(SPLINT_FLAGS -f ${CMAKE_CURRENT_SOURCE_DIR}/cmake/windows.splintrc)
 elseif(${CMAKE_SYSTEM_NAME} MATCHES "Linux")#
-	set(SPLINT_FLAGS ${SPLINT_FLAGS} +unixlib -D__linux__)
+	set(SPLINT_FLAGS ${SPLINT_FLAGS} +posixlib -D__linux__)
 else()
 	message(WARNING 
 		"i don't know how to configure splint for this platform.")

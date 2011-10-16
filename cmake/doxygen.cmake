@@ -27,8 +27,13 @@
 # PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+find_package(Doxygen)
+
+option(WANT_DOCS 
+	"if YES, i'll automatically generate documentation (requires doxygen)." 
+	${DOXYGEN_FOUND})
 option(WANT_INTERNAL_DOCS 
 	"if YES, doxygen will generate internal documentation (INTERNAL_DOCS)." 
 	NO)
@@ -40,35 +45,46 @@ set(DOXYGEN_CONFIG_TEMPLATE ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Doxyfile.in)
 
 # TODO: all of these should be cache variables.
 set(DOXYGEN_OUTPUT_DIRECTORY "\"${CMAKE_CURRENT_BINARY_DIR}/doxygen\"")
+set(DOXYGEN_GENERATE_HTML YES)
+set(DOXYGEN_GENERATE_LATEX NO)
 set(DOXYGEN_FULL_PATH_NAMES NO)
 set(DOXYGEN_OPTIMIZE_OUTPUT_FOR_C YES)
 set(DOXYGEN_SOURCE_BROWSER NO)
 set(DOXYGEN_INLINE_SOURCES YES)
 set(DOXYGEN_WARN_NO_PARAMDOC YES)
+set(DOXYGEN_SORT_MEMBER_DOCS YES)
+set(DOXYGEN_SORT_BRIEF_DOCS YES)
+set(DOXYGEN_HTML_FOOTER "\"${CMAKE_CURRENT_SOURCE_DIR}/src/doc/footer.html.in\"")
 if(WANT_INTERNAL_DOCS)
 	set(DOXYGEN_INTERNAL_DOCS YES)
 else()
 	set(DOXYGEN_INTERNAL_DOCS NO)
 endif()
 
-find_package(Doxygen)
-
-function(add_doxygen DOXYGEN_PROJECT_NAME)
+# TODO: project name should probably have a keyword.
+function(add_doxygen TARGET DOXYGEN_PROJECT_NAME)
 
 	if (NOT DOXYGEN_FOUND)
-		message(WARNING 
-			"i will be unable to generate documentation because doxygen could not be found.")
-		return()
+		if (WANT_DOCS)
+			message(SEND_ERROR 
+				"i will be unable to generate documentation because doxygen could not be found.")
+			return()
+		endif()
 	endif()
-
+	
 	foreach(i ${ARGN})
 		set(DOXYGEN_INPUT 
 			"${DOXYGEN_INPUT} \"${CMAKE_CURRENT_SOURCE_DIR}/${i}\""
 			)
 	endforeach()
 	configure_file(${DOXYGEN_CONFIG_TEMPLATE} ${DOXYGEN_CONFIG})
+	# the ALL keyword indicates that the custom target should be built as
+	# part of the default make target.
+	if(WANT_DOCS)
+		set(ALL ALL)
+	endif()
 	add_custom_target(
-		doxygen
+		doxygen ${ALL}
 		COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_FLAGS}
 		DEPENDS ${ARGN} ${DOXYGEN_CONFIG}
 		)

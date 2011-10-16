@@ -36,6 +36,6 @@
 
 #include <ramalloc/fail.h>
 
-ramfail_status_t rammisc_swap(void *ptr0_arg, void *ptr1_arg, size_t count_arg);
+ram_reply_t rammisc_swap(void *ptr0_arg, void *ptr1_arg, size_t count_arg);
 
 #endif /* RAMMISC_H_IS_INCLUDED */

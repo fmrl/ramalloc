@@ -1,0 +1,99 @@
+/* ex: set softtabstop=3 shiftwidth=3 expandtab: */
+
+/* This file is part of the *ramalloc* project at <http://fmrl.org>.
+ * Copyright (c) 2011, Michael Lowell Roberts.
+ * All rights reserved. 
+ *
+ * Redistribution and use in source and binary forms, with or without 
+ * modification, are permitted provided that the following conditions are 
+ * met: 
+ *
+ *  * Redistributions of source code must retain the above copyright 
+ *  notice, this list of conditions and the following disclaimer. 
+ *
+ *  * Redistributions in binary form must reproduce the above copyright 
+ *  notice, this list of conditions and the following disclaimer in the 
+ *  documentation and/or other materials provided with the distribution.
+ * 
+ *  * Neither the name of the copyright holder nor the names of 
+ *  contributors may be used to endorse or promote products derived 
+ *  from this software without specific prior written permission. 
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS 
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED 
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A 
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER 
+ * OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED 
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR 
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
+
+/**
+ * @addtogroup config
+ * @{
+ * @file config.h.in
+ * @brief CMake integration of compile-time configuration options.
+ * @see opt.h
+ */
+
+#ifndef RAMALLOC_CMAKE_H
+#define RAMALLOC_CMAKE_H
+
+#cmakedefine01 WANT_FEEDBACK
+#define RAM_WANT_FEEDBACK WANT_FEEDBACK
+
+#cmakedefine WANT_DEBUG_SPECIFIED
+#ifdef WANT_DEBUG_SPECIFIED
+#cmakedefine01 WANT_DEBUG
+#define RAM_WANT_DEBUG WANT_DEBUG
+#endif /* WANT_DEBUG_SPECIFIED */
+
+#cmakedefine WANT_MARK_FREED_SPECIFIED
+#ifdef WANT_MARK_FREED_SPECIFIED
+#define RAM_WANT_MARKFREED @WANT_MARK_FREED@
+#endif /* WANT_MARK_FREED_SPECIFIED */
+
+#cmakedefine WANT_ZEROED_MEMORY_SPECIFIED
+#ifdef WANT_ZEROED_MEMORY_SPECIFIED
+#cmakedefine01 WANT_ZEROED_MEMORY
+#define RAM_WANT_ZEROMEM WANT_ZEROED_MEMORY
+#endif /* WANT_ZEROED_MEMORY_SPECIFIED */
+
+#cmakedefine WANT_COMPACT_SPECIFIED
+#ifdef WANT_COMPACT_SPECIFIED
+#cmakedefine01 WANT_COMPACT
+#define RAM_WANT_COMPACT WANT_COMPACT
+#endif /* WANT_COMPACT_SPECIFIED */
+
+#cmakedefine WANT_MINIMUM_PAGE_CAPACITY_SPECIFIED
+#ifdef WANT_MINIMUM_PAGE_CAPACITY_SPECIFIED
+#define RAM_WANT_MINPAGECAPACITY @WANT_MINIMUM_PAGE_CAPACITY@
+#endif /* WANT_MINIMUM_PAGE_CAPACITY_SPECIFIED */
+
+#cmakedefine WANT_DEFAULT_RECLAIM_GOAL_SPECIFIED
+#ifdef WANT_DEFAULT_RECLAIM_GOAL_SPECIFIED
+#define RAM_WANT_DEFAULTRECLAIMGOAL @WANT_DEFAULT_RECLAIM_GOAL@
+#endif /* WANT_DEFAULT_RECLAIM_GOAL_SPECIFIED */
+
+#cmakedefine WANT_DEFAULT_APPETITE_SPECIFIED
+#ifdef WANT_DEFAULT_APPETITE_SPECIFIED
+#define RAM_WANT_DEFAULTAPPETITE @WANT_DEFAULT_APPETITE@
+#endif /* WANT_DEFAULT_APPETITE_SPECIFIED */
+
+#cmakedefine01 WANT_NPTL_DEADLOCK
+#define RAM_WANT_NPTLDEADLOCK WANT_NPTL_DEADLOCK
+
+#cmakedefine01 WANT_NO_UNUSED_ARGS
+#define RAM_WANT_NOUNUSEDARGS WANT_NO_UNUSED_ARGS
+
+#cmakedefine01 WANT_OVERCONFIDENT
+#define RAM_WANT_OVERCONFIDENT WANT_OVERCONFIDENT
+
+#endif /* RAMALLOC_CMAKE_H */
+
+/**
+ * @}
+ */

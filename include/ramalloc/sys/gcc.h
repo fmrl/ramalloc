@@ -35,7 +35,14 @@
 #define RAMALLOC_GCC_H_IS_INCLUDED
 
 #define RAMGCC_ALIGNOF(Type) (__alignof__(Type))
+#define RAMGCC_PRAGMA(Args) _Pragma(#Args)
+#define RAMGCC_MESSAGE(Message) RAMGCC_PRAGMA(message (#Message))
+#define RAMGCC_PRINTFDECL(Decl, FmtStrOrdinal, VarArgsOrdinal) \
+   Decl __attribute__((format(printf, FmtStrOrdinal, VarArgsOrdinal)))
 
-#define RAMSYS_ALIGNOF(Type) RAMGCC_ALIGNOF(Type)
+#define RAMSYS_ALIGNOF RAMGCC_ALIGNOF
+#define RAMSYS_MESSAGE(Message) RAMGCC_MESSAGE
+#define RAMSYS_PRINTFDECL(Decl, FmtStrOrdinal, VarArgsOrdinal) \
+   RAMGCC_PRINTFDECL(Decl, FmtStrOrdinal, VarArgsOrdinal)
 
 #endif /* RAMALLOC_GCC_H_IS_INCLUDED */

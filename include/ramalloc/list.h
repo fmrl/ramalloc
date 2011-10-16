@@ -44,16 +44,16 @@ typedef struct ramlist_list
    struct ramlist_list *ramlistl_prev;
 } ramlist_list_t;
 
-typedef ramfail_status_t (*ramlist_foreach_t)(ramlist_list_t *node_arg, void *context_arg);
+typedef ram_reply_t (*ramlist_foreach_t)(ramlist_list_t *node_arg, void *context_arg);
 
-ramfail_status_t ramlist_mklist(ramlist_list_t *list_arg);
-ramfail_status_t ramlist_mknil(ramlist_list_t *list_arg);
-ramfail_status_t ramlist_splice(ramlist_list_t *lhs_arg, ramlist_list_t *rhs_arg);
-ramfail_status_t ramlist_pop(ramlist_list_t **tail_arg, ramlist_list_t *head_arg);
-ramfail_status_t ramlist_chklist(const ramlist_list_t *list_arg);
-ramfail_status_t ramlist_hastail(int *result_arg, const ramlist_list_t *list_arg);
-ramfail_status_t ramlist_next(ramlist_list_t **succ_arg, ramlist_list_t *of_arg);
-ramfail_status_t ramlist_foreach(ramlist_list_t *begin_arg, ramlist_list_t *end_arg,
+ram_reply_t ramlist_mklist(ramlist_list_t *list_arg);
+ram_reply_t ramlist_mknil(ramlist_list_t *list_arg);
+ram_reply_t ramlist_splice(ramlist_list_t *lhs_arg, ramlist_list_t *rhs_arg);
+ram_reply_t ramlist_pop(ramlist_list_t **tail_arg, ramlist_list_t *head_arg);
+ram_reply_t ramlist_chklist(const ramlist_list_t *list_arg);
+ram_reply_t ramlist_hastail(int *result_arg, const ramlist_list_t *list_arg);
+ram_reply_t ramlist_next(ramlist_list_t **succ_arg, ramlist_list_t *of_arg);
+ram_reply_t ramlist_foreach(ramlist_list_t *begin_arg, ramlist_list_t *end_arg,
    ramlist_foreach_t func_arg, void *context_arg); 
 
 #define RAMLIST_ISNIL(List) (NULL == (List)->ramlistl_next)

@@ -34,9 +34,9 @@
 #ifndef RAMANNOTATE_H_IS_INCLUDED
 #define RAMANNOTATE_H_IS_INCLUDED
 
-#include <ramalloc/opt.h>
+#include <ramalloc/want.h>
 
-#if RAMOPT_DEBUGUNUSEDARGS
+#if RAM_WANT_NOUNUSEDARGS
 #  define RAMANNOTATE_UNUSEDARG(ArgName) do {} while(0)
 #else
 #  define RAMANNOTATE_UNUSEDARG(ArgName) (void)(ArgName)

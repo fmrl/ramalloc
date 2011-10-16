@@ -41,17 +41,17 @@
 typedef struct rampara_pool
 {
    ramtls_key_t ramparap_tlskey;
-   ramopt_appetite_t ramparap_appetite;
+   rampg_appetite_t ramparap_appetite;
    size_t ramparap_reclaimratio;
 } rampara_pool_t;
 
-ramfail_status_t rampara_mkpool(rampara_pool_t *parapool_arg, ramopt_appetite_t appetite_arg, size_t reclaimratio_arg);
-ramfail_status_t rampara_rmpool(rampara_pool_t *parapool_arg);
-ramfail_status_t rampara_acquire(void **newptr_arg, rampara_pool_t *parapool_arg, size_t size_arg);
+ram_reply_t rampara_mkpool(rampara_pool_t *parapool_arg, rampg_appetite_t appetite_arg, size_t reclaimratio_arg);
+ram_reply_t rampara_rmpool(rampara_pool_t *parapool_arg);
+ram_reply_t rampara_acquire(void **newptr_arg, rampara_pool_t *parapool_arg, size_t size_arg);
 #define rampara_release ramlazy_release
-ramfail_status_t rampara_reclaim(size_t *count_arg, rampara_pool_t *parapool_arg, size_t goal_arg);
-ramfail_status_t rampara_flush(rampara_pool_t *parapool_arg);
-ramfail_status_t rampara_query(rampara_pool_t **parapool_arg, size_t *size_arg, void *ptr_arg);
-ramfail_status_t rampara_chkpool(const rampara_pool_t *parapool_arg);
+ram_reply_t rampara_reclaim(size_t *count_arg, rampara_pool_t *parapool_arg, size_t goal_arg);
+ram_reply_t rampara_flush(rampara_pool_t *parapool_arg);
+ram_reply_t rampara_query(rampara_pool_t **parapool_arg, size_t *size_arg, void *ptr_arg);
+ram_reply_t rampara_chkpool(const rampara_pool_t *parapool_arg);
 
 #endif /* RAMPARA_H_IS_INCLUDED */

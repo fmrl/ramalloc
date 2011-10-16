@@ -31,26 +31,36 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
+/**
+ * @file
+ * @brief the main header file.
+ */
+
 #ifndef RAMALLOC_H_IS_INCLUDED
 #define RAMALLOC_H_IS_INCLUDED
 
 #include <ramalloc/fail.h>
-#include <ramalloc/opt.h>
-#include <ramalloc/default.h>
-#include <ramalloc/compat.h>
+#include <ramalloc/facade.h>
 
-ramfail_status_t ramalloc_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg);
-
-#define ramalloc_acquire ramdefault_acquire
-#define ramalloc_discard ramdefault_discard
-#define ramalloc_reclaim ramdefault_reclaim
-#define ramalloc_flush ramdefault_flush
-#define ramalloc_query ramdefault_query
-#define ramalloc_check ramdefault_check
-
-#define ramalloc_malloc ramcompat_malloc
-#define ramalloc_free ramcompat_free
-#define ramalloc_calloc ramcompat_calloc
-#define ramalloc_realloc ramcompat_realloc
+/**
+ * @ingroup init
+ * @brief initialize @e ramalloc.
+ * @details ram_initialize() should be called before calling other
+ *    @e ramalloc functions.
+ * @param supmalloc_arg
+ *    a pointer to the supplementary allocation function. if @c NULL,
+ *    <tt>@&malloc</tt> is used.
+ * @param supfree_arg
+ *    a pointer to the supplementary deallocation function. if @c NULL,
+ *    <tt>@&free</tt> is used.
+ * @return @c RAM_REPLY_OK - the operation was successful.
+ * @remark this function returns a @e reply as described in reply.h.
+ *    replies not yet documented here may also be passed up through the
+ *    callstack. use a reply wrapper from fail.h to trap unexpected
+ *    replies.
+ */
+ram_reply_t ram_initialize(ram_malloc_t supmalloc_arg,
+      ram_free_t supfree_arg);
 
 #endif /* RAMALLOC_H_IS_INCLUDED */
+

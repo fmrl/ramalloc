@@ -34,18 +34,18 @@
 #include <ramalloc/sig.h>
 #include <assert.h>
 
-ramfail_status_t ramsig_init(ramsig_signature_t *sig_arg, const char *str_arg)
+ram_reply_t ramsig_init(ramsig_signature_t *sig_arg, const char *str_arg)
 {
    size_t i = 0;
 
-   RAMFAIL_DISALLOWNULL(sig_arg);
-   RAMFAIL_DISALLOWNULL(str_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_DISALLOWED, '\0' != *str_arg);
+   RAM_FAIL_NOTNULL(sig_arg);
+   RAM_FAIL_NOTNULL(str_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_DISALLOWED, '\0' != *str_arg);
 
    for (i = 0; i < sizeof(uint32_t) && '\0' != str_arg[i]; ++i)
       sig_arg->ramsigs_s[i] = str_arg[i];
    for (; i < sizeof(uint32_t); ++i)
       sig_arg->ramsigs_s[i] = '\0';
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }

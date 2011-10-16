@@ -44,13 +44,5 @@
 #  error <ramalloc/sys/detect.h> has not detected a platform that i recognize.
 #endif /* platform check */
 
-#ifdef RAMSYS_MSVC
-#  include <ramalloc/sys/msvc.h>
-#elif defined(RAMSYS_GCC)
-#  include <ramalloc/sys/gcc.h>
-#else
-#  error <ramalloc/sys/detect.h> has not detected a compiler that i recognize.
-#endif
-
 #endif /* RAMSYS_H_IS_INCLUDED */
 

@@ -37,14 +37,15 @@
 #include <ramalloc/para.h>
 #include <ramalloc/mem.h>
 
-ramfail_status_t ramalloc_initialize(ramopt_malloc_t supmalloc_arg, ramopt_free_t supfree_arg)
+ram_reply_t ram_initialize(ram_malloc_t supmalloc_arg,
+      ram_free_t supfree_arg)
 {
-   RAMFAIL_RETURN(ramsys_initialize());
-   RAMFAIL_RETURN(rammem_initialize(supmalloc_arg, supfree_arg));
-   RAMFAIL_RETURN(rampg_initialize());
-   RAMFAIL_RETURN(ramalgn_initialize());
-   RAMFAIL_RETURN(ramdefault_initialize());
+   RAM_FAIL_TRAP(ramsys_initialize());
+   RAM_FAIL_TRAP(rammem_initialize(supmalloc_arg, supfree_arg));
+   RAM_FAIL_TRAP(rampg_initialize());
+   RAM_FAIL_TRAP(ramalgn_initialize());
+   RAM_FAIL_TRAP(ram_default_initialize());
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 

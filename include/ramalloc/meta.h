@@ -31,28 +31,100 @@
  * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
-#ifndef RAMMETA_H_IS_INCLUDED
-#define RAMMETA_H_IS_INCLUDED
+/**
+ * @addtogroup general
+ * @{
+ * @file
+ * @brief metaprogramming tools for C.
+ */
 
-#define RAMMETA_CONCATTOK2(A, B) A##B
-#define RAMMETA_CONCATTOK(A, B) RAMMETA_CONCATTOK2(A, B)
+#ifndef RAM_META_H_IS_INCLUDED
+#define RAM_META_H_IS_INCLUDED
 
-#define RAMMETA_GENERATENAME(Prefix) RAMMETA_CONCATTOK(Prefix, __COUNTER__)
+/**
+ * @internal
+ * @brief a support macro for RAM_META_CATTOK().
+ * @details this macro is part of a common pattern for concatenating two
+ *    tokens with support for the expansion of special preprocessor symbols
+ *    such as @c __FILE__.
+ * @param A
+ *    the left-hand token in the expression @e A @e + @e B @e => @e @e AB.
+ * @param B
+ *    the right-hand token in the expression @e A @e + @e B @e => @e @e AB.
+ */
+#define RAM_META_CATTOK2(A, B) A##B
 
-#define RAMMETA_BACKCAST(DestPtr, Type, SrcFieldName, SrcPtr) \
-   ((DestPtr) = (Type *)((char *)(SrcPtr) - ((char *)(&(DestPtr)->SrcFieldName) - (char *)(DestPtr))))
+/**
+ * @brief concatenate two tokens.
+ * @details this macro is a common pattern for concatenating two tokens
+ *    with support for the expansion of special preprocessor symbols such
+ *    as @c __FILE__.
+ * @param A
+ *    the left-hand token in the expression @e A @e + @e B @e => @e @e AB.
+ * @param B
+ *    the right-hand token in the expression @e A @e + @e B @e => @e @e AB.
+ */
+#define RAM_META_CATTOK(A, B) RAM_META_CATTOK2(A, B)
 
-#define RAMMETA_IFTHEN(Condition, Then) \
-         do \
+/**
+ * @internal
+ * @brief a token counter.
+ * @details use RAM_META_COUNTER to generate unique (or semi-unique) tokens
+ *    for use in automatically generated identifiers.
+ * @remark do not use this function directly to generate identifiers. use
+ *    RAM_META_GENNAME() instead.
+ * @todo @c __COUNTER__ isn't supported on all versions of all compilers,
+ *    so i need to determine when it isn't and use @c __LINE__ instead.
+ * @see RAM_META_GENNAME()
+ */
+#define RAM_META_COUNTER __COUNTER__
+
+/**
+ * @brief generate a unique (or semi-unique) C identifier.
+ * @details use RAM_META_GENNAME() to generate a unique (or
+ *    semi-unique) C identifier, as best as the compiler can manage.
+ * @param Prefix
+ *    a C identifier that is to be used as the prefix for the generated
+ *    identifier. e.g. if @e Prefix is @c tmp then RAM_META_GENNAME()
+ *    will produce an identifier such as @c tmp36.
+ */
+#define RAM_META_GENNAME(Prefix) \
+      RAM_META_CATTOK(Prefix, RAM_META_COUNTER)
+
+/**
+ * @brief generate an <em><b>if</b>...<b>then</b></em> statement.
+ * @details use RAM_META_IFTHEN() to generate an
+ *    <em><b>if</b>...<b>then</b></em> statement. it is intended for use
+ *    within other preprocessor macros where it is inconvenient to type out
+ *    the <em><b>if</b>...<b>then</b></em>,
+ *    <em><b>do</b>...<b>while</b> (0)</em> wrapper, and the requisite
+ *    backslashes.
+ * @param Condition
+ *    a boolean expression to be used as the conditional clause.
+ * @param Then
+ *    a statement, or series of statements to be used as the @e then
+ *    clause.
+ */
+#define RAM_META_IFTHEN(Condition, Then) \
+      do \
+      { \
+         if (Condition) \
          { \
-            if (Condition) \
-            { \
-               Then; \
-            } \
+            Then; \
          } \
-         while (0)
+      } \
+      while (0)
 
-#define RAMMETA_NOP() do { } while (0)
+/**
+ * @brief generate an empty statement.
+ * @details use RAM_META_NOP() to generate code that does nothing. it is
+ *    useful in situations where something is needed to satisfy lexical
+ *    requirements but no actual processing should occur.
+ */
+#define RAM_META_NOP() do { } while (0)
 
+#endif /* RAM_META_H_IS_INCLUDED */
 
-#endif /* RAMMETA_H_IS_INCLUDED */
+/**
+ * @}
+ */

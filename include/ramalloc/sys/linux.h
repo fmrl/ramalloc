@@ -42,7 +42,7 @@
 #include <ramalloc/sys/pthreads.h>
 #include <ramalloc/fail.h>
 #include <ramalloc/stdint.h>
-#include <ramalloc/opt.h>
+#include <ramalloc/want.h>
 
 typedef struct ramlin_barrier
 {
@@ -53,10 +53,10 @@ typedef struct ramlin_barrier
    uintptr_t ramlinb_cycle;
 } ramlin_barrier_t;
 
-ramfail_status_t ramlin_mkbarrier(ramlin_barrier_t *barrier_arg,
+ram_reply_t ramlin_mkbarrier(ramlin_barrier_t *barrier_arg,
       size_t capacity_arg);
-ramfail_status_t ramlin_rmbarrier(ramlin_barrier_t *barrier_arg);
-ramfail_status_t ramlin_waitonbarrier(ramlin_barrier_t *barrier_arg);
+ram_reply_t ramlin_rmbarrier(ramlin_barrier_t *barrier_arg);
+ram_reply_t ramlin_waitonbarrier(ramlin_barrier_t *barrier_arg);
 
 #define ramsys_initialize ramuix_initialize
 /* virtual memory mapping */
@@ -86,7 +86,7 @@ typedef ramuix_thread_t ramsys_thread_t;
 #define ramsys_mkthread ramuix_mkthread
 #define ramsys_jointhread ramuix_jointhread
 /* barriers */
-#if RAMOPT_BARRIERDEADLOCK
+#if RAM_WANT_NPTLDEADLOCK
 typedef ramuix_barrier_t ramsys_barrier_t;
 #  define ramsys_mkbarrier ramuix_mkbarrier
 #  define ramsys_waitonbarrier ramuix_waitonbarrier

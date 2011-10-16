@@ -32,6 +32,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include <ramalloc/lazy.h>
+#include <ramalloc/cast.h>
 #include <string.h>
 
 typedef struct ramlazy_chktrashnode
@@ -39,18 +40,18 @@ typedef struct ramlazy_chktrashnode
    const ramlazy_pool_t *ramlazyctn_lazypool;
 } ramlazy_chktrashnode_t;
 
-static ramfail_status_t ramlazy_mkpool2(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg);
-static ramfail_status_t ramlazy_chktrashnode(void *ptr_arg, void *context_arg);
+static ram_reply_t ramlazy_mkpool2(ramlazy_pool_t *lpool_arg, rampg_appetite_t appetite_arg, size_t disposalratio_arg);
+static ram_reply_t ramlazy_chktrashnode(void *ptr_arg, void *context_arg);
 
-ramfail_status_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg)
+ram_reply_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, rampg_appetite_t appetite_arg, size_t disposalratio_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(lpool_arg);
+   RAM_FAIL_NOTNULL(lpool_arg);
 
    e = ramlazy_mkpool2(lpool_arg, appetite_arg, disposalratio_arg);
-   if (RAMFAIL_OK == e)
-      return RAMFAIL_OK;
+   if (RAM_REPLY_OK == e)
+      return RAM_REPLY_OK;
    else
    {
       memset(lpool_arg, 0, sizeof(*lpool_arg));
@@ -58,134 +59,134 @@ ramfail_status_t ramlazy_mkpool(ramlazy_pool_t *lpool_arg, ramopt_appetite_t app
    }
 }
 
-ramfail_status_t ramlazy_mkpool2(ramlazy_pool_t *lpool_arg, ramopt_appetite_t appetite_arg, size_t disposalratio_arg)
+ram_reply_t ramlazy_mkpool2(ramlazy_pool_t *lpool_arg, rampg_appetite_t appetite_arg, size_t disposalratio_arg)
 {
    assert(lpool_arg != NULL);
-   RAMFAIL_DISALLOWZ(disposalratio_arg);
+   RAM_FAIL_NOTZERO(disposalratio_arg);
 
-   RAMFAIL_RETURN(ramtra_mktrash(&lpool_arg->ramlazyp_trash));
-   RAMFAIL_RETURN(rammux_mkpool(&lpool_arg->ramlazyp_muxpool, appetite_arg));
+   RAM_FAIL_TRAP(ramtra_mktrash(&lpool_arg->ramlazyp_trash));
+   RAM_FAIL_TRAP(rammux_mkpool(&lpool_arg->ramlazyp_muxpool, appetite_arg));
    lpool_arg->ramlazyp_disposalratio = disposalratio_arg;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlazy_rmpool(ramlazy_pool_t *lpool_arg)
+ram_reply_t ramlazy_rmpool(ramlazy_pool_t *lpool_arg)
 {
-   RAMFAIL_DISALLOWNULL(lpool_arg);
+   RAM_FAIL_NOTNULL(lpool_arg);
 
-   RAMFAIL_RETURN(ramtra_rmtrash(&lpool_arg->ramlazyp_trash));
+   RAM_FAIL_TRAP(ramtra_rmtrash(&lpool_arg->ramlazyp_trash));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlazy_acquire(void **newptr_arg, ramlazy_pool_t *lpool_arg, size_t size_arg)
+ram_reply_t ramlazy_acquire(void **newptr_arg, ramlazy_pool_t *lpool_arg, size_t size_arg)
 {
    size_t unused = 0;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(newptr_arg);
+   RAM_FAIL_NOTNULL(newptr_arg);
    *newptr_arg = NULL;
-   RAMFAIL_DISALLOWNULL(lpool_arg);
-   RAMFAIL_DISALLOWZ(size_arg);
+   RAM_FAIL_NOTNULL(lpool_arg);
+   RAM_FAIL_NOTZERO(size_arg);
 
    /* first, i need to release anything that's sitting around in the trash. */
-   RAMFAIL_RETURN(ramlazy_reclaim(&unused, lpool_arg, lpool_arg->ramlazyp_disposalratio));
+   RAM_FAIL_TRAP(ramlazy_reclaim(&unused, lpool_arg, lpool_arg->ramlazyp_disposalratio));
    e = rammux_acquire(newptr_arg, &lpool_arg->ramlazyp_muxpool, size_arg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
+      RAM_FAIL_TRAP(e);
       /* i shouldn't ever get here. */
-      return RAMFAIL_INSANE;
-   case RAMFAIL_RANGE:
+      return RAM_REPLY_INSANE;
+   case RAM_REPLY_RANGEFAIL:
       return e;
-   case RAMFAIL_OK:
+   case RAM_REPLY_OK:
       break;
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlazy_release(void *ptr_arg)
+ram_reply_t ramlazy_release(void *ptr_arg)
 {
    ramlazy_pool_t *lpool = NULL;
    size_t sz = 0;
 
-   RAMFAIL_DISALLOWNULL(ptr_arg);
+   RAM_FAIL_NOTNULL(ptr_arg);
 
-   RAMFAIL_RETURN(ramlazy_query(&lpool, &sz, ptr_arg));
-#if RAMOPT_MARKFREED
-   memset(ptr_arg, RAMOPT_MARKFREED, sz);
+   RAM_FAIL_TRAP(ramlazy_query(&lpool, &sz, ptr_arg));
+#if RAM_WANT_MARKFREED
+   memset(ptr_arg, RAM_WANT_MARKFREED, sz);
 #endif
    /* i push the pointer onto the trash stack; it will be freed on it's home
     * thread with less synchronization and contention than i could manage from 
     * here. */
-   RAMFAIL_RETURN(ramtra_push(&lpool->ramlazyp_trash, ptr_arg));
+   RAM_FAIL_TRAP(ramtra_push(&lpool->ramlazyp_trash, ptr_arg));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlazy_reclaim(size_t *count_arg, ramlazy_pool_t *lpool_arg, size_t goal_arg)
+ram_reply_t ramlazy_reclaim(size_t *count_arg, ramlazy_pool_t *lpool_arg, size_t goal_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
    void *p = NULL;
    size_t i = 0;
 
-   RAMFAIL_DISALLOWNULL(count_arg);
+   RAM_FAIL_NOTNULL(count_arg);
    *count_arg = 0;
-   RAMFAIL_DISALLOWNULL(lpool_arg);
-   RAMFAIL_DISALLOWZ(goal_arg);
+   RAM_FAIL_NOTNULL(lpool_arg);
+   RAM_FAIL_NOTZERO(goal_arg);
 
-   while (i < goal_arg && RAMFAIL_OK == (e = ramtra_pop(&p, &lpool_arg->ramlazyp_trash)))
+   while (i < goal_arg && RAM_REPLY_OK == (e = ramtra_pop(&p, &lpool_arg->ramlazyp_trash)))
    {
-      RAMFAIL_RETURN(rammux_release(p));
+      RAM_FAIL_TRAP(rammux_release(p));
       ++i;
    }
 
    /* it's not a problem if we don't succeed in releasing 'count_arg' items. */
-   if (RAMFAIL_NOTFOUND == e || RAMFAIL_OK == e)
+   if (RAM_REPLY_NOTFOUND == e || RAM_REPLY_OK == e)
    {
       *count_arg = i;
-      return RAMFAIL_OK;
+      return RAM_REPLY_OK;
    }
    else
       return e;
 }
 
-ramfail_status_t ramlazy_flush(ramlazy_pool_t *lpool_arg)
+ram_reply_t ramlazy_flush(ramlazy_pool_t *lpool_arg)
 {
    size_t count = 0, unused = 0;
 
-   RAMFAIL_DISALLOWNULL(lpool_arg);
+   RAM_FAIL_NOTNULL(lpool_arg);
 
    /* the intent is to flush the allocator but in reality, the best i can hope for
     * is to grab an instantaneous count of the number of items in the trash and 
     * use that as a goal for ramlazy_reclaim(). */
-   RAMFAIL_RETURN(ramtra_size(&count, &lpool_arg->ramlazyp_trash));
+   RAM_FAIL_TRAP(ramtra_size(&count, &lpool_arg->ramlazyp_trash));
    if (count)
-      RAMFAIL_RETURN(ramlazy_reclaim(&unused, lpool_arg, count));
+      RAM_FAIL_TRAP(ramlazy_reclaim(&unused, lpool_arg, count));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlazy_chkpool(const ramlazy_pool_t *lpool_arg)
+ram_reply_t ramlazy_chkpool(const ramlazy_pool_t *lpool_arg)
 {
    ramlazy_chktrashnode_t ctn = {0};
 
-   RAMFAIL_DISALLOWNULL(lpool_arg);
+   RAM_FAIL_NOTNULL(lpool_arg);
 
-   RAMFAIL_RETURN(rammux_chkpool(&lpool_arg->ramlazyp_muxpool));
+   RAM_FAIL_TRAP(rammux_chkpool(&lpool_arg->ramlazyp_muxpool));
    /* now, i check the trash. i'll be able to verify each pointer in the trash is mine. */
    ctn.ramlazyctn_lazypool = lpool_arg;
    /* it should be safe to cast away the const here. 'ramtra_foreach()' doesn't modify anything
     * and neither does 'ramlazy_chktrashnode().' */
-   RAMFAIL_RETURN(ramtra_foreach((ramtra_trash_t *)&lpool_arg->ramlazyp_trash, &ramlazy_chktrashnode, &ctn));
+   RAM_FAIL_TRAP(ramtra_foreach((ramtra_trash_t *)&lpool_arg->ramlazyp_trash, &ramlazy_chktrashnode, &ctn));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlazy_chktrashnode(void *ptr_arg, void *context_arg)
+ram_reply_t ramlazy_chktrashnode(void *ptr_arg, void *context_arg)
 {
    ramlazy_pool_t *lazypool = NULL;
    ramlazy_chktrashnode_t *ctn = NULL;
@@ -195,39 +196,40 @@ ramfail_status_t ramlazy_chktrashnode(void *ptr_arg, void *context_arg)
    ctn = (ramlazy_chktrashnode_t *)context_arg;
    assert(ctn->ramlazyctn_lazypool != NULL);
 
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, ptr_arg);
+   RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, ptr_arg);
    /* if an address is in the trash, i can still query it, which gives me a good way to
     * check the trash's integrity. */
-   RAMFAIL_RETURN(ramlazy_query(&lazypool, &unused, ptr_arg));
-   RAMFAIL_CONFIRM(RAMFAIL_CORRUPT, ctn->ramlazyctn_lazypool == lazypool);
+   RAM_FAIL_TRAP(ramlazy_query(&lazypool, &unused, ptr_arg));
+   RAM_FAIL_EXPECT(RAM_REPLY_CORRUPT, ctn->ramlazyctn_lazypool == lazypool);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t ramlazy_query(ramlazy_pool_t **lpool_arg, size_t *size_arg, void *ptr_arg)
+ram_reply_t ramlazy_query(ramlazy_pool_t **lpool_arg, size_t *size_arg, void *ptr_arg)
 {
    rammux_pool_t *muxpool = NULL;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_DISALLOWNULL(lpool_arg);
+   RAM_FAIL_NOTNULL(lpool_arg);
    *lpool_arg = NULL;
-   RAMFAIL_DISALLOWNULL(size_arg);
+   RAM_FAIL_NOTNULL(size_arg);
    *size_arg = 0;
-   RAMFAIL_DISALLOWNULL(ptr_arg);
+   RAM_FAIL_NOTNULL(ptr_arg);
 
    e = rammux_query(&muxpool, size_arg, ptr_arg);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
+      RAM_FAIL_TRAP(e);
       /* i shouldn't ever get here. */
-      return RAMFAIL_INSANE;
-   case RAMFAIL_NOTFOUND:
+      return RAM_REPLY_INSANE;
+   case RAM_REPLY_NOTFOUND:
       return e;
-   case RAMFAIL_OK:
+   case RAM_REPLY_OK:
       break;
    }
 
-   RAMMETA_BACKCAST(*lpool_arg, ramlazy_pool_t, ramlazyp_muxpool, muxpool);
-   return RAMFAIL_OK;
+   *lpool_arg = RAM_CAST_STRUCTBASE(ramlazy_pool_t, ramlazyp_muxpool,
+         muxpool);
+   return RAM_REPLY_OK;
 }

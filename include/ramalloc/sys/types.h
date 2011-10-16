@@ -36,6 +36,6 @@
 
 #include <ramalloc/fail.h>
 
-typedef ramfail_status_t (*ramsys_threadmain_t)(void *);
+typedef ram_reply_t (*ramsys_threadmain_t)(void *);
 
 #endif /* RAMSYS_TYPES_H_IS_INCLUDED */

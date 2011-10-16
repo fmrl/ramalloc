@@ -39,52 +39,43 @@
 #define SMALL_SIZE 4
 #define LARGE_SIZE (1024 * 100)
 
-static ramfail_status_t malloctest(size_t size_arg);
-static ramfail_status_t calloctest(size_t count_arg, size_t size_arg);
+static ram_reply_t malloctest(size_t size_arg);
+static ram_reply_t calloctest(size_t count_arg, size_t size_arg);
 
 int main()
 {
    size_t pgsz = 0;
-   ramfail_status_t reply = RAMFAIL_INSANE;
 
-   reply = ramalloc_initialize(NULL, NULL);
-   RAMFAIL_CONFIRM(-1, RAMFAIL_OK == reply);
-   reply = rammem_pagesize(&pgsz);
-   RAMFAIL_CONFIRM(-2, RAMFAIL_OK == reply);
-   reply = malloctest(0);
-   RAMFAIL_CONFIRM(1, RAMFAIL_OK == reply);
-   reply = malloctest(SMALL_SIZE);
-   RAMFAIL_CONFIRM(2, RAMFAIL_OK == reply);
-   reply = malloctest(LARGE_SIZE);
-   RAMFAIL_CONFIRM(3, RAMFAIL_OK == reply);
-   reply = malloctest((pgsz / (RAMOPT_MINDENSITY - 1)));
-   RAMFAIL_CONFIRM(3, RAMFAIL_OK == reply);
-   reply = calloctest(2, SMALL_SIZE);
-   RAMFAIL_CONFIRM(4, RAMFAIL_OK == reply);
-   reply = calloctest(2, LARGE_SIZE);
-   RAMFAIL_CONFIRM(5, RAMFAIL_OK == reply);
+   RAM_FAIL_EXPECT(-1, RAM_REPLY_OK == ram_initialize(NULL, NULL));
+   RAM_FAIL_EXPECT(-2, RAM_REPLY_OK == rammem_pagesize(&pgsz));
+   RAM_FAIL_EXPECT(1, RAM_REPLY_OK == malloctest(0));
+   RAM_FAIL_EXPECT(2, RAM_REPLY_OK == malloctest(SMALL_SIZE));
+   RAM_FAIL_EXPECT(3, RAM_REPLY_OK == malloctest(LARGE_SIZE));
+   RAM_FAIL_EXPECT(3, RAM_REPLY_OK == malloctest((pgsz / (RAM_WANT_MINPAGECAPACITY - 1))));
+   RAM_FAIL_EXPECT(4, RAM_REPLY_OK == calloctest(2, SMALL_SIZE));
+   RAM_FAIL_EXPECT(5, RAM_REPLY_OK == calloctest(2, LARGE_SIZE));
 
    return 0;
 }
 
-ramfail_status_t malloctest(size_t size_arg)
+ram_reply_t malloctest(size_t size_arg)
 {
    char *p = NULL;
 
    p = ramcompat_malloc(size_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_INSANE, p != NULL);
+   RAM_FAIL_EXPECT(RAM_REPLY_INSANE, p != NULL);
    ramcompat_free(p);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t calloctest(size_t count_arg, size_t size_arg)
+ram_reply_t calloctest(size_t count_arg, size_t size_arg)
 {
    char *p = NULL;
 
    p = ramcompat_calloc(count_arg, size_arg);
-   RAMFAIL_CONFIRM(RAMFAIL_INSANE, p != NULL);
+   RAM_FAIL_EXPECT(RAM_REPLY_INSANE, p != NULL);
    ramcompat_free(p);
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }

@@ -34,8 +34,8 @@
 
 #include "test.h"
 
-void usage(ramfail_status_t exit_arg, int argc_arg, char *argv_arg[]);
-ramfail_status_t parseargs(ramtest_params_t *params_arg,
+void usage(ram_reply_t exit_arg, int argc_arg, char *argv_arg[]);
+ram_reply_t parseargs(ramtest_params_t *params_arg,
       int argc_arg, char *argv_arg[]);
 
 #endif /* RAMALLOC_TEST_PARSEARGS_H_IS_INCLUDED */

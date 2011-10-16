@@ -21,8 +21,9 @@ requirements
 
 * a C89 compiler (to-date, only MSVC 2010 and GCC 4.4.4 have been tested).
 * [CMake][2].
+* [trio][3], which is already included for you in the source distribution.
 * support for threads.
-* Windows or Linux (other ports should require little effort).
+* Windows or Linux, though other ports should require little effort.
 
 license
 -------
@@ -33,12 +34,14 @@ this means that you are free to use *ramalloc* for any purpose you see fit, as l
 
 you're not required to distribute source code if you use *ramalloc*. if you don't, you can satisfy the credit requirement by crediting me in the about box (in a GUI application), a usage message (in a command-line application), or in a credits list (in a game).
 
-see the file LICENSE in the source distribution for more details.
+see [the LICENSE file][4] in the source distribution for more details.
 
 history
 -------
 
 *ramalloc* is based on an allocator i wrote for the MMORPG [Horizons][1], before it was released in 2003. the intention its design was to reduce the allocation rate that the many interpreters imposed on the (global) heap allocator, while eliminating obstacles to parallelism.
+
+*ramalloc* is named after [a well known image macro][5].
 
 usage
 -----
@@ -97,11 +100,14 @@ known issues
 
 -----
 
-**README.md for ramalloc** by [michael lowell roberts][3].
-copyright &copy; 2011, michael lowell roberts.
-all rights reserved. 
-licensed under the *New BSD License*. 
+**README.markdown for ramalloc** by [michael lowell roberts][6].  
+copyright &copy; 2011, michael lowell roberts.  
+all rights reserved.  
+licensed under the [*New BSD License*][4].
 
 [1]: http://en.wikipedia.org/wiki/Istaria:_Chronicles_of_the_Gifted
 [2]: http://www.cmake.org
-[3]: http://fmrl.org
+[3]: http://daniel.haxx.se/projects/trio/
+[4]: http://github.com/fmrl/ramalloc/blob/master/LICENSE.markdown
+[5]: http://icanhascheezburger.files.wordpress.com/2008/02/funny-pictures-robo-ram.jpg
+[6]: http://fmrl.org

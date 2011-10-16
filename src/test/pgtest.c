@@ -51,54 +51,55 @@ typedef struct extra
    rampg_pool_t e_thepool;
 } extra_t;
 
-static ramfail_status_t main2(int argc, char *argv[]);
-static ramfail_status_t initdefaults(ramtest_params_t *params_arg);
-static ramfail_status_t runtest(const ramtest_params_t *params_arg);
-static ramfail_status_t runtest2(const ramtest_params_t *params_arg,
+static ram_reply_t main2(int argc, char *argv[]);
+static ram_reply_t initdefaults(ramtest_params_t *params_arg);
+static ram_reply_t runtest(const ramtest_params_t *params_arg);
+static ram_reply_t runtest2(const ramtest_params_t *params_arg,
       extra_t *extra_arg);
-static ramfail_status_t getpool(rampg_pool_t **pool_arg, void *extra_arg,
+static ram_reply_t getpool(rampg_pool_t **pool_arg, void *extra_arg,
       size_t threadidx_arg);
-static ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
+static ram_reply_t acquire(ramtest_allocdesc_t *desc_arg,
       size_t size_arg, void *extra_arg, size_t threadidx_arg);
-static ramfail_status_t release(ramtest_allocdesc_t *desc_arg);
-static ramfail_status_t query(void **pool_arg, size_t *size_arg,
+static ram_reply_t release(ramtest_allocdesc_t *desc_arg);
+static ram_reply_t query(void **pool_arg, size_t *size_arg,
       void *ptr_arg, void *extra_arg);
-static ramfail_status_t flush(void *extra_arg, size_t threadidx_arg);
-static ramfail_status_t check(void *extra_arg, size_t threadidx_arg);
+static ram_reply_t flush(void *extra_arg, size_t threadidx_arg);
+static ram_reply_t check(void *extra_arg, size_t threadidx_arg);
 
 int main(int argc, char *argv[])
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
+   size_t unused = 0;
 
    e = main2(argc, argv);
-   if (RAMFAIL_OK != e)
-      fprintf(stderr, "fail (%d).", e);
-   if (RAMFAIL_INPUT == e)
+   if (RAM_REPLY_OK != e)
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr, "fail (%d).", e));
+   if (RAM_REPLY_INPUTFAIL == e)
    {
       usage(e, argc, argv);
-      ramfail_epicfail("unreachable code.");
-      return RAMFAIL_INSANE;
+      ram_fail_panic("unreachable code.");
+      return RAM_REPLY_INSANE;
    }
    else
       return e;
 }
 
-ramfail_status_t main2(int argc, char *argv[])
+ram_reply_t main2(int argc, char *argv[])
 {
    ramtest_params_t testparams;
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
 
-   RAMFAIL_RETURN(ramalloc_initialize(NULL, NULL));
+   RAM_FAIL_TRAP(ram_initialize(NULL, NULL));
 
-   RAMFAIL_RETURN(initdefaults(&testparams));
+   RAM_FAIL_TRAP(initdefaults(&testparams));
    e = parseargs(&testparams, argc, argv);
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+   case RAM_REPLY_OK:
       break;
-   case RAMFAIL_INPUT:
+   case RAM_REPLY_INPUTFAIL:
       return e;
    }
 
@@ -106,19 +107,19 @@ ramfail_status_t main2(int argc, char *argv[])
    switch (e)
    {
    default:
-      RAMFAIL_RETURN(e);
-   case RAMFAIL_OK:
+      RAM_FAIL_TRAP(e);
+   case RAM_REPLY_OK:
       break;
-   case RAMFAIL_INPUT:
+   case RAM_REPLY_INPUTFAIL:
       return e;
    }
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t initdefaults(ramtest_params_t *params_arg)
+ram_reply_t initdefaults(ramtest_params_t *params_arg)
 {
-   RAMFAIL_DISALLOWNULL(params_arg);
+   RAM_FAIL_NOTNULL(params_arg);
    memset(params_arg, 0, sizeof(*params_arg));
 
    params_arg->ramtestp_alloccount = DEFAULT_ALLOCATION_COUNT;
@@ -131,133 +132,134 @@ ramfail_status_t initdefaults(ramtest_params_t *params_arg)
    params_arg->ramtestp_minsize = 0;
    params_arg->ramtestp_maxsize = 0;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t getpool(rampg_pool_t **pool_arg, void *extra_arg,
+ram_reply_t getpool(rampg_pool_t **pool_arg, void *extra_arg,
       size_t threadidx_arg)
 {
    extra_t *x = NULL;
 
-   RAMFAIL_DISALLOWNULL(pool_arg);
+   RAM_FAIL_NOTNULL(pool_arg);
    *pool_arg = NULL;
-   RAMFAIL_DISALLOWNULL(extra_arg);
+   RAM_FAIL_NOTNULL(extra_arg);
    x = (extra_t *)extra_arg;
    RAMANNOTATE_UNUSEDARG(threadidx_arg);
 
    *pool_arg = &x->e_thepool;
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t acquire(ramtest_allocdesc_t *desc_arg,
+ram_reply_t acquire(ramtest_allocdesc_t *desc_arg,
       size_t size_arg, void *extra_arg, size_t threadidx_arg)
 {
    rampg_pool_t *pool = NULL;
    void *p = NULL;
 
-   RAMFAIL_DISALLOWNULL(desc_arg);
+   RAM_FAIL_NOTNULL(desc_arg);
    memset(desc_arg, 0, sizeof(*desc_arg));
-   RAMFAIL_DISALLOWZ(size_arg);
+   RAM_FAIL_NOTZERO(size_arg);
 
-   RAMFAIL_RETURN(getpool(&pool, extra_arg, threadidx_arg));
-   RAMFAIL_RETURN(rampg_acquire(&p, pool));
+   RAM_FAIL_TRAP(getpool(&pool, extra_arg, threadidx_arg));
+   RAM_FAIL_TRAP(rampg_acquire(&p, pool));
    desc_arg->ramtestad_ptr = (char *)p;
    desc_arg->ramtestad_pool = pool;
    desc_arg->ramtestad_sz = size_arg;
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t release(ramtest_allocdesc_t *desc_arg)
+ram_reply_t release(ramtest_allocdesc_t *desc_arg)
 {
-   RAMFAIL_DISALLOWNULL(desc_arg);
+   RAM_FAIL_NOTNULL(desc_arg);
 
-   RAMFAIL_RETURN(rampg_release(desc_arg->ramtestad_ptr));
+   RAM_FAIL_TRAP(rampg_release(desc_arg->ramtestad_ptr));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
+ram_reply_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
       void *extra_arg)
 {
    extra_t *x = NULL;
 
-   RAMFAIL_DISALLOWNULL(pool_arg);
+   RAM_FAIL_NOTNULL(pool_arg);
    *pool_arg = NULL;
-   RAMFAIL_DISALLOWNULL(ptr_arg);
-   RAMFAIL_DISALLOWNULL(extra_arg);
+   RAM_FAIL_NOTNULL(ptr_arg);
+   RAM_FAIL_NOTNULL(extra_arg);
 
    x = (extra_t *)extra_arg;
    /* page pools don't support the query option, so i emulate it by
     * returning the pointer stored in the extra info. */
    *pool_arg = &x->e_thepool;
-   RAMFAIL_RETURN(rampg_getgranularity(size_arg));
-   return RAMFAIL_OK;
+   RAM_FAIL_TRAP(rampg_getgranularity(size_arg));
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t flush(void *extra_arg, size_t threadidx_arg)
+ram_reply_t flush(void *extra_arg, size_t threadidx_arg)
 {
    RAMANNOTATE_UNUSEDARG(extra_arg);
    RAMANNOTATE_UNUSEDARG(threadidx_arg);
    /* algn pools don't support the flush operation. */
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t check(void *extra_arg, size_t threadidx_arg)
+ram_reply_t check(void *extra_arg, size_t threadidx_arg)
 {
    rampg_pool_t *pool = NULL;
 
-   RAMFAIL_RETURN(getpool(&pool, extra_arg, threadidx_arg));
-   RAMFAIL_RETURN(rampg_chkpool(pool));
+   RAM_FAIL_TRAP(getpool(&pool, extra_arg, threadidx_arg));
+   RAM_FAIL_TRAP(rampg_chkpool(pool));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
-ramfail_status_t runtest(const ramtest_params_t *params_arg)
+ram_reply_t runtest(const ramtest_params_t *params_arg)
 {
-   ramfail_status_t e = RAMFAIL_INSANE;
+   ram_reply_t e = RAM_REPLY_INSANE;
    extra_t x;
 
-   RAMFAIL_DISALLOWNULL(params_arg);
+   RAM_FAIL_NOTNULL(params_arg);
 
    e = runtest2(params_arg, &x);
 
    return e;
 }
 
-ramfail_status_t runtest2(const ramtest_params_t *params_arg,
+ram_reply_t runtest2(const ramtest_params_t *params_arg,
       extra_t *extra_arg)
 {
    ramtest_params_t testparams = {0};
    size_t sz = 0;
+   size_t unused = 0;
 
    testparams = *params_arg;
 
-   RAMFAIL_RETURN(rampg_getgranularity(&sz));
+   RAM_FAIL_TRAP(rampg_getgranularity(&sz));
    if (sz != testparams.ramtestp_maxsize ||
          sz != testparams.ramtestp_minsize)
    {
-      fprintf(stderr,
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
             "warning: this test doesn't support customized sizes. i will "
-            "use the predetermined size (%u bytes) for all "
-            "allocations.\n", sz);
+            "use the predetermined size (%zu bytes) for all "
+            "allocations.\n", sz));
       testparams.ramtestp_maxsize = sz;
       testparams.ramtestp_minsize = sz;
    }
    /* the pgpool doesn't support multi-threaded access. */
    if (testparams.ramtestp_threadcount > 1)
    {
-      fprintf(stderr,
-            "the --parallelize option is not supported in this test.\n");
-      return RAMFAIL_INPUT;
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+            "the --parallelize option is not supported in this test.\n"));
+      return RAM_REPLY_INPUTFAIL;
    }
    /* the pgpool is unable to detect whether it allocated a given
     * object. */
    if (testparams.ramtestp_mallocchance != 0)
    {
-      fprintf(stderr,
-            "the --mallocchance option is not supported in this test.\n");
-      return RAMFAIL_INPUT;
+      RAM_FAIL_TRAP(ramtest_fprintf(&unused, stderr,
+            "the --mallocchance option is not supported in this test.\n"));
+      return RAM_REPLY_INPUTFAIL;
    }
 
    /* TODO: how do i determine the maximum allocation size ahead of time? */
@@ -268,11 +270,11 @@ ramfail_status_t runtest2(const ramtest_params_t *params_arg,
    testparams.ramtestp_flush = &flush;
    testparams.ramtestp_check = &check;
 
-   RAMFAIL_RETURN(rampg_mkpool(&extra_arg->e_thepool,
-         RAMOPT_DEFAULTAPPETITE));
+   RAM_FAIL_TRAP(rampg_mkpool(&extra_arg->e_thepool,
+         RAM_WANT_DEFAULTAPPETITE));
 
-   RAMFAIL_RETURN(ramtest_test(&testparams));
+   RAM_FAIL_TRAP(ramtest_test(&testparams));
 
-   return RAMFAIL_OK;
+   return RAM_REPLY_OK;
 }
 
