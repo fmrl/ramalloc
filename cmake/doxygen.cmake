@@ -27,7 +27,7 @@
 # PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF 
 # LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING 
 # NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS 
-# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+# SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 find_package(Doxygen)
 
@@ -71,21 +71,23 @@ function(add_doxygen TARGET DOXYGEN_PROJECT_NAME)
 			return()
 		endif()
 	endif()
-
+	
 	foreach(i ${ARGN})
 		set(DOXYGEN_INPUT 
 			"${DOXYGEN_INPUT} \"${CMAKE_CURRENT_SOURCE_DIR}/${i}\""
 			)
 	endforeach()
 	configure_file(${DOXYGEN_CONFIG_TEMPLATE} ${DOXYGEN_CONFIG})
+	# the ALL keyword indicates that the custom target should be built as
+	# part of the default make target.
+	if(WANT_DOCS)
+		set(ALL ALL)
+	endif()
 	add_custom_target(
-		doxygen
+		doxygen ${ALL}
 		COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_FLAGS}
 		DEPENDS ${ARGN} ${DOXYGEN_CONFIG}
 		)
-	if(WANT_DOCS)
-		add_dependencies(${TARGET} doxygen)
-	endif()
 
 endfunction()
 
