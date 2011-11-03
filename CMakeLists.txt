@@ -46,24 +46,30 @@ include(cmake/detect.cmake)
 # TODO: i'm not yet sure how to write the following include file but i'm
 # interested...
 #include(InstallRequiredSystemLibraries)
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "a parallelized, amortized-constant time allocator for objects smaller than a hardware page.")
-set(CPACK_PACKAGE_DESCRIPTION "ramalloc is a parallelized, amortized-constant time allocator for objects smaller than a hardware page. it exhibits deterministic performance characteristics, which is necessary for soft real-time applications. it also reduces memory fragmentation, which is important for long-running processes. ramalloc is designed for game and interpreter development but should be useful for other applications as well. ramalloc is also parallelized; there is no global resource that requires serialized access.")
-set(CPACK_PACKAGE_VENDOR "fmrl")
-set(CPACK_PACKAGE_DESCRIPTION_FILE
-	"${CMAKE_CURRENT_SOURCE_DIR}/README.markdown")
-set(CPACK_RESOURCE_FILE_LICENSE
-	"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.markdown")
-# TODO: the following should probably be set in a variable and perhaps in
-# a separate file.
-set(CPACK_PACKAGE_VERSION_MAJOR "0")
-set(CPACK_PACKAGE_VERSION_MINOR "0")
-set(CPACK_PACKAGE_VERSION_PATCH "0")
-if(UNIX)
-	set(CPACK_GENERATOR "TGZ")
-else(UNIX)
-	set(CPACK_GENERATOR "ZIP")
-endif(UNIX)
+include(cmake/doxygen.cmake)
+if(DOXYGEN_FOUND)
+	set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "a parallelized, amortized-constant time allocator for objects smaller than a hardware page.")
+	set(CPACK_PACKAGE_DESCRIPTION "ramalloc is a parallelized, amortized-constant time allocator for objects smaller than a hardware page. it exhibits deterministic performance characteristics, which is necessary for soft real-time applications. it also reduces memory fragmentation, which is important for long-running processes. ramalloc is designed for game and interpreter development but should be useful for other applications as well. ramalloc is also parallelized; there is no global resource that requires serialized access.")
+	set(CPACK_PACKAGE_VENDOR "fmrl")
+	set(CPACK_PACKAGE_DESCRIPTION_FILE
+		"${CMAKE_CURRENT_SOURCE_DIR}/README.markdown")
+	set(CPACK_RESOURCE_FILE_LICENSE
+		"${CMAKE_CURRENT_SOURCE_DIR}/LICENSE.markdown")
+	# TODO: the following should probably be set in a variable and perhaps in
+	# a separate file.
+	set(CPACK_PACKAGE_VERSION_MAJOR "0")
+	set(CPACK_PACKAGE_VERSION_MINOR "0")
+	set(CPACK_PACKAGE_VERSION_PATCH "0")
+	if(UNIX)
+		set(CPACK_GENERATOR "TGZ")
+	else(UNIX)
+		set(CPACK_GENERATOR "ZIP")
+	endif(UNIX)
 include(CPack)
+else()
+	message(WARNING
+		"i will be unable to create an installation package without doxygen support.")
+endif()
 
 # compiler configuration
 # ----------------------
@@ -363,7 +369,6 @@ endif(UNIX)
 
 # documentation
 # -------------
-include(cmake/doxygen.cmake)
 add_doxygen(ramalloc ramalloc
 	src/doc/groups.h ${RAMALLOC_HEADERS} ${RAMALLOC_SOURCES})
 # TODO: i don't yet how to force the generation of documentation
@@ -372,12 +377,14 @@ add_doxygen(ramalloc ramalloc
 # TODO: i can't use ${DOXYGEN_OUTPUT_DIRECTORY} because there's quotes in
 # it. i'll have to refactor doxygen.cmake to offer versions without quotes
 # and versions with quotes to substitute into Doxyfile.
-if(UNIX)
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doxygen/html
-		DESTINATION share/doc/ramalloc
-		)
-else()
-	install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doxygen/html
-		DESTINATION doc
-		)
+if(DOXYGEN_FOUND)
+	if(UNIX)
+		install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doxygen/html
+			DESTINATION share/doc/ramalloc
+			)
+	else()
+		install(DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/doxygen/html
+			DESTINATION doc
+			)
+	endif()
 endif()

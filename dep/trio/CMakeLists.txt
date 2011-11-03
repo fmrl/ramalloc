@@ -80,4 +80,9 @@ endif()
 
 add_executable(trio-regression regression.c)
 target_link_libraries(trio-regression trio)
-add_test(trio-regression ${EXECUTABLE_OUTPUT_PATH}/trio-regression)
+# [todo] on windows vista, the regression test crashes if you don't run it 
+# with elevated privledges, so i have to disable this test for windows in 
+# general until i can learn how to detect vista.
+if(NOT WIN32)
+	add_test(trio-regression ${EXECUTABLE_OUTPUT_PATH}/trio-regression)
+endif()
