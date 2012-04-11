@@ -1,0 +1,74 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>ramalloc by fmrl</title>
+    
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+  </head>
+  <body>
+    <div class="wrapper">
+      <header>
+        <h1>ramalloc</h1>
+        <p>a parallelized, amortized-constant time allocator for objects smaller than a hardware page.</p>
+        <p class="view"><a href="https://github.com/fmrl/ramalloc">View the Project on GitHub <small>fmrl/ramalloc</small></a></p>
+        <ul>
+          <li><a href="https://github.com/fmrl/ramalloc/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/fmrl/ramalloc/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/fmrl/ramalloc">Fork On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
+        <p><strong>ramalloc</strong> is a parallelized, amortized-constant time allocator for objects smaller than a hardware page. it exhibits deterministic performance characteristics, which is necessary for soft real-time applications. it also reduces memory fragmentation, which is important for long-running processes. <em>ramalloc</em> is designed for game and interpreter development but should be useful for other applications as well. <em>ramalloc</em> is also parallelized; there is no global resource that requires serialized access.</p>
+
+<p>please read the <a href="https://github.com/fmrl/ramalloc/blob/master/README.markdown">README</a> file for details about project status and usage.</p>
+
+<h2>features</h2>
+
+<ul>
+<li>deterministic performance (amortized-constant time).</li>
+<li>low fragmentation.</li>
+<li>limited waste (a 4 byte object can have less than 1 byte of overhead).</li>
+<li>coexists with a supplementary heap allocator.</li>
+<li>query any valid base pointer to determine source allocator, if any.</li>
+<li>returns unused memory to the system.</li>
+<li>parallelized.</li>
+</ul><h2>requirements</h2>
+
+<ul>
+<li>a C89 compiler (to-date, only MSVC 2010 and GCC 4.4.4 have been tested).</li>
+<li>
+<a href="http://www.cmake.org">CMake</a>.</li>
+<li>
+<a href="http://daniel.haxx.se/projects/trio/">trio</a>, which is already included for you in the source distribution.</li>
+<li>support for threads.</li>
+<li>Windows or Linux, though other ports should require little effort.</li>
+</ul><h2>license</h2>
+
+<p><em>ramalloc</em> source code is provided under the <em>New BSD License</em>.</p>
+
+<p>this means that you are free to use <em>ramalloc</em> for any purpose you see fit, as long as you give proper credit for my work.</p>
+
+<p>see <a href="http://github.com/fmrl/ramalloc/blob/master/LICENSE.markdown">the LICENSE file</a> in the source distribution for more details.</p>
+
+<hr><p>copyright © 2011, michael lowell roberts.<br>
+all rights reserved.<br>
+licensed under the <a href="http://github.com/fmrl/ramalloc/blob/master/LICENSE.markdown"><em>New BSD License</em></a>.</p>
+
+<h2>fmrl</h2>
+      </section>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/fmrl">fmrl</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
+      </footer>
+    </div>
+    <script src="javascripts/scale.fix.js"></script>
+    
+  </body>
+</html>
