@@ -1,5 +1,5 @@
-ramalloc (under construction)
-=============================
+ramalloc (alpha)
+================
 
 **ramalloc** is a parallelized, amortized-constant time allocator for objects smaller than a hardware page. it exhibits deterministic performance characteristics, which is necessary for soft real-time applications. it also reduces memory fragmentation, which is important for long-running processes. *ramalloc* is designed for game and interpreter development but should be useful for other applications as well. *ramalloc* is also parallelized; there is no global resource that requires serialized access.
 
@@ -112,4 +112,4 @@ licensed under the [*New BSD License*][4].
 [5]: http://icanhascheezburger.files.wordpress.com/2008/02/funny-pictures-robo-ram.jpg
 [6]: http://fmrl.org
 
-##朝露fmrl
+##fmrl
