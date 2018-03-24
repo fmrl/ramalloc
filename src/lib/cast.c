@@ -91,9 +91,9 @@ static ram_reply_t ram_cast_testinttoint();
       { \
          if ((From) >= 0) \
          { \
-            const intmax_t Tmp = ((intmax_t)(From)); \
+            const uintmax_t Tmp = ((uintmax_t)(From)); \
             \
-            if (Tmp <= ((intmax_t)(ToMax))) \
+            if (Tmp <= ((uintmax_t)(ToMax))) \
             { \
                *(To) = ((ToType)(From)); \
                break; \
