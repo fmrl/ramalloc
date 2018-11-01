@@ -69,7 +69,7 @@ typedef struct rampg_pool
    ramsig_signature_t rampgp_slotsig;
 } rampg_pool_t;
 
-ram_reply_t rampg_initialize();
+ram_reply_t ram_slab_initialize();
 ram_reply_t rampg_mkpool(rampg_pool_t *pool_arg, rampg_appetite_t appetite_arg);
 ram_reply_t rampg_acquire(void **newptr_arg, rampg_pool_t *pool_arg);
 ram_reply_t rampg_release(void *ptr_arg);

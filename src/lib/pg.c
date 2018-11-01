@@ -52,7 +52,7 @@ typedef size_t rampg_index_t;
 
 struct rampg_snode;
 
-typedef struct rampg_vnode
+typedef struct ramslab_node
 {
    ramvec_node_t rampgvn_vnode;
    char *rampgvn_pages;
@@ -107,7 +107,7 @@ static ram_reply_t rampg_initslot(void *slot_arg, ramslot_node_t *node_arg);
 
 static rampg_globals_t rampg_theglobals;
 
-ram_reply_t rampg_initialize()
+ram_reply_t ram_slab_initialize()
 {
    if (!rampg_theglobals.rampgg_initflag)
    {

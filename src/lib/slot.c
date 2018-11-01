@@ -214,7 +214,7 @@ ram_reply_t ramslot_mknode(ramvec_node_t **node_arg, ramvec_pool_t *pool_arg)
 
 ram_reply_t ramslot_initnode(ramslot_node_t *node_arg, ramslot_pool_t *pool_arg, char *slots_arg)
 {
-   ramslot_index_t i = 0, j = RAMSLOT_NIL_INDEX;
+   ramslot_index_t i = 0, ii = 0, j = RAMSLOT_NIL_INDEX;
 
    assert(node_arg != NULL);
    assert(pool_arg != NULL);
@@ -225,7 +225,8 @@ ram_reply_t ramslot_initnode(ramslot_node_t *node_arg, ramslot_pool_t *pool_arg,
    /* the node starts out empty... */
    node_arg->ramslotn_count = 0;
    /* ...meaning the free list starts out full. */
-   for (i = pool_arg->ramslotp_vpool.ramvecvp_nodecapacity - 1; i >= 0; j = (i--))
+   RAM_FAIL_TRAP(ramslot_sztoidx(&ii, pool_arg->ramslotp_vpool.ramvecvp_nodecapacity));
+   for (i = ii - 1; i >= 0; j = (i--))
    {
       ramslot_freeslot_t * const s = 
          (ramslot_freeslot_t *)RAMSLOT_GETSLOT(node_arg, i, pool_arg->ramslotp_granularity);
@@ -252,7 +253,7 @@ ram_reply_t ramslot_calcindex(ramslot_index_t *idx_arg, const ramslot_node_t *no
    pool = RAM_CAST_STRUCTBASE(ramslot_pool_t, ramslotp_vpool,
          node_arg->ramslotn_vnode.ramvecn_vpool);
 
-   RAM_FAIL_TRAP(ram_cast_sizetoint(&n, pool->ramslotp_granularity));
+   RAM_FAIL_TRAP(ram_cast_sztoint(&n, pool->ramslotp_granularity));
    d = div(ptr_arg - node_arg->ramslotn_slots, n);
    /* it's safe to cast the node capacity to ramslot_index_t because
     * when the pool was initialized, i ensured that the node capacity

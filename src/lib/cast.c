@@ -124,14 +124,33 @@ ram_reply_t ram_cast_ulongtochar(char *to_arg, unsigned long from_arg)
    return RAM_REPLY_OK;
 }
 
-ram_reply_t ram_cast_sizetoint(int *to_arg, size_t from_arg)
+ram_reply_t ram_cast_sztoi32(int32_t *to_arg, size_t from_arg)
 {
    RAM_FAIL_NOTNULL(to_arg);
 
-   RAM_CAST_UINTTOINT(to_arg, int, INT_MAX, from_arg);
+   RAM_CAST_UINTTOINT(to_arg, int32_t, INT32_MAX, from_arg);
 
    return RAM_REPLY_OK;
 }
+
+
+ram_reply_t ram_cast_sztoint(int *to_arg, size_t from_arg)
+{
+	RAM_FAIL_NOTNULL(to_arg);
+
+	RAM_CAST_UINTTOINT(to_arg, int, INT_MAX, from_arg);
+
+	return RAM_REPLY_OK;
+}
+
+ram_reply_t ram_cast_sztoi16(short int *to_arg, size_t from_arg)
+{
+	RAM_FAIL_NOTNULL(to_arg);
+
+	RAM_CAST_UINTTOINT(to_arg, short int, INT16_MAX, from_arg);
+	return RAM_REPLY_OK;
+}
+
 
 ram_reply_t ram_cast_longtosize(size_t *to_arg, long from_arg)
 {

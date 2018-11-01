@@ -42,7 +42,7 @@ ram_reply_t ram_initialize(ram_malloc_t supmalloc_arg,
 {
    RAM_FAIL_TRAP(ramsys_initialize());
    RAM_FAIL_TRAP(rammem_initialize(supmalloc_arg, supfree_arg));
-   RAM_FAIL_TRAP(rampg_initialize());
+   RAM_FAIL_TRAP(ram_slab_initialize());
    RAM_FAIL_TRAP(ramalgn_initialize());
    RAM_FAIL_TRAP(ram_default_initialize());
 

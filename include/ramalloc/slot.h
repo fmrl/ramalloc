@@ -41,10 +41,12 @@
 
 #if RAM_WANT_COMPACT
    typedef int16_t ramslot_index_t;
+#  define ramslot_sztoidx ram_cast_sztoi16
 #  define RAMSLOT_MAXCAPACITY ((size_t)INT16_MAX)
    typedef uint16_t ramslot_size_t;
 #else
    typedef int32_t ramslot_index_t;
+#  define ramslot_sztoidx ram_cast_sztoi32
 #  define RAMSLOT_MAXCAPACITY ((size_t)INT32_MAX)
    typedef uint32_t ramslot_size_t;
 #endif

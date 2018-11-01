@@ -35,6 +35,7 @@
 #define RAMALLOC_CAST_H_IS_INCLUDED
 
 #include <ramalloc/fail.h>
+#include <ramalloc/stdint.h>
 #include <stddef.h>
 
 /**
@@ -81,7 +82,7 @@ ram_reply_t ram_cast_ulongtochar(char *to_arg, unsigned long from_arg);
 
 /**
  * @brief convert a @c size_t to an @b int.
- * @details use ram_cast_sizetoint() to convert a @c size_t to an @b int.
+ * @details use ram_cast_sztoi32() to convert a @c size_t to an @b int32_t.
  *    if the value cannot be preserved, this function notifies the caller.
  * @param to_arg
  *    address of destination value.
@@ -95,7 +96,11 @@ ram_reply_t ram_cast_ulongtochar(char *to_arg, unsigned long from_arg);
  *    callstack. use a reply wrapper from fail.h to trap unexpected
  *    replies.
  */
-ram_reply_t ram_cast_sizetoint(int *to_arg, size_t from_arg);
+ram_reply_t ram_cast_sztoi32(int32_t *to_arg, size_t from_arg);
+
+ram_reply_t ram_cast_sztoint(int *to_arg, size_t from_arg);
+
+ram_reply_t ram_cast_sztoi16(int16_t *to_arg, size_t from_arg);
 
 /**
  * @brief convert a @c size_t to a @b long.
