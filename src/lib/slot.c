@@ -243,7 +243,7 @@ ram_reply_t ramslot_calcindex(ramslot_index_t *idx_arg, const ramslot_node_t *no
 {
    div_t d = {0};
    ramslot_pool_t *pool = NULL;
-   int n = 0;
+   int n = 0, m = 0;
 
    RAM_FAIL_NOTNULL(idx_arg);
    *idx_arg = RAMSLOT_NIL_INDEX;
@@ -253,8 +253,9 @@ ram_reply_t ramslot_calcindex(ramslot_index_t *idx_arg, const ramslot_node_t *no
    pool = RAM_CAST_STRUCTBASE(ramslot_pool_t, ramslotp_vpool,
          node_arg->ramslotn_vnode.ramvecn_vpool);
 
-   RAM_FAIL_TRAP(ram_cast_sztoint(&n, pool->ramslotp_granularity));
-   d = div(ptr_arg - node_arg->ramslotn_slots, n);
+   RAM_FAIL_TRAP(ram_cast_sztoint(&n, ptr_arg - node_arg->ramslotn_slots));
+   RAM_FAIL_TRAP(ram_cast_sztoint(&m, pool->ramslotp_granularity));
+   d = div(n, m);
    /* it's safe to cast the node capacity to ramslot_index_t because
     * when the pool was initialized, i ensured that the node capacity
     * could not exceed RAMSLOT_MAXCAPACITY. */
