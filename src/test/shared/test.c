@@ -321,7 +321,7 @@ ram_reply_t ramtest_describe(FILE *out_arg,
    RAM_FAIL_TRAP(ramtest_fprintf(&unused, out_arg,
          "warning: this is an overconfident build, so the results cannot "
          "be trusted. rebuild with RAMOPT_UNSUPPORTED_OVERCONFIDENT "
-         "#define'd as 0 if you wish to have reliable results.\n");
+         "#define'd as 0 if you wish to have reliable results.\n"));
 #endif
    if (params_arg->ramtestp_dryrun)
    {
