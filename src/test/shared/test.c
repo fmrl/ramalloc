@@ -143,9 +143,10 @@ ram_reply_t ramtest_shuffle(void *array_arg, size_t size_arg,
    {
       for (i = count_arg - 1; i > 0; --i)
       {
-         uint32_t j = 0;
+		 uint32_t j = 0, ii = 0;
 
-         RAM_FAIL_TRAP(ramtest_randuint32(&j, 0, i));
+		 RAM_FAIL_TRAP(ram_cast_sztou32(&ii, i));
+         RAM_FAIL_TRAP(ramtest_randuint32(&j, 0, ii));
          RAM_FAIL_TRAP(rammisc_swap(&p[i * size_arg], &p[j * size_arg],
                size_arg));
       }

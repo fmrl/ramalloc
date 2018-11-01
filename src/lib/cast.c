@@ -129,17 +129,22 @@ ram_reply_t ram_cast_sztoi32(int32_t *to_arg, size_t from_arg)
    RAM_FAIL_NOTNULL(to_arg);
 
    RAM_CAST_UINTTOINT(to_arg, int32_t, INT32_MAX, from_arg);
-
    return RAM_REPLY_OK;
 }
 
+ram_reply_t ram_cast_sztou32(uint32_t *to_arg, size_t from_arg)
+{
+	RAM_FAIL_NOTNULL(to_arg);
+
+	RAM_CAST_UINTTOUINT(to_arg, uint32_t, from_arg, size_t);
+	return RAM_REPLY_OK;
+}
 
 ram_reply_t ram_cast_sztoint(int *to_arg, size_t from_arg)
 {
 	RAM_FAIL_NOTNULL(to_arg);
 
 	RAM_CAST_UINTTOINT(to_arg, int, INT_MAX, from_arg);
-
 	return RAM_REPLY_OK;
 }
 

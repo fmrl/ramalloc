@@ -98,8 +98,8 @@ ram_reply_t ram_cast_ulongtochar(char *to_arg, unsigned long from_arg);
  */
 ram_reply_t ram_cast_sztoi32(int32_t *to_arg, size_t from_arg);
 
+ram_reply_t ram_cast_sztou32(uint32_t *to_arg, size_t from_arg);
 ram_reply_t ram_cast_sztoint(int *to_arg, size_t from_arg);
-
 ram_reply_t ram_cast_sztoi16(int16_t *to_arg, size_t from_arg);
 
 /**
