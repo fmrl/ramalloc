@@ -349,7 +349,7 @@ ram_reply_t initslot(void *slot_arg, ramslot_node_t *node_arg)
    slot = (slot_t *)slot_arg;
    slot->s_sig = thesig;
    slot->s_node = node;
-   slot->s_value = slot - node->n_slots;
+   RAM_FAIL_TRAP(ram_cast_ssztoi32(&slot->s_value, slot - node->n_slots));
 
    return RAM_REPLY_OK;
 }

@@ -132,6 +132,15 @@ ram_reply_t ram_cast_sztoi32(int32_t *to_arg, size_t from_arg)
    return RAM_REPLY_OK;
 }
 
+ram_reply_t ram_cast_ssztoi32(int32_t *to_arg, ssize_t from_arg)
+{
+	RAM_FAIL_NOTNULL(to_arg);
+
+	RAM_CAST_INTTOINT(to_arg, int32_t, from_arg, ssize_t);
+	return RAM_REPLY_OK;
+}
+
+
 ram_reply_t ram_cast_sztou32(uint32_t *to_arg, size_t from_arg)
 {
 	RAM_FAIL_NOTNULL(to_arg);
@@ -243,19 +252,19 @@ ram_reply_t ram_cast_test()
 
 ram_reply_t ram_cast_testuinttouint()
 {
-   unsigned char small = 0;
+   unsigned char little = 0;
    unsigned long big = 0;
    ram_reply_t e = RAM_REPLY_INSANE;
 
    /* unsigned to unsigned conversion has two different test cases.
-    * first, a success case: the value of the source variable is small
+    * first, a success case: the value of the source variable is little
     * enough to fit into the target variable. */
    big = UCHAR_MAX;
-   RAM_FAIL_TRAP(ram_cast_ulongtouchar(&small, big));
-   /* second, a failure case: the value of the source variable is not small
+   RAM_FAIL_TRAP(ram_cast_ulongtouchar(&little, big));
+   /* second, a failure case: the value of the source variable is not little
     * enough to fit in the target variable and cannot be preserved. */
    big = ULONG_MAX;
-   e = ram_cast_ulongtouchar(&small, big);
+   e = ram_cast_ulongtouchar(&little, big);
    switch (e)
    {
    default:
@@ -273,7 +282,7 @@ ram_reply_t ram_cast_testuinttouint()
 
 ram_reply_t ram_cast_testuinttoint()
 {
-   char small = 0;
+   char little = 0;
    unsigned long big = 0;
    ram_reply_t e = RAM_REPLY_INSANE;
 
@@ -281,13 +290,13 @@ ram_reply_t ram_cast_testuinttoint()
     * first, a success case: the value of the source variable is within
     * the range of the target variable. */
    big = (unsigned long)CHAR_MAX;
-   RAM_FAIL_TRAP(ram_cast_ulongtochar(&small, big));
-   /* second, a failure case: the value of the source variable is not small
+   RAM_FAIL_TRAP(ram_cast_ulongtochar(&little, big));
+   /* second, a failure case: the value of the source variable is not little
     * enough to fit in the target variable's positive number space and
     * cannot be preserved. the third case is where the value of the source
     * variable. */
    big = (unsigned long)CHAR_MAX + 1;
-   e = ram_cast_ulongtochar(&small, big);
+   e = ram_cast_ulongtochar(&little, big);
    switch (e)
    {
    default:
@@ -304,7 +313,7 @@ ram_reply_t ram_cast_testuinttoint()
     * type. this conversion cannot be allowed to succeed because the values
     * do not represent the same thing. */
    big = (unsigned long)-1;
-   e = ram_cast_ulongtochar(&small, big);
+   e = ram_cast_ulongtochar(&little, big);
    switch (e)
    {
    default:
@@ -322,7 +331,7 @@ ram_reply_t ram_cast_testuinttoint()
 
 ram_reply_t ram_cast_testinttouint()
 {
-   unsigned char small = 0;
+   unsigned char little = 0;
    long big = 0;
    ram_reply_t e = RAM_REPLY_INSANE;
 
@@ -330,12 +339,12 @@ ram_reply_t ram_cast_testinttouint()
     * first, a success case: the value of the source variable is within
     * the range of the target variable. */
    big = (long)UCHAR_MAX;
-   RAM_FAIL_TRAP(ramcast_longtouchar(&small, big));
+   RAM_FAIL_TRAP(ramcast_longtouchar(&little, big));
    /* second, a failure case: the value of the source variable is positive
-    * but is not small enough to fit within the target variable's number
+    * but is not little enough to fit within the target variable's number
     * space. */
    big = (long)UCHAR_MAX + 1;
-   e = ramcast_longtouchar(&small, big);
+   e = ramcast_longtouchar(&little, big);
    switch (e)
    {
    default:
@@ -350,7 +359,7 @@ ram_reply_t ram_cast_testinttouint()
    /* the third case is where the value of the source variable is a
     * negative value. */
    big = (long)-1;
-   e = ramcast_longtouchar(&small, big);
+   e = ramcast_longtouchar(&little, big);
    switch (e)
    {
    default:
@@ -368,7 +377,7 @@ ram_reply_t ram_cast_testinttouint()
 
 ram_reply_t ram_cast_testinttoint()
 {
-   char small = 0;
+   char little = 0;
    long big = 0;
    ram_reply_t e = RAM_REPLY_INSANE;
 
@@ -376,12 +385,12 @@ ram_reply_t ram_cast_testinttoint()
     * first, a success case: the value of the source variable is within
     * the range of the target variable. */
    big = (long)CHAR_MAX;
-   RAM_FAIL_TRAP(ram_cast_longtochar(&small, big));
+   RAM_FAIL_TRAP(ram_cast_longtochar(&little, big));
    /* second, a failure case: the value of the source variable is positive
-    * but is not small enough to fit within the target variable's number
+    * but is not little enough to fit within the target variable's number
     * space. */
    big = (long)UCHAR_MAX + 1;
-   e = ram_cast_longtochar(&small, big);
+   e = ram_cast_longtochar(&little, big);
    switch (e)
    {
    default:
@@ -397,7 +406,7 @@ ram_reply_t ram_cast_testinttoint()
     * and is not large enough to fit within the target variable's number
     * space. */
    big = (long)CHAR_MIN - 1;
-   e = ram_cast_longtochar(&small, big);
+   e = ram_cast_longtochar(&little, big);
    switch (e)
    {
    default:

@@ -43,6 +43,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
+#include "ramalloc/cast.h"
 
 #define DEFAULT_ALLOCATION_COUNT 1024 * 100
 #define DEFAULT_MINIMUM_ALLOCATION_SIZE 8
@@ -208,7 +209,8 @@ ram_reply_t query(void **pool_arg, size_t *size_arg, void *ptr_arg,
    }
 
    RAM_FAIL_TRAP(ramalgn_gettag(&tag, pool));
-   sig.ramsigs_n = tag->ramalgnt_values[0];
+   /* note: `size_t` and `uintptr_t` should be identical types. */
+   RAM_FAIL_TRAP(ram_cast_sztou32(&sig.ramsigs_n, tag->ramalgnt_values[0]));
    if (0 == RAMSIG_CMP(x->e_sig, sig))
    {
       *pool_arg = pool;

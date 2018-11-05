@@ -32,6 +32,7 @@
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. */
 
 #include <ramalloc/mux.h>
+#include "ramalloc/cast.h"
 #include <memory.h>
 
 static ramsig_signature_t rammux_thesignature = { RAMSIG_MKUINT32('M', 'U', 'X', 'P') };
@@ -182,8 +183,9 @@ ram_reply_t rammux_query(rammux_pool_t **mpool_arg, size_t *size_arg, void *ptr_
    RAM_FAIL_TRAP(ramalgn_gettag(&tag, apool));
    /* i use the signature in the first half of the tag to increase the possibility that
     * an invalid address in 'ptr_arg' won't crash the process when someone attempts to dereference
-    * the pointer that i expect to contain the mux pool. */
-   sig.ramsigs_n = tag->ramalgnt_values[0];
+    * the pointer that i expect to contain the mux pool.
+    * note: `size_t` and `uintptr_t` should be identical types. */
+   RAM_FAIL_TRAP(ram_cast_sztou32(&sig.ramsigs_n, tag->ramalgnt_values[0]));
    /* i consider a signature mismatch an expected failure here it this function is used
     * to determine whether a pointer belongs to another allocator. */
    if (0 != RAMSIG_CMP(sig, rammux_thesignature))

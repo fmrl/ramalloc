@@ -48,6 +48,8 @@
 #include <ramalloc/fail.h>
 #include <Windows.h>
 
+typedef SSIZE_T ssize_t;
+
 typedef DWORD ramwin_tlskey_t;
 #define RAMWIN_NILTLSKEY TLS_OUT_OF_INDEXES
 typedef CRITICAL_SECTION ramwin_mutex_t;
